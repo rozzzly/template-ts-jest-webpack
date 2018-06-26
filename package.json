@@ -1,12 +1,19 @@
 {
   "name": "template-ts-jest",
   "version": "0.0.0",
-  "description": "",
+  "description": "just a package template including typescript and test",
   "main": "./bin/src/index.js",
   "scripts": {
     "test": "node ./node_modules/jest --config ./jest.config.js",
     "build": "node ./node_modules/typescript/tsc -p ./",
     "watch": "node ./node_modules/typescript/tsc -w -p ./"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rozzzly/template-ts-jest.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rozzzly/template-ts-jest/issues"
   },
   "author": {
     "name": "rozzzly",
