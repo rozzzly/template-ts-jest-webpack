@@ -1,0 +1,25 @@
+{
+  "name": "template-ts-jest",
+  "version": "0.0.0",
+  "description": "",
+  "main": "./bin/src/index.js",
+  "scripts": {
+    "test": "node ./node_modules/jest --config ./jest.config.js",
+    "build": "node ./node_modules/typescript/tsc -p ./",
+    "watch": "node ./node_modules/typescript/tsc -w -p ./"
+  },
+  "author": {
+    "name": "rozzzly",
+    "email": "pclienau@gmail.com",
+    "url": "https://github.com/rozzzly"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^23.1.1",
+    "@types/node": "^10.3.5",
+    "jest": "^23.2.0",
+    "ts-jest": "^22.4.6",
+    "tslint": "^5.10.0",
+    "typescript": "^2.9.2"
+  }
+}

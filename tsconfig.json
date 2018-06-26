@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+      "target": "es6",
+      "module": "commonjs",
+      "moduleResolution": "node",
+      "sourceMap": true,
+      "preserveConstEnums": true,
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+      "declaration": true,
+      "diagnostics": true,
+      "noImplicitAny": true,
+      "noImplicitThis": true,
+      "noImplicitReturns": true,
+      "allowSyntheticDefaultImports": false,
+      "removeComments": false,
+      "newLine": "LF",
+      "pretty": true,
+      "lib": ["es2017"],
+      "rootDir": ".",
+      "outDir": "out",
+      "strictNullChecks": true
+    },
+    "exclude": [
+      "node_modules",
+      "out",
+      ".vscode"
+    ]
+  }
+  
