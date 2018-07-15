@@ -1,13 +1,14 @@
 {
     "compilerOptions": {
-      "target": "es6",
-      "module": "commonjs",
+      "target": "esnext",
+      "module": "esnext",
       "moduleResolution": "node",
       "sourceMap": true,
+      // "inlineSourceMap": true,
       "preserveConstEnums": true,
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
-      "declaration": true,
+      "declaration": false,
       "diagnostics": true,
       "noImplicitAny": true,
       "noImplicitThis": true,
@@ -16,14 +17,14 @@
       "removeComments": false,
       "newLine": "LF",
       "pretty": true,
-      "lib": ["es2017"],
+      "lib": ["esnext", "dom"],
       "rootDir": ".",
       "outDir": "out",
       "strictNullChecks": true
     },
     "exclude": [
       "node_modules",
-      "out",
+      "bin",
       "dist",
       ".vscode"
     ]

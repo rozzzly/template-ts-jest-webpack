@@ -1,4 +1,4 @@
-import { add } from '../src';
+const add = (a: number, b: number): number => a + b;
 
 describe('add(a: number, b: number): number', () => {
     it('can add two numbers', () => {

@@ -1,5 +1,5 @@
 node_modules
 package-lock.json
-out
+bin
 dist
 .vscode/tasks.json

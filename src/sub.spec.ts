@@ -1,4 +1,4 @@
-import { sub } from './sub';
+import sub from './sub';
 
 describe('sub(a: number, b: number): number', () => {
     it('can subtract two numbers', () => {
