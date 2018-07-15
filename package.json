@@ -1,7 +1,7 @@
 {
-  "name": "~~--replace-me--~~",
+  "name": "template-ts-jest-webpack",
   "version": "0.0.0",
-  "description": "~~--replace-me--~~",
+  "description": "template-ts-jest-webpack",
   "main": "./bin/src/index.js",
   "scripts": {
     "test": "node ./node_modules/jest --config ./jest.config.js",
@@ -22,10 +22,10 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@types/jest": "^23.1.2",
-    "@types/node": "^10.3.6",
-    "jest": "^23.2.0",
-    "ts-jest": "^22.4.6",
+    "@types/jest": "^23.1.6",
+    "@types/node": "^10.5.2",
+    "jest": "^23.4.1",
+    "ts-jest": "^23.0.0",
     "tslint": "^5.10.0",
     "typescript": "^2.9.2"
   }
