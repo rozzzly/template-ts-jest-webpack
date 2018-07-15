@@ -1,6 +1,14 @@
+import { Application } from 'express';
+import getRouter from './router';
+export default function init(app: Application): void {
+    let router = getRouter();
 
-export * from './sub';
+    if (module.hot) {
+        module.hot.accept('./router', () => {
+            console.log('change to ./router');
+            router = getRouter();
+        });
+    }
 
-export function add(a: number, b: number): number {
-    return a + b;
+    app.use((req, res, next) => router(req, res, next));
 }
