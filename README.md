@@ -23,6 +23,7 @@
     
     * [ ] [gajus/prepack-webpack-plugin](https://github.com/gajus/prepack-webpack-plugin)
 
+    * [ ]  [mzgoddard/hard-source-webpack-plugin](https://github.com/mzgoddard/hard-source-webpack-plugin)
 
 
 #### Resources
@@ -32,7 +33,7 @@
     * SplitChunks
 
       * https://medium.com/dailyjs/webpack-4-splitchunks-plugin-d9fbbe091fd0
-      
+
       * https://webpack.js.org/plugins/split-chunks-plugin/
 
     * typescript-loader
