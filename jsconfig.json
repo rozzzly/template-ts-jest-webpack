@@ -1,0 +1,29 @@
+{
+    "compilerOptions": {
+      "target": "esnext",
+      "moduleResolution": "node",
+      "sourceMap": true,
+      // "inlineSourceMap": true,
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+      "diagnostics": true,
+      "noImplicitAny": true,
+      "noImplicitThis": true,
+      "noImplicitReturns": true,
+      "allowSyntheticDefaultImports": false,
+      "removeComments": false,
+      "newLine": "LF",
+      "pretty": true,
+      "lib": ["esnext", "dom"],
+      "rootDir": ".",
+      "outDir": "out",
+      "strictNullChecks": true
+    },
+    "exclude": [
+      "node_modules",
+      "bin",
+      "dist",
+      ".vscode"
+    ]
+  }
+  

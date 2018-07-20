@@ -9,13 +9,13 @@ const commonCfg = require('./webpack.common');
 module.exports = merge(commonCfg, {
     target: 'node',
     entry: {
-        server: [
+        app: [
             'webpack/hot/poll?1000',
             './src/server'
         ]
     },
     output: {
-        filename: '[name].js',
+        filename: '[name].server.js',
         path: path.resolve(__dirname, 'bin'),
         library: 'init',
         libraryExport: 'default',

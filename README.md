@@ -29,6 +29,12 @@
 
   * Webpack Config
 
+    * SplitChunks
+
+      * https://medium.com/dailyjs/webpack-4-splitchunks-plugin-d9fbbe091fd0
+      
+      * https://webpack.js.org/plugins/split-chunks-plugin/
+
     * typescript-loader
 
       * https://github.com/TypeStrong/ts-loader/blob/master/examples/react-hot-boilerplate/webpack.config.js#L58:7

@@ -1,7 +1,8 @@
 const webpack = require('webpack');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
-module.exports = {
+/** @type {import('webpack').Configuration} */
+const cfg = {
     mode: 'development',
     devtool: 'inline-source-map',
 
@@ -9,6 +10,20 @@ module.exports = {
         extensions: [
             '.ts', '.tsx', '.js', '.jsx'
         ]
+    },
+    optimization: {
+        splitChunks: {
+            cacheGroups: {
+                runtimeChunk: 'single',
+                vendor: {
+                    name: 'vendor',
+                    chunks: 'all',
+                    priority: 1,
+                    test: /node_modules/
+                }
+            }
+        },
+        
     },
     module: {
         rules: [
@@ -27,11 +42,12 @@ module.exports = {
         ]
     },
     plugins: [
-        new webpack.NamedModulesPlugin(),
         new ForkTsCheckerWebpackPlugin({
             tslint: true,
             checkSyntacticErrors: true,
             watch: ['./src'] // optional but improves performance (fewer stat calls)
         })
     ]
-}
+};
+
+module.exports = cfg;
