@@ -4,6 +4,7 @@
       "module": "esnext",
       "moduleResolution": "node",
       "sourceMap": true,
+      "jsx": "react",
       // "inlineSourceMap": true,
       "preserveConstEnums": true,
       "experimentalDecorators": true,

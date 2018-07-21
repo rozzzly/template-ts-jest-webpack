@@ -1,10 +1,10 @@
 import { Application } from 'express';
-import getRouter from './router';
+import getRouter from './modules/app/server';
 export default function init(app: Application): void {
     let router = getRouter();
 
     if (module.hot) {
-        module.hot.accept('./router', () => {
+        module.hot.accept('./modules/app/server', () => {
             console.log('change to ./router');
             router = getRouter();
         });

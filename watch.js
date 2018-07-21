@@ -9,7 +9,7 @@ require('source-map-support').install({
 
 
 const config = require('./webpack.server');
-const serverBin = path.resolve(config.output.path, 'server.js');
+const serverBin = path.resolve(config.output.path, 'app.server.js');
 
 
 

@@ -15,7 +15,7 @@ const cfg = {
         splitChunks: {
             cacheGroups: {
                 runtimeChunk: 'single',
-                vendor: {
+                vendor: { // NOT USED ON SERVER
                     name: 'vendor',
                     chunks: 'all',
                     priority: 1,

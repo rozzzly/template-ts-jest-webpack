@@ -3,6 +3,7 @@
       "target": "esnext",
       "moduleResolution": "node",
       "sourceMap": true,
+      "jsx": "react",
       // "inlineSourceMap": true,
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
