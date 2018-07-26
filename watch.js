@@ -18,9 +18,10 @@ const serverBin = path.resolve(serverConfig.output.path, 'app.server.js');
 async function launch() {
     const app = express();
 
-    const multiCompiler = [clientConfig, serverConfig];
-    const wdmInstance = wdm(multiCompiler, {
+    const multiCompiler = webpack([clientConfig, serverConfig]);
+    const wdmInstance = new wdm(multiCompiler, {
         serverSideRender: true,
+        writeToDisk: true
     });
     app.use(wdmInstance);
     app.use(whm(multiCompiler, {

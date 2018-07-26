@@ -1,3 +1,4 @@
+const path = require('path');
 const webpack = require('webpack');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
@@ -23,6 +24,12 @@ const cfg = {
                     chunks: 'all',
                     priority: 1,
                     test: /node_modules/
+                },
+                frontend: {
+                    name: 'frontend',
+                    chunks: 'all',
+                    priority: 100,
+                    test: /frontend/
                 }
             }
         },
