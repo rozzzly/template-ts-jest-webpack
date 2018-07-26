@@ -8,15 +8,12 @@ const commonCfg = require('./webpack.common');
 
 module.exports = merge(commonCfg, {
     target: 'node',
-    entry: {
-        app: [
-            'webpack/hot/poll?1000',
-            './src/server'
-        ]
-    },
+    entry: [
+        'webpack/hot/poll?1000',
+        './src/modules/app/server/entrypoint'
+    ],
     output: {
         filename: '[name].server.js',
-        path: path.resolve(__dirname, 'bin'),
         library: 'init',
         libraryExport: 'default',
         libraryTarget: 'commonjs2'

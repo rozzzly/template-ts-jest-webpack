@@ -11,6 +11,9 @@ const cfg = {
             '.ts', '.tsx', '.js', '.jsx'
         ]
     },
+    output: {
+        path: path.resolve(__dirname, 'bin')
+    },
     optimization: {
         splitChunks: {
             cacheGroups: {
