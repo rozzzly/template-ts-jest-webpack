@@ -16,20 +16,20 @@ const cfg = {
         path: path.resolve(__dirname, 'bin')
     },
     optimization: {
+        runtimeChunk: 'single',
         splitChunks: {
+            //minSize: 100,
+            chunks: 'all',
             cacheGroups: {
-                runtimeChunk: 'single',
                 vendor: { // NOT USED ON SERVER
                     name: 'vendor',
                     chunks: 'all',
-                    priority: 1,
-                    test: /node_modules/
+                    test: /[\\/]node_modules[\\/]/
                 },
                 frontend: {
                     name: 'frontend',
                     chunks: 'all',
-                    priority: 100,
-                    test: /frontend/
+                    test: /[\\/]frontend[\\/]/
                 }
             }
         },

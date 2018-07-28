@@ -2,7 +2,6 @@ import * as React from 'react-dom';
 import { MOUNT_POINT_ID } from '../shared/App';
 import { render } from './render';
 
-
 let mountPoint: HTMLDivElement | null;
 
 window.addEventListener('load', () => {

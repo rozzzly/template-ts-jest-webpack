@@ -1,5 +1,5 @@
 import { Application } from 'express';
-import getRouter from '../server';
+import { getRouter } from '../server';
 export default function init(app: Application): void {
     let router = getRouter();
 

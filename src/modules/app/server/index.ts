@@ -43,9 +43,8 @@ export async function handleRequest(req: express.Request, res: express.Response)
 
     }
 }
-export default function getRouter(): express.Router {
+export function getRouter(): express.Router {
     const router = express.Router();
     router.use(handleRequest);
-
     return router;
 }
