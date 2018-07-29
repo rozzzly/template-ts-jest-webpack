@@ -18,7 +18,7 @@ const cfg = {
     optimization: {
         runtimeChunk: 'single',
         splitChunks: {
-            //minSize: 100,
+            minSize: 100,
             chunks: 'all',
             cacheGroups: {
                 vendor: { // NOT USED ON SERVER
@@ -26,10 +26,15 @@ const cfg = {
                     chunks: 'all',
                     test: /[\\/]node_modules[\\/]/
                 },
+                shared: {
+                    name: 'shared',
+                    chunks: 'all',
+                    test: /[\\/]src[\\/]modules[\\/].+[\\/]shared[\\/]/
+                },
                 frontend: {
                     name: 'frontend',
                     chunks: 'all',
-                    test: /[\\/]frontend[\\/]/
+                    test: /[\\/]src[\\/]modules[\\/]frontend[\\/]/
                 }
             }
         },
