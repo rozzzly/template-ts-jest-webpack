@@ -12,7 +12,7 @@ require('source-map-support').install({
 
 const clientConfig = require('./webpack.client');
 const serverConfig = require('./webpack.server');
-const serverBin = path.resolve(serverConfig.output.path, 'app.server.js');
+// const serverBin = path.resolve(serverConfig.output.path, 'app.server.js');
 
 
 async function launch() {
@@ -25,7 +25,7 @@ async function launch() {
     });
     app.use(wdmInstance);
     app.use(whm(multiCompiler, {
-        
+
     }));
     app.listen(3000);
     //let failed = false;
@@ -46,7 +46,7 @@ async function launch() {
     //     failed = true;
     //     console.error('compilation failed', e);
     // }
-    
+
     // if (!failed) {
     //     try {
     //         require(serverBin)(app);

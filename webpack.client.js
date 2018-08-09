@@ -4,7 +4,7 @@ const webpack = require('webpack');
 const path = require('path');
 
 
-const commonCfg = require('./webpack.common');
+const commonCfg = require('./webpack.shared');
 
 module.exports = merge(commonCfg, {
     target: 'web',
