@@ -32,11 +32,12 @@ const cfg = {
         ]
     },
     plugins: [
+        // new webpack.HotModuleReplacementPlugin(),
         new ForkTsCheckerWebpackPlugin({
             tslint: true,
             checkSyntacticErrors: true,
             watch: ['./src'] // optional but improves performance (fewer stat calls)
-        })
+        }),
     ]
 };
 

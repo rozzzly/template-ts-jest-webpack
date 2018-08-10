@@ -1,33 +1,58 @@
 const path = require('path');
 const webpack = require('webpack');
 const express = require('express');
-const wdm = require('webpack-dev-middleware');
-const whm = require('webpack-hot-middleware');
+// const wdm = require('webpack-dev-middleware');
+// const whm = require('webpack-hot-middleware');
 
-require('source-map-support').install({
-    // hookRequire for inline-sourcemaps support:
-    hookRequire: true
-});
+// require('source-map-support').install({
+//     // hookRequire for inline-sourcemaps support:
+//     hookRequire: true
+// });
 
+const dllConfig = require('./webpack.dll')
+//const serverConfig = require('./webpack.server');
 
-const clientConfig = require('./webpack.client');
-const serverConfig = require('./webpack.server');
-// const serverBin = path.resolve(serverConfig.output.path, 'app.server.js');
+async function watchMain() {
+    console.log('starting main watcher!')
+    const clientConfig = require('./webpack.client');
+    const multiCompiler = webpack(clientConfig);
+    multiCompiler.watch({}, (err, stats) => {
+        if (err) {
+            console.error(err);
+        } else {
+            console.log(stats.toString({ colors: true }));
+            console.log('client built!')
+        }
+    });
+}
+
 
 
 async function launch() {
-    const app = express();
-
-    const multiCompiler = webpack([clientConfig, serverConfig]);
-    const wdmInstance = new wdm(multiCompiler, {
-        serverSideRender: true,
-        writeToDisk: true
+    // const app = express();
+    
+    const dllCompiler = webpack(dllConfig);
+    // let dllReady = false;
+    dllCompiler.watch({}, (err, stats) => {
+        if (err) {
+            console.error(err) 
+        } else {
+            console.log(stats.toString({ colors: true }));
+            console.log('dll built!')
+        }
     });
-    app.use(wdmInstance);
-    app.use(whm(multiCompiler, {
+    setTimeout(watchMain, 15000);
 
-    }));
-    app.listen(3000);
+    // const multiCompiler = webpack([clientConfig, serverConfig]);
+    // const wdmInstance = new wdm(multiCompiler, {
+    //     serverSideRender: true,
+    //     writeToDisk: true
+    // });
+    // app.use(wdmInstance);
+    // app.use(whm(multiCompiler, {
+
+    // }));
+    // app.listen(3000);
     //let failed = false;
     // try {
     //     await new Promise(resolve => {

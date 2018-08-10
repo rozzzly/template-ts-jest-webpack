@@ -3,20 +3,27 @@ const merge = require('webpack-merge');
 const webpack = require('webpack');
 const path = require('path');
 
+const baseCfg = require('./webpack.base');
 
-const commonCfg = require('./webpack.shared');
-
-module.exports = merge(commonCfg, {
-    target: 'web',
-    entry: [
-        'webpack-hot-middleware/client',
-        './src/modules/app/client'
-    ],
+module.exports = merge(baseCfg, {
+    // target: 'web',
+    entry: {
+        clientApp: [
+            // 'webpack-hot-middleware/client',
+            './src/modules/app/client'
+        ]
+    },
     output: {
         publicPath: '/assets',
         filename: '[name].client.js'
     },
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
+        // ...(['main'].map(dllName => (
+            new webpack.DllReferencePlugin({
+                // context: __dirname,
+                manifest: path.join(baseCfg.output.path, `shared.manifest.json`)
+                // manifest: path.join(__dirname, 'bin', `${dllName}.dll-manifest.json`)
+            })
+        // )))
     ]
 })

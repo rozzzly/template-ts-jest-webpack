@@ -4,7 +4,7 @@ const webpack = require('webpack');
 const path = require('path');
 
 
-const commonCfg = require('./webpack.shared');
+const commonCfg = require('./webpack.common');
 
 module.exports = merge(commonCfg, {
     target: 'node',
@@ -27,6 +27,5 @@ module.exports = merge(commonCfg, {
         })
     ],
     plugins: [
-        new webpack.HotModuleReplacementPlugin(),
     ]
 })

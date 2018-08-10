@@ -8,7 +8,8 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}\\bin\\src\\index.js",
+            "program": "${workspaceFolder}\\watch.js",
+            "stopOnEntry": true,
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ]
