@@ -3,13 +3,13 @@ const merge = require('webpack-merge');
 const webpack = require('webpack');
 const path = require('path');
 
-const baseCfg = require('./webpack.base');
+const sharedCfg = require('./webpack.shared');
 
-module.exports = merge(baseCfg, {
-    // target: 'web',
+module.exports = merge(sharedCfg, {
+    target: 'web',
     entry: {
-        clientApp: [
-            // 'webpack-hot-middleware/client',
+        entrypoint: [
+            'webpack-hot-middleware/client',
             './src/modules/app/client'
         ]
     },
@@ -17,13 +17,25 @@ module.exports = merge(baseCfg, {
         publicPath: '/assets',
         filename: '[name].client.js'
     },
+    optimization: {
+        splitChunks: {
+            minSize: 100,
+            chunks: 'all',
+            cacheGroups: {
+                // default: false,
+                vendor: {
+                    name: 'vendor',
+                    chunks: 'all',
+                    test: /[\\/]node_modules[\\/]/
+                }
+            }
+        }
+    },
     plugins: [
-        // ...(['main'].map(dllName => (
+        ...(['frontend', 'app'].map(dllName => (
             new webpack.DllReferencePlugin({
-                // context: __dirname,
-                manifest: path.join(baseCfg.output.path, `shared.manifest.json`)
-                // manifest: path.join(__dirname, 'bin', `${dllName}.dll-manifest.json`)
+                manifest: path.join(sharedCfg.output.path, `${dllName}.manifest.json`)
             })
-        // )))
+        )))
     ]
 })

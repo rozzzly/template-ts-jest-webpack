@@ -13,7 +13,34 @@ module.exports = mergeCfg(baseCfg, {
     output: {
         filename: '[name].dll.js'
     },
-    // externals: [nodeExternals()],
+    optimization: {
+        // runtimeChunk: 'single',
+        splitChunks: {
+            minSize: 100,
+            chunks: 'all',
+            cacheGroups: {
+                // default: false,
+                vendor: {
+                    name: 'vendor',
+                    chunks: 'all',
+                    test: /[\\/]node_modules[\\/]/
+                },
+                frontend: {
+                    name: 'frontend',
+                    chunks: 'all',
+                    // priority: 100,
+                    test: /[\\/]src[\\/]modules[\\/]frontend[\\/]/
+                },
+                app: {
+                    name: 'app',
+                    chunks: 'all',
+                    // priority: 0,
+                    test: /[\\/]src[\\/]modules[\\/]app[\\/]shared[\\/]/
+                },
+            }
+        }
+    },
+    externals: [nodeExternals()],
     plugins: [
         new webpack.DllPlugin({
             // context: __dirname,

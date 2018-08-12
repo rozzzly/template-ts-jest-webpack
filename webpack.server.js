@@ -4,9 +4,9 @@ const webpack = require('webpack');
 const path = require('path');
 
 
-const commonCfg = require('./webpack.common');
+const sharedCfg = require('./webpack.shared');
 
-module.exports = merge(commonCfg, {
+module.exports = merge(sharedCfg, {
     target: 'node',
     entry: [
         'webpack/hot/poll?1000',
