@@ -6,6 +6,7 @@ const path = require('path');
 const sharedCfg = require('./webpack.shared');
 
 module.exports = merge(sharedCfg, {
+    name: 'client',
     target: 'web',
     entry: {
         entrypoint: [

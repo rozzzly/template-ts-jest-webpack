@@ -7,11 +7,14 @@ const path = require('path');
 const sharedCfg = require('./webpack.shared');
 
 module.exports = merge(sharedCfg, {
+    name: 'server',
     target: 'node',
-    entry: [
-        'webpack/hot/poll?1000',
-        './src/modules/app/server/entrypoint'
-    ],
+    entry: {
+        entrypoint: [
+            'webpack/hot/poll?1000',
+            './src/modules/app/server/entrypoint'
+        ]
+    },
     output: {
         filename: '[name].server.js',
         library: 'init',

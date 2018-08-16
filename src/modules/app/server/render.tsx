@@ -3,7 +3,7 @@ import { StaticRouter, StaticRouterProps } from 'react-router';
 import { App, MOUNT_POINT_ID } from '../shared/App';
 import Helmet from 'react-helmet';
 
-/// NOTE:: not a SFC so it can be called as a function from a `.ts` file
+/// NOTE:::not a SFC so it can be called as a function from a `.ts` file
 export const renderApp = ({ ...props }):  React.ReactElement<StaticRouterProps> => (
     <StaticRouter {...props}>
         <App />
