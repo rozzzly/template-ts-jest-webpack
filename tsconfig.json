@@ -14,7 +14,7 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "noImplicitReturns": true,
-    "allowSyntheticDefaultImports": false,
+    "allowSyntheticDefaultImports": true,
     "removeComments": false,
     "newLine": "LF",
     "pretty": true,

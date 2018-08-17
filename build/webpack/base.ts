@@ -1,9 +1,8 @@
-const path = require('path');
-const webpack = require('webpack');
-const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+import * as webpack from 'webpack';
+import * as ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin';
+import { BIN_DIR, NODE_MODULES_REGEX } from '../constants';
 
-/** @type {import('webpack').Configuration} */
-const cfg = {
+export default {
     mode: 'development',
     devtool: 'inline-source-map',
 
@@ -13,13 +12,13 @@ const cfg = {
         ]
     },
     output: {
-        path: path.resolve(__dirname, 'bin')
+        path: BIN_DIR
     },
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
-                exclude: /[\\/]node_modules[\\/]/,
+                exclude: NODE_MODULES_REGEX,
                 use: [{
                     loader: 'ts-loader',
                     options: {
@@ -34,11 +33,9 @@ const cfg = {
     plugins: [
         new webpack.HotModuleReplacementPlugin(),
         new ForkTsCheckerWebpackPlugin({
-            tslint: true,
+            // tslint: true,
             checkSyntacticErrors: true,
             watch: ['./src'] // optional but improves performance (fewer stat calls)
         }),
     ]
-};
-
-module.exports = cfg;
+} as webpack.Configuration;
