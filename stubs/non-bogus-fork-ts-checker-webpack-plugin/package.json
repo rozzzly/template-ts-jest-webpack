@@ -1,0 +1,10 @@
+{
+    "private": true,
+    "version": "0.0.1",
+    "name": "non-bogus-fork-ts-checker-webpack-plugin",
+    "main": "index.js",
+    "description": "@fork-ts-checker-webpack-plugin -- why the fck are you using `exports = ...` ",
+    "dependencies": {
+        "fork-ts-checker-webpack-plugin": "^0.4.8"
+    }
+}

@@ -1,0 +1,1 @@
+declare module 'non-bogus-fork-ts-checker-webpack-plugin';
