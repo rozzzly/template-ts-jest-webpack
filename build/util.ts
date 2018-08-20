@@ -1,19 +1,19 @@
-
 import * as webpack from 'webpack';
-import { join } from 'path';
-import { Options } from 'webpack';
 import * as merge from 'webpack-merge';
 
+import { join } from 'path';
+
+
 export type ChunkGroupsShortForm = {
-    [chunkName: string]: Options.CacheGroupsOptions['test']
+    [chunkName: string]: webpack.Options.CacheGroupsOptions['test']
 };
 
 export type ChunkGroupsFullForm = {
-    [chunkName: string]: Options.CacheGroupsOptions;
+    [chunkName: string]: webpack.Options.CacheGroupsOptions;
 };
 
 export function createCacheGroups(shortForms: ChunkGroupsShortForm): ChunkGroupsFullForm {
-    const chunks: Options.SplitChunksOptions['cacheGroups'] = {};
+    const chunks: webpack.Options.SplitChunksOptions['cacheGroups'] = {};
     Object.keys(shortForms).forEach(chunkName => {
         chunks[chunkName] = {
             chunks: 'all',
@@ -24,8 +24,11 @@ export function createCacheGroups(shortForms: ChunkGroupsShortForm): ChunkGroups
     return chunks;
 }
 
-export const SYM_STRIP_IF_ENCOUNTERED: unique symbol = Symbol('SYM_STRIP_IF_ENCOUNTERED');
-export type SYM_STRIP_IF_ENCOUNTERED = typeof SYM_STRIP_IF_ENCOUNTERED;
+export const SYM_STRIP: unique symbol = Symbol('SYM_STRIP');
+export type SYM_STRIP = typeof SYM_STRIP;
+
+export const SYM_CONFIG_PROXY: unique symbol = Symbol('SYM_CONFIG_PROXY');
+export type SYM_CONFIG_PROXY = typeof SYM_CONFIG_PROXY;
 
 export interface ConfigProxyOptions {
     mode: 'production' | 'development';
@@ -34,9 +37,10 @@ export interface ConfigProxyOptions {
 export interface ConfigProxyHandle<O extends ConfigProxyOptions> {
     merge: merge.WebpackMerge;
     options: O;
-    STRIP: SYM_STRIP_IF_ENCOUNTERED;
+    stripItems<T extends unknown[]>(...value: T): T[];
+    stripKeys<T extends {}>(value: T): T;
     isDev(): boolean;
-    isDev<C>(consequent: C): boolean;
+    isDev<C>(consequent: C): C;
     isDev<C, A>(consequent: C, antiConsequent: A): C | A;
     isProd(): boolean;
     isProd<C>(consequent: C): C;
@@ -44,7 +48,7 @@ export interface ConfigProxyHandle<O extends ConfigProxyOptions> {
 }
 
 export interface ConfigProxyConfig<O extends ConfigProxyOptions, C extends webpack.Configuration> {
-    (options?: Partial<O>): C;
+    (options?: Partial<O>): this;
 }
 
 export type ConfigProxy<O extends ConfigProxyOptions, C extends webpack.Configuration> = (
@@ -52,25 +56,98 @@ export type ConfigProxy<O extends ConfigProxyOptions, C extends webpack.Configur
     & C
 );
 
-const makeHandle = <O extends ConfigProxyOptions>(options: O): ConfigProxyHandle<O> => ({
-    merge,
+const isConfigProxy = <
+    O extends ConfigProxyOptions,
+    C extends webpack.Configuration
+>(value: unknown): value is ConfigProxy<O, C> => (
+    (value as any)[SYM_CONFIG_PROXY] === true
+);
+
+const makeHandle = <
+    O extends ConfigProxyOptions
+>(options: O): ConfigProxyHandle<O> => ({
+    merge: new Proxy(merge, {
+        apply<C extends webpack.Configuration[]>(target: merge.WebpackMerge, thisArg: any, ...args: C) {
+            const patchedArgs: webpack.Configuration[] = [];
+            args.forEach(arg => {
+                if (isConfigProxy<O, C[number]>(arg)) {
+                    patchedArgs.push(arg(options));
+                } else {
+                    patchedArgs.push(arg);
+                }
+            });
+            return merge(...patchedArgs);
+        }
+    }),
     options,
-    STRIP: SYM_STRIP_IF_ENCOUNTERED,
-    isDev<C, A>(consequent?: C): C | A | boolean {
-        return false;
+    stripItems<T extends any[]>(...values: T): T[] {
+        return values.reduce((reduction, value) => (
+            ((value === SYM_STRIP)
+                ? reduction
+                : [...reduction, value]
+            )
+        ), []);
     },
-    isProd<C, A>(consequent?: C): C | A | boolean {
-        return false;
+    stripKeys<T extends {}>(value: T): T {
+        return ((Object.keys(value))
+            .reduce((reduction, key) => (
+                (((value as any)[key] === SYM_STRIP)
+                    ? reduction
+                    : { ...(reduction as any), [key]: (value as any)[key] }
+                )
+            ), {} as T)
+        );
+    },
+    isDev<C, A>(
+        consequent: C | SYM_STRIP = SYM_STRIP,
+        antiConsequent: A | SYM_STRIP = SYM_STRIP
+    ): C | A | boolean {
+        if (consequent === SYM_STRIP) {
+            return options.mode === 'development';
+        } else {
+            return ((options.mode === 'development')
+                ? consequent
+                : antiConsequent as A
+            );
+        }
+    },
+    isProd<C, A>(
+        consequent: C | SYM_STRIP = SYM_STRIP,
+        antiConsequent: A | SYM_STRIP = SYM_STRIP
+    ): C | A | boolean {
+        if (consequent === SYM_STRIP) {
+            return options.mode === 'production';
+        } else {
+            return ((options.mode === 'production')
+                ? consequent
+                : antiConsequent as A
+            );
+        }
     }
 });
 
-export function MakeConfigProxy<
+export function configProxy<
     O extends ConfigProxyOptions,
     C extends webpack.Configuration
->(config: (handle: ConfigProxyHandle<O>) => C): ConfigProxyConfig<O, C> {
+>(
+    config: (handle: ConfigProxyHandle<O>) => C,
+    options: O = { mode: 'development' } as O
+): ConfigProxy<O, C> {
 
-    const cfg = config(makeHandle({ mode: 'development'} as O));
-    return {} as any;
+    const cfg = config(makeHandle(options));
+    const proxy = new Proxy(cfg, {
+        get(target, key: keyof webpack.Configuration | SYM_CONFIG_PROXY) {
+            if (key === SYM_CONFIG_PROXY) {
+                return true;
+            } else {
+                return target[key];
+            }
+        },
+        apply(target, thisArg, optionOverrides = {}) {
+            return configProxy(config, { ...(options as any), ...optionOverrides });
+        }
+    });
+    return proxy as ConfigProxy<O, C>;
 }
 
 export { join };
