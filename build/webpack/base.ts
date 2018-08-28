@@ -1,11 +1,18 @@
 import * as webpack from 'webpack';
 import * as ForkTsCheckerWebpackPlugin from 'non-bogus-fork-ts-checker-webpack-plugin';
-import { BIN_DIR, NODE_MODULES_REGEX } from '../constants';
+import { BIN_DIR, NODE_MODULES_REGEX, ROOT_DIR } from '../constants';
+import { configProxy } from '../util';
 
-export default {
-    mode: 'development',
+export default configProxy(({
+    isDev,
+    isProd,
+    stripKeys,
+    stripItems,
+    options: { mode, ...rest },
+}) => ({
+    mode,
     devtool: 'inline-source-map',
-
+    context: ROOT_DIR,
     resolve: {
         extensions: [
             '.ts', '.tsx', '.js', '.jsx'
@@ -30,12 +37,13 @@ export default {
             }
         ]
     },
-    plugins: [
-        new webpack.HotModuleReplacementPlugin(),
-        new ForkTsCheckerWebpackPlugin({
+    plugins: stripItems(
+        isProd(new webpack.HotModuleReplacementPlugin()),
+        new ForkTsCheckerWebpackPlugin(stripKeys({
+            context: ROOT_DIR,
             // tslint: true,
             checkSyntacticErrors: true,
-            watch: ['./src'] // optional but improves performance (fewer stat calls)
-        }),
-    ]
-} as webpack.Configuration;
+            watch: isDev(['./src']) // optional but improves performance (fewer stat calls)
+        }))
+    )
+}));

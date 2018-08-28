@@ -37,7 +37,7 @@ export interface ConfigProxyOptions {
 export interface ConfigProxyHandle<O extends ConfigProxyOptions> {
     merge: merge.WebpackMerge;
     options: O;
-    stripItems<T extends unknown[]>(...value: T): T[];
+    stripItems<T extends unknown[]>(...value: T): T;
     stripKeys<T extends {}>(value: T): T;
     isDev(): boolean;
     isDev<C>(consequent: C): C;
@@ -47,13 +47,12 @@ export interface ConfigProxyHandle<O extends ConfigProxyOptions> {
     isProd<C, A>(consequent: C, antiConsequent: A): C | A;
 }
 
-export interface ConfigProxyConfig<O extends ConfigProxyOptions, C extends webpack.Configuration> {
-    (options?: Partial<O>): this;
-}
 
 export type ConfigProxy<O extends ConfigProxyOptions, C extends webpack.Configuration> = (
-    & ConfigProxyConfig<O, C>
     & C
+    & {
+        mutate<M extends C>(overrides?: Partial<O>): ConfigProxy<O, M>;
+    }
 );
 
 const isConfigProxy = <
@@ -71,7 +70,7 @@ const makeHandle = <
             const patchedArgs: webpack.Configuration[] = [];
             args.forEach(arg => {
                 if (isConfigProxy<O, C[number]>(arg)) {
-                    patchedArgs.push(arg(options));
+                    patchedArgs.push(arg.mutate(options));
                 } else {
                     patchedArgs.push(arg);
                 }
@@ -79,11 +78,11 @@ const makeHandle = <
             return merge(...patchedArgs);
         }
     }),
-    options,
-    stripItems<T extends any[]>(...values: T): T[] {
+    options: { ...(options as any) },
+    stripItems<T extends any[]>(...values: T): T {
         return values.reduce((reduction, value) => (
             ((value === SYM_STRIP)
-                ? reduction
+                ? [...reduction]
                 : [...reduction, value]
             )
         ), []);
@@ -92,7 +91,7 @@ const makeHandle = <
         return ((Object.keys(value))
             .reduce((reduction, key) => (
                 (((value as any)[key] === SYM_STRIP)
-                    ? reduction
+                    ? { ...(reduction as any) }
                     : { ...(reduction as any), [key]: (value as any)[key] }
                 )
             ), {} as T)
@@ -133,18 +132,20 @@ export function configProxy<
     config: (handle: ConfigProxyHandle<O>) => C,
     options: O = { mode: 'development' } as O
 ): ConfigProxy<O, C> {
-
+    console.log(options);
     const cfg = config(makeHandle(options));
     const proxy = new Proxy(cfg, {
-        get(target, key: keyof webpack.Configuration | SYM_CONFIG_PROXY) {
-            if (key === SYM_CONFIG_PROXY) {
+        get(target, key: keyof C) {
+            if (key === 'mutate') {
+                return (optionOverrides = {})  => {
+                    console.log({ optionOverrides, options });
+                    return configProxy(config, { ...(options as any), ...optionOverrides });
+                };
+            } else if (key === SYM_CONFIG_PROXY) {
                 return true;
             } else {
                 return target[key];
             }
-        },
-        apply(target, thisArg, optionOverrides = {}) {
-            return configProxy(config, { ...(options as any), ...optionOverrides });
         }
     });
     return proxy as ConfigProxy<O, C>;

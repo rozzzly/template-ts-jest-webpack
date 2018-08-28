@@ -102,7 +102,7 @@ import sharedCfg from './webpack/shared';
 
 async function launch() {
 
-    const dllCompiler = webpack(sharedCfg);
+    const dllCompiler = webpack(sharedCfg.mutate({ }));
     // let dllReady = false;
     // dllCompiler.hooks.afterEmit.tap('DelayedStart', (compilationParams) => {
     //     if (!dllCompiled) {
