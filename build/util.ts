@@ -31,6 +31,7 @@ export const SYM_CONFIG_PROXY: unique symbol = Symbol('SYM_CONFIG_PROXY');
 export type SYM_CONFIG_PROXY = typeof SYM_CONFIG_PROXY;
 
 export interface ConfigProxyOptions {
+    [option: string]: any;
     mode: 'production' | 'development';
 }
 
@@ -69,8 +70,8 @@ const makeHandle = <
         apply<C extends webpack.Configuration[]>(target: merge.WebpackMerge, thisArg: any, ...args: C) {
             const patchedArgs: webpack.Configuration[] = [];
             args.forEach(arg => {
-                if (isConfigProxy<O, C[number]>(arg)) {
-                    patchedArgs.push(arg.mutate(options));
+                if (isConfigProxy<O, typeof arg>(arg)) {
+                    patchedArgs.push(arg.mutate({ ...(options as any) }));
                 } else {
                     patchedArgs.push(arg);
                 }
@@ -78,7 +79,7 @@ const makeHandle = <
             return merge(...patchedArgs);
         }
     }),
-    options: { ...(options as any) },
+    options: options as O,
     stripItems<T extends any[]>(...values: T): T {
         return values.reduce((reduction, value) => (
             ((value === SYM_STRIP)
