@@ -100,11 +100,48 @@ import sharedCfg from './webpack/shared';
 //     });
 // }
 
+type CompilerPhaseInit = {
+    phase: 'init';
+    onDisk: false;
+    started: 0;
+    finished: 0;
+};
+
+
+type CompilerPhaseBuilding = {
+    phase: 'building';
+};
+type CompilerPhaseSuccess = {
+    phase: 'success';
+    warnings: any[];
+    onDisk: true;
+};
+
+type CompilerPhaseFailure= {
+    phase: 'failure';
+    errors: any[];
+    warnings: any[];
+};
+type CompilerHandle = (
+    & {
+        compiler: webpack.Compiler;
+        onDisk: false;
+        started: number;
+        finished: number;
+    }
+    & (
+        | CompilerPhaseInit
+        | CompilerPhaseBuilding
+        | CompilerPhaseSuccess
+        | CompilerPhaseFailure
+    &
+    &
+);
 
 let compilers: {
-    shared?: webpack.Compiler,
-    client?: webpack.Compiler,
-    server?: webpack.Compiler
+    shared?: CompilerHandle
+    client?: CompilerHandle,
+    server?: CompilerHandle
 } = { };
 
 
@@ -120,17 +157,23 @@ function launchStageTwo() {
 }
 
 function launchStageOne() {
-    compilers.shared = webpack(sharedCfg.mutate({
-        mode: 'production',
-        hookSuite: new HookSuitePlugin({
-            id: 'shared',
-            onDone: buildNotif,
-            afterFirstEmit() {
-                launchStageTwo();
-            }
+    compilers.shared = {
+        status: 'init',
+        onDisk: false,
+        started: 0,
+        finished: 0,
+        compiler: webpack(sharedCfg.mutate({
+            mode: 'production',
+            hookSuite: new HookSuitePlugin({
+                id: 'shared',
+                onDone: buildNotif,
+                afterFirstEmit() {
+                    launchStageTwo();
+                }
 
-        })
-    }));
+            })
+        }))
+    };
     compilers.shared.watch({}, () => { /* */ });
 }
 
