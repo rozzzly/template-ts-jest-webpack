@@ -1,20 +1,27 @@
-import * as nodeExternals from 'webpack-node-externals';
 import * as webpack from 'webpack';
-import * as mergeCfg from 'webpack-merge';
+import * as nodeExternals from 'webpack-node-externals';
+
 import baseCfg from './base';
 import { ROOT_DIR, BIN_DIR, CACHE_GROUPS } from '../constants';
-import { createCacheGroups, join } from '../util';
+import { createCacheGroups, join, configProxy } from '../util';
+import HookSuitePlugin from '../HookSuitePlugin';
 
-export default mergeCfg(baseCfg, {
+
+export default configProxy(({
+    merge,
+    isDev,
+    options: {
+        hookSuite
+    }
+}) => merge(baseCfg, {
     entry: {
-        shared: [
+        runtime: [
             './src/modules/app/shared/App'
         ]
     },
     output: {
-        filename: '[name].shared.js'
+        filename: isDev('[name].shared.js', '[name]_[hash:6].shared.js')
     },
-    context: ROOT_DIR,
     optimization: {
         // runtimeChunk: 'single',
         splitChunks: {
@@ -27,8 +34,9 @@ export default mergeCfg(baseCfg, {
     plugins: [
         new webpack.DllPlugin({
             context: ROOT_DIR,
-            name: '[name]_[hash]',
+            name: '[name]_[hash:6]',
             path: join(BIN_DIR, '[name].manifest.json')
-        })
+        }),
+        hookSuite as HookSuitePlugin
     ]
-});
+}));

@@ -3,6 +3,8 @@ import * as webpack from 'webpack';
 import * as express from 'express';
 import * as wdm from 'webpack-dev-middleware';
 import * as whm from 'webpack-hot-middleware';
+import HookSuitePlugin from './HookSuitePlugin';
+import chalk from 'chalk';
 import sharedCfg from './webpack/shared';
 
 // require('source-map-support').install({
@@ -99,24 +101,37 @@ import sharedCfg from './webpack/shared';
 // }
 
 
+let compilers: {
+    shared?: webpack.Compiler,
+    client?: webpack.Compiler,
+    server?: webpack.Compiler
+} = { };
 
-async function launch() {
 
-    const dllCompiler = webpack(sharedCfg);
-    // let dllReady = false;
-    // dllCompiler.hooks.afterEmit.tap('DelayedStart', (compilationParams) => {
-    //     if (!dllCompiled) {
-    //         dllCompiled = true;
-    //         watchMain();
-    //     }
-    // })
-    dllCompiler.watch({}, (err, stats) => {
-        if (err) {
-            console.error(err);
-        } else {
-            console.log(`dll built in ${stats.toJson({chunks: false}).time}ms`);
-        }
-    });
+const buildNotif = (stats: webpack.Stats, id: string) => {
+    const duration = stats.toJson({chunks: false}).time;
+    console.log(`${chalk.magenta(id)} built in ${chalk.greenBright(duration)}ms`);
+};
+
+
+
+function launchStageTwo() {
+    console.log('stage 2');
 }
 
-launch();
+function launchStageOne() {
+    compilers.shared = webpack(sharedCfg.mutate({
+        mode: 'production',
+        hookSuite: new HookSuitePlugin({
+            id: 'shared',
+            onDone: buildNotif,
+            afterFirstEmit() {
+                launchStageTwo();
+            }
+
+        })
+    }));
+    compilers.shared.watch({}, () => { /* */ });
+}
+
+launchStageOne();
