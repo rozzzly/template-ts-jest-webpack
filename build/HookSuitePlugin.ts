@@ -3,7 +3,7 @@ import * as webpack from 'webpack';
 export type OnDone = (stats: webpack.Stats, id: string) => void;
 export type AfterEmit = (compilation: webpack.compilation.Compilation, id: string) => void;
 export type AfterFirstEmit = (compilation: webpack.compilation.Compilation, id: string) => void;
-export type BeforeRun = (compiler: webpack.compilation.Compilation, id: string) => void;
+export type BeforeRun = (compiler: webpack.Compiler, id: string) => void;
 export type OnFailed = (error: Error, id: string) => void;
 export type OnInvalid = (fileName: string, changeTime: Date, id: string) => void;
 
@@ -92,9 +92,9 @@ export default class HookSuitePlugin {
             }
         }
         if (this.beforeRun) {
-            compiler.hooks.beforeRun.tap(HookSuitePlugin.name, (compilation) => {
+            compiler.hooks.beforeRun.tap(HookSuitePlugin.name, (compiler2) => {
                 // @ts-ignore
-                this.beforeRun(compilation, this.id);
+                this.beforeRun(compiler2, this.id);
             });
         }
         if (this.onFailed) {
