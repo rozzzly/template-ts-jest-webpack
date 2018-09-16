@@ -8,7 +8,6 @@ export type OnFailed = (error: Error, id: string) => void;
 export type OnInvalid = (fileName: string, changeTime: Date, id: string) => void;
 
 export interface HookSuitePluginOptions {
-    id?: string;
     onDone?: OnDone;
     afterEmit?: AfterEmit;
     afterFirstEmit?: AfterFirstEmit;
@@ -27,14 +26,9 @@ export default class HookSuitePlugin {
     private beforeRun?: BeforeRun;
     private onFailed?: OnFailed;
     private onInvalid?: OnInvalid;
-    // private hashes
 
     public constructor(options: HookSuitePluginOptions) {
         this.isFirstEmit = true;
-        this.id = ((options.id)
-            ? options.id
-            : `unnamed-${Date.now()}`
-        );
 
         if (options.onDone) {
             this.onDone = options.onDone;
@@ -57,6 +51,9 @@ export default class HookSuitePlugin {
     }
 
     public apply(compiler: webpack.Compiler): void {
+        if (!compiler.name) throw new TypeError('Compiler must be named! Specify a \'name\' in the compiler\'s config');
+        else this.id = compiler.name;
+
         if (this.onDone) {
             compiler.hooks.done.tap(HookSuitePlugin.name, (stats) => {
                 // @ts-ignore
