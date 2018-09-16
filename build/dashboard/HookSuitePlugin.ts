@@ -51,8 +51,8 @@ export default class HookSuitePlugin {
     }
 
     public apply(compiler: webpack.Compiler): void {
-        if (!compiler.name) throw new TypeError('Compiler must be named! Specify a \'name\' in the compiler\'s config');
-        else this.id = compiler.name;
+        // if (!compiler.name) throw new TypeError('Compiler must be named! Specify a \'name\' in the compiler\'s config');
+        // else this.id = compiler.name;
 
         if (this.onDone) {
             compiler.hooks.done.tap(HookSuitePlugin.name, (stats) => {
@@ -116,7 +116,7 @@ export { HookSuitePlugin };
 export class HookSuiteBridgePlugin extends HookSuitePlugin {
     private master: CompilerSet<string>;
 
-    public constructor(opts: HookSuitePluginOptions, master: CompilerSet<string>) {
+    public constructor(opts: HookSuitePluginOptions, master: CompilerSet<string>, name: string) {
         super({
             ...opts,
             afterEmit: (compilation, id) => {
@@ -139,8 +139,7 @@ export class HookSuiteBridgePlugin extends HookSuitePlugin {
                 master.onInvalid(fileName, changeTime, id);
                 if (opts.onInvalid) opts.onInvalid(fileName, changeTime, id);
             }
-
         });
-
+        this.id = name;
     }
 }

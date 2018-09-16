@@ -99,6 +99,7 @@ export default class CompilerHandle<CompilerID extends string> {
             timestamp: record.timestamp || [ Date.now(), this.startedAt ],
             duration: record.duration || (Date.now() - this.startedAt)
         });
+        console.log(this.records[this.records.length - 1]);
         // only track x number of records
         while (this.records.length > CompilerHandle.MAX_RECORDS) {
             this.records.shift();
@@ -106,6 +107,7 @@ export default class CompilerHandle<CompilerID extends string> {
     }
 
     public start(): void {
+        console.log('running ' + this.phase)
         this.tally.run++;
         if (this.phase === 'uninitiated') {
             this.record({
@@ -147,6 +149,7 @@ export default class CompilerHandle<CompilerID extends string> {
 
     public invalidated(fileName: string, changeTime: Date): void {
         this.tally.invalid++;
+        console.log('invalidated', fileName);
         /// TODO ::: determine if it's even worth recording these
     }
 

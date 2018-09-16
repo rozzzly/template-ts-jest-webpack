@@ -133,13 +133,13 @@ export function configProxy<
     config: (handle: ConfigProxyHandle<O>) => C,
     options: O = { mode: 'development' } as O
 ): ConfigProxy<O, C> {
-    console.log(options);
+    // console.log(options);
     const cfg = config(makeHandle(options));
     const proxy = new Proxy(cfg, {
         get(target, key: keyof C) {
             if (key === 'mutate') {
                 return (optionOverrides = {})  => {
-                    console.log({ optionOverrides, options });
+                    // console.log({ optionOverrides, options });
                     return configProxy(config, { ...(options as any), ...optionOverrides });
                 };
             } else if (key === SYM_CONFIG_PROXY) {
