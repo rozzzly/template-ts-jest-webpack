@@ -37,7 +37,7 @@
         "no-construct": true,
         "no-debugger": true,
         "no-duplicate-variable": true,
-        "no-empty": true,
+        "no-empty": false,
         "no-eval": true,
         "number-literal-format": true,
         "no-internal-module": true,

@@ -5,21 +5,29 @@ export interface CompilerTallyBook {
     done: number;
     doneClean: number;
     doneDirty: number;
-    emits: number;
+    emit: number;
     invalid: number;
     failed: number;
 }
 
 export type CompilerPhase = (
+    | 'uninitiated' /// 🚲🏠 (bikeshed) me please!
     | 'idle'
-    | 'init'
     | 'running'
-    | 'doneClean'
-    | 'doneDirty'
-    | 'failed'
+    /// TODO ::: consider adding 'invalid'
+    ///     for when compiler is marked invalid but may not yet have triggered a new compilation
+    ///         ie: `webpack.Configuration.watchOptions.aggregateTimeout`
+    ///     probably way too short to notice after delay
 );
 
-export interface RunRecordStatsShorthand {
+export type CompilationStatus = (
+    | 'uninitiated' /// 🚲🏠 (bikeshed) me please!
+    | 'clean'
+    | 'dirty' // compiled code has errors/warnings
+    | 'failed' // internal (to webpack/plugin/loader) error led to premature abort of compilation
+);
+
+export interface CompilationRecordStatsShorthand {
     hash?: string;
     errors?: any[];
     warnings?: any[];
@@ -30,31 +38,28 @@ export interface RunRecordStatsShorthand {
     emits?: [string, number][];
 }
 
-export interface RunRecordStats {
+export interface CompilationRecordStats {
     hash: string;
     errors: any[];
     warnings: any[];
     emits: [string, number][];
 }
 
-export interface RunRecordShorthand extends RunRecordStatsShorthand {
+export interface CompilationRecordShorthand extends CompilationRecordStatsShorthand {
     /** in ms */
     duration?: number;
     /** tuple is: [startTime, endTime] */
     timestamp?: [number, number];
-    kind: (
-        | 'idle'
-        | 'init'
-        | 'doneClean'
-        | 'doneDirty' // build finished with errors/warnings (in code being compiled)
-        | 'failed' // internal (to webpack/plugin/loader) error
-    );
+    kind: Exclude<
+        CompilerPhase | CompilationStatus | 'init' | 'emitted' | 'invalid',
+        'idle' | 'running'
+    >;
 }
 
 /**
  * @note External run record which ensures duration/timestamp is always there
  */
-export interface RunRecord extends RunRecordShorthand {
+export interface CompilationRecord extends CompilationRecordShorthand {
     duration: number;
     timestamp: [number, number];
 }
@@ -65,212 +70,95 @@ export default class CompilerHandle<CompilerID extends string> {
 
     public id: CompilerID;
     public phase: CompilerPhase;
+    public status: CompilationStatus;
     public compiler: webpack.Compiler;
-    public buildRecords: RunRecord[];
+    public records: CompilationRecord[];
 
     private tally: CompilerTallyBook;
     private startedAt: number;
 
     public constructor(id: CompilerID) {
-        this.phase = 'idle';
+        this.phase = 'uninitiated';
+        this.status = 'uninitiated';
         this.tally = {
             run: 0,
             done: 0,
-            emits: 0,
+            emit: 0,
             invalid: 0,
             doneClean: 0,
             doneDirty: 0,
             failed: 0
         };
-        this.buildRecords = [];
-        this.startedAt = Date.now();
+        this.records = [];
+        this.resetClock(); // this.startedAt = Date.now();
     }
 
-    private addRecord(record: RunRecordShorthand): void {
-        this.buildRecords.push({
+    private record(record: CompilationRecordShorthand): void {
+        this.records.push({
             ...record,
             timestamp: record.timestamp || [ Date.now(), this.startedAt ],
             duration: record.duration || (Date.now() - this.startedAt)
         });
         // only track x number of records
-        while (this.buildRecords.length > CompilerHandle.MAX_RECORDS) {
-            this.buildRecords.shift();
+        while (this.records.length > CompilerHandle.MAX_RECORDS) {
+            this.records.shift();
         }
     }
 
-    private toInit(): void {
-        this.addRecord({ kind: 'idle' });
-        this.startedAt = Date.now();
-        this.phase = 'init';
-    }
-
-    private toRun(): void {
-        if (this.tally.run === 0) {
-            this.addRecord({
+    public start(): void {
+        this.tally.run++;
+        if (this.phase === 'uninitiated') {
+            this.record({
                 kind: 'init'
             });
         }
-        this.startedAt = Date.now();
-        this.tally.run++;
+        this.resetClock();
+        this.phase = 'running';
     }
 
-    private toFailed(error: Error): void {
-        this.phase = 'failed';
+    public failed(error: Error): void {
         this.tally.failed++;
-        this.addRecord({
+        this.record({
             kind: 'failed',
             errors: [error]
         });
+        this.phase = 'idle';
     }
 
-    private toDoneClean(stats: RunRecordStats): void {
-        this.phase = 'done';
-        this.addRecord(record)
+    public doneClean(stats: CompilationRecordStats): void {
+        this.tally.done++;
+        this.tally.doneClean++;
+        this.record({
+            kind: 'clean',
+            ...stats
+        });
+        this.phase = 'idle';
     }
 
-    private shiftPhase(phase: Exclude<CompilerPhase, 'idle' | 'successful' | 'failed'>): void;
-    private shiftPhase(
-        phase: Exclude<CompilerPhase, 'idle' | 'init' | 'running'>,
-        { errors, warnings }: { errors: any[], warnings: any[] }
-    ): void;
-    private shiftPhase(
-        phase: Exclude<CompilerPhase, 'idle'>,
-        { errors, warnings }: {
-            errors: any[], warnings: any[]
-        } = {
-            errors: [], warnings: []
-        }
-    ): void {
-        if (phase === 'init') {
+    public doneDirty(stats: CompilationRecordStats): void {
+        this.tally.done++;
+        this.tally.doneDirty++;
+        this.record({
+            kind: 'dirty',
+            ...stats
+        });
+        this.phase = 'idle';
+    }
 
-            this.compiler.watch({}, () => { /* */ }); // start watching
-        } else if (phase === 'running') {
+    public invalidated(fileName: string, changeTime: Date): void {
+        this.tally.invalid++;
+        /// TODO ::: determine if it's even worth recording these
+    }
 
-        } else if (phase === 'failed') {
+    public emitted(stats: CompilationRecordStats) {
+        this.tally.emit++;
+        this.record({
+            kind: 'emitted',
+            ...stats
+        });
+    }
 
-        }
+    private resetClock(): void {
+        this.startedAt = Date.now();
     }
 }
-
-
-interface CompilerInitPhase {
-    phase: 'init';
-    compiler: webpack.Compiler;
-    onDisk: false;
-    started: number;
-    finished: number;
-
-    initTime: number;
-}
-
-interface CompilerBuildingPhase {
-    phase: 'building';
-    compiler: webpack.Compiler;
-    onDisk: boolean;
-    started: number;
-    finished: number;
-
-    initTime: number;
-    warnings: [];
-    errors: [];
-}
-interface CompilerSuccessPhase {
-    phase: 'success';
-    compiler: webpack.Compiler;
-    started: number;
-    finished: number;
-    initTime: number;
-    warnings: any[];
-    errors: any[];
-    onDisk: true;
-}
-
-interface CompilerFailurePhase {
-    phase: 'failure';
-    compiler: webpack.Compiler;
-    started: number;
-    finished: number;
-    onDisk: boolean;
-
-    initTime: number;
-    errors: any[];
-    warnings: any[];
-}
-
-export type CompilerHandle2= (
-    | CompilerInitPhase
-    | CompilerBuildingPhase
-    | CompilerSuccessPhase
-    | CompilerFailurePhase
-);
-
-
-
-function phaseShift(id: CompilerID2, newPhase: 'building', args?: { }): void;
-function phaseShift(id: CompilerID2, newPhase: 'init', args: { compiler: webpack.Compiler }): void;
-function phaseShift(id: CompilerID2, newPhase: 'success' | 'failure', args: { warnings: any[], errors: any[] }): void;
-function phaseShift(id: CompilerID2, newPhase: CompilerPhase, args: { warnings?: any[], errors?: any[], compiler?: webpack.Compiler } = {}): void {
-    let prevState: CompilerBuildingPhase = compilers[id] as CompilerBuildingPhase;
-    switch (newPhase) {
-        case 'init':
-            compilers[id] = {
-                phase: 'init',
-                started: Date.now(),
-                finished: -1,
-                initTime: -1,
-                onDisk: false,
-                compiler: args.compiler as webpack.Compiler
-            };
-            break;
-        case 'building':
-            compilers[id] = {
-                ...prevState,
-                phase: 'building',
-                initTime: ((prevState.initTime === -1)
-                    ? Date.now() - prevState.started
-                    : prevState.initTime
-                ),
-                started: Date.now(),
-                finished: -1,
-                warnings: [],
-                errors: []
-            };
-            break;
-        case 'success':
-            compilers[id] = {
-                ...prevState,
-                phase: 'success',
-                finished: Date.now(),
-                warnings: args.warnings as any[],
-                errors: args.errors as any[],
-                onDisk: true,
-            };
-            break;
-        case 'failure':
-            compilers[id] = {
-                ...prevState,
-                phase: 'failure',
-                finished: Date.now(),
-                warnings: args.warnings as any[],
-                errors: args.errors as any[],
-            };
-            break;
-        default:
-            throw new TypeError('Unexpected phase given');
-            break;
-    }
-}
-
-type CompilerID2 = (
-    | 'shared'
-    | 'client'
-    | 'server'
-);
-
-let compilers: {
-    [cid in CompilerID2]: CompilerHandle
-} = {
-    shared: {} as CompilerInitPhase,
-    client: {} as CompilerInitPhase,
-    server: {} as CompilerInitPhase
- };

@@ -1,4 +1,5 @@
 import * as webpack from 'webpack';
+import CompilerSet from './CompilerSet';
 
 export type OnDone = (stats: webpack.Stats, id: string) => void;
 export type AfterEmit = (compilation: webpack.compilation.Compilation, id: string) => void;
@@ -14,18 +15,17 @@ export interface HookSuitePluginOptions {
     beforeRun?: BeforeRun;
     onFailed?: OnFailed;
     onInvalid?: OnInvalid;
-
 }
 
 export default class HookSuitePlugin {
-    private id: string;
-    private isFirstEmit: boolean;
-    private onDone?: OnDone;
-    private afterEmit?: AfterEmit;
-    private afterFirstEmit?: AfterFirstEmit;
-    private beforeRun?: BeforeRun;
-    private onFailed?: OnFailed;
-    private onInvalid?: OnInvalid;
+    protected id: string;
+    protected isFirstEmit: boolean;
+    protected onDone?: OnDone;
+    protected afterEmit?: AfterEmit;
+    protected afterFirstEmit?: AfterFirstEmit;
+    protected beforeRun?: BeforeRun;
+    protected onFailed?: OnFailed;
+    protected onInvalid?: OnInvalid;
 
     public constructor(options: HookSuitePluginOptions) {
         this.isFirstEmit = true;
@@ -107,5 +107,40 @@ export default class HookSuitePlugin {
             });
         }
     }
+}
 
+export { HookSuitePlugin };
+
+
+
+export class HookSuiteBridgePlugin extends HookSuitePlugin {
+    private master: CompilerSet<string>;
+
+    public constructor(opts: HookSuitePluginOptions, master: CompilerSet<string>) {
+        super({
+            ...opts,
+            afterEmit: (compilation, id) => {
+                master.afterEmit(compilation, id);
+                if (opts.onFailed) master.afterEmit(compilation, id);
+            },
+            beforeRun: (compiler, id) => {
+                master.beforeRun(compiler, id);
+                if (opts.beforeRun) master.beforeRun(compiler, id);
+            },
+            onDone: (stats, id) => {
+                master.onDone(stats, id);
+                if (opts.onDone) opts.onDone(stats, id);
+            },
+            onFailed: (error, id) => {
+                master.onFailed(error, id);
+                if (opts.onFailed) master.onFailed(error, id);
+            },
+            onInvalid: (fileName, changeTime, id) => {
+                master.onInvalid(fileName, changeTime, id);
+                if (opts.onInvalid) opts.onInvalid(fileName, changeTime, id);
+            }
+
+        });
+
+    }
 }
