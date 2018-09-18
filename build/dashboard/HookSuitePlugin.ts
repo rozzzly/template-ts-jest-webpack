@@ -1,5 +1,5 @@
 import * as webpack from 'webpack';
-import CompilerSet from './CompilerSet';
+import Tracker from './Tracker';
 
 export type OnDone = (stats: webpack.Stats, id: string) => void;
 export type AfterEmit = (compilation: webpack.compilation.Compilation, id: string) => void;
@@ -9,6 +9,7 @@ export type OnFailed = (error: Error, id: string) => void;
 export type OnInvalid = (fileName: string, changeTime: Date, id: string) => void;
 
 export interface HookSuitePluginOptions {
+    id?: string;
     onDone?: OnDone;
     afterEmit?: AfterEmit;
     afterFirstEmit?: AfterFirstEmit;
@@ -29,6 +30,11 @@ export default class HookSuitePlugin {
 
     public constructor(options: HookSuitePluginOptions) {
         this.isFirstEmit = true;
+        if (options.id) {
+            this.id = options.id;
+        } else {
+            this.id = 'unnamed-' + Date.now();
+        }
 
         if (options.onDone) {
             this.onDone = options.onDone;
@@ -89,9 +95,9 @@ export default class HookSuitePlugin {
             }
         }
         if (this.beforeRun) {
-            compiler.hooks.beforeRun.tap(HookSuitePlugin.name, (compiler2) => {
+            compiler.hooks.beforeRun.tap(HookSuitePlugin.name, (_compiler) => {
                 // @ts-ignore
-                this.beforeRun(compiler2, this.id);
+                this.beforeRun(_compiler, this.id);
             });
         }
         if (this.onFailed) {
@@ -112,34 +118,39 @@ export default class HookSuitePlugin {
 export { HookSuitePlugin };
 
 
+export interface HookSuiteBridgePluginOptions extends HookSuitePluginOptions {
+    id: string; // _required_ unlike HookSuitePluginOptions
+    tracker: Tracker<string>; // tracker instance this will call back to
+}
 
 export class HookSuiteBridgePlugin extends HookSuitePlugin {
-    private master: CompilerSet<string>;
+    protected id: string;
+    protected tracker: Tracker<string>;
 
-    public constructor(opts: HookSuitePluginOptions, master: CompilerSet<string>, name: string) {
+    public constructor({ tracker, ...opts }: HookSuiteBridgePluginOptions) {
         super({
             ...opts,
             afterEmit: (compilation, id) => {
-                master.afterEmit(compilation, id);
-                if (opts.onFailed) master.afterEmit(compilation, id);
+                this.tracker.receiver.afterEmit(compilation, id);
+                if (opts.afterEmit) opts.afterEmit(compilation, id);
             },
             beforeRun: (compiler, id) => {
-                master.beforeRun(compiler, id);
-                if (opts.beforeRun) master.beforeRun(compiler, id);
+                this.tracker.receiver.beforeRun(compiler, id);
+                if (opts.beforeRun) opts.beforeRun(compiler, id);
             },
             onDone: (stats, id) => {
-                master.onDone(stats, id);
+                this.tracker.receiver.onDone(stats, id);
                 if (opts.onDone) opts.onDone(stats, id);
             },
             onFailed: (error, id) => {
-                master.onFailed(error, id);
-                if (opts.onFailed) master.onFailed(error, id);
+                this.tracker.receiver.onFailed(error, id);
+                if (opts.onFailed) opts.onFailed(error, id);
             },
             onInvalid: (fileName, changeTime, id) => {
-                master.onInvalid(fileName, changeTime, id);
+                this.tracker.receiver.onInvalid(fileName, changeTime, id);
                 if (opts.onInvalid) opts.onInvalid(fileName, changeTime, id);
             }
         });
-        this.id = name;
+        this.tracker = tracker;
     }
 }

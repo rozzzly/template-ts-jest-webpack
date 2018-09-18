@@ -1,14 +1,30 @@
 import * as webpack from 'webpack';
 
 import CompilerHandle from './CompilerHandle';
+import { OnDone, AfterEmit, AfterFirstEmit, BeforeRun, OnFailed, OnInvalid } from './HookSuitePlugin';
 
-export default class CompilerSet<CompilerIDs extends string> {
+export default class Tracker<CompilerIDs extends string> {
     public pool: {
         [CompilerID in CompilerIDs]: CompilerHandle<CompilerID>
     };
 
+    public receiver: {
+        onDone: OnDone;
+        afterEmit: AfterEmit;
+        beforeRun: BeforeRun;
+        onFailed: OnFailed;
+        onInvalid: OnInvalid;
+    };
 
     public constructor(compilerIDs: CompilerIDs[]) {
+        this.receiver = {
+            onDone: this.onDone,
+            afterEmit: this.afterEmit,
+            beforeRun: this.beforeRun,
+            onFailed: this.onFailed,
+            onInvalid: this.onInvalid
+        };
+
         this.pool = compilerIDs.reduce((reduction, id) => ({
             ...(reduction as any),
             [id]: new CompilerHandle(id)
@@ -17,10 +33,13 @@ export default class CompilerSet<CompilerIDs extends string> {
 
     private checkID(id: string): CompilerIDs {
         if (id in this.pool) return id as CompilerIDs;
-        else throw new ReferenceError('Unrecognized Compiler ID Error');
+        else {
+            /// TODO ::: debate on the fly additions vs
+            throw new ReferenceError('Unrecognized Compiler ID!!');
+        }
     }
 
-    public onDone(stats: webpack.Stats, id: string): void {
+    private onDone(stats: webpack.Stats, id: string): void {
         const $id = this.checkID(id);
         if (stats.hasErrors() || stats.hasWarnings()) {
             const $stats = stats.toJson({ chunks: false });
@@ -41,7 +60,7 @@ export default class CompilerSet<CompilerIDs extends string> {
         }
     }
 
-    public afterEmit(compilation: webpack.compilation.Compilation, id: string): void {
+    private afterEmit(compilation: webpack.compilation.Compilation, id: string): void {
         const $id = this.checkID(id);
         /// TODO ::: pass some useful data
         this.pool[$id].emitted({
@@ -52,17 +71,17 @@ export default class CompilerSet<CompilerIDs extends string> {
         });
     }
 
-    public beforeRun(compiler: webpack.Compiler, id: string): void {
+    private beforeRun(compiler: webpack.Compiler, id: string): void {
         const $id = this.checkID(id);
         this.pool[$id].start();
     }
 
-    public onFailed(error: Error, id: string): void {
+    private onFailed(error: Error, id: string): void {
         const $id = this.checkID(id);
         this.pool[$id].failed(error);
     }
 
-    public onInvalid(fileName: string, changeTime: Date, id: string): void {
+    private onInvalid(fileName: string, changeTime: Date, id: string): void {
         const $id = this.checkID(id);
         this.pool[$id].invalidated(fileName, changeTime);
     }

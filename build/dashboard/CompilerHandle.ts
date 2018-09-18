@@ -11,18 +11,15 @@ export interface CompilerTallyBook {
 }
 
 export type CompilerPhase = (
-    | 'uninitiated' /// 🚲🏠 (bikeshed) me please!
-    | 'idle'
-    | 'running'
-    /// TODO ::: consider adding 'invalid'
-    ///     for when compiler is marked invalid but may not yet have triggered a new compilation
-    ///         ie: `webpack.Configuration.watchOptions.aggregateTimeout`
-    ///     probably way too short to notice after delay
+    | null /// prior to first run
+    | 'idle' // between runs
+    | 'running' // running
 );
 
 export type CompilationStatus = (
-    | 'uninitiated' /// 🚲🏠 (bikeshed) me please!
-    | 'clean'
+    | null // prior to first run
+    | 'invalid' // compilation is invalid (meaning compiler is running, or about to be)
+    | 'clean' // compiled code has no errors/warnings
     | 'dirty' // compiled code has errors/warnings
     | 'failed' // internal (to webpack/plugin/loader) error led to premature abort of compilation
 );
@@ -50,10 +47,7 @@ export interface CompilationRecordShorthand extends CompilationRecordStatsShorth
     duration?: number;
     /** tuple is: [startTime, endTime] */
     timestamp?: [number, number];
-    kind: Exclude<
-        CompilerPhase | CompilationStatus | 'init' | 'emitted' | 'invalid',
-        'idle' | 'running'
-    >;
+    kind: CompilationStatus | 'init' | 'emitted';
 }
 
 /**
@@ -78,8 +72,9 @@ export default class CompilerHandle<CompilerID extends string> {
     private startedAt: number;
 
     public constructor(id: CompilerID) {
-        this.phase = 'uninitiated';
-        this.status = 'uninitiated';
+        this.id = id;
+        this.phase = null;
+        this.status = null;
         this.tally = {
             run: 0,
             done: 0,
@@ -96,26 +91,33 @@ export default class CompilerHandle<CompilerID extends string> {
     private record(record: CompilationRecordShorthand): void {
         this.records.push({
             ...record,
-            timestamp: record.timestamp || [ Date.now(), this.startedAt ],
-            duration: record.duration || (Date.now() - this.startedAt)
+            timestamp: record.timestamp || [ this.startedAt, Date.now() ],
+            duration: (record.duration
+                ? record.duration
+                : (record.timestamp
+                    ? record.timestamp[1] - record.timestamp[0]
+                    : Date.now() - this.startedAt
+                )
+            )
         });
         console.log(this.records[this.records.length - 1]);
-        // only track x number of records
+        // only track x number of records, discard oldest records first
         while (this.records.length > CompilerHandle.MAX_RECORDS) {
             this.records.shift();
         }
     }
 
     public start(): void {
-        console.log('running ' + this.phase)
+        console.log('running ' + this.phase);
         this.tally.run++;
-        if (this.phase === 'uninitiated') {
+        if (this.phase === null) {
             this.record({
                 kind: 'init'
             });
         }
         this.resetClock();
         this.phase = 'running';
+        this.status = 'invalid';
     }
 
     public failed(error: Error): void {
@@ -149,8 +151,8 @@ export default class CompilerHandle<CompilerID extends string> {
 
     public invalidated(fileName: string, changeTime: Date): void {
         this.tally.invalid++;
+        this.status = 'invalid';
         console.log('invalidated', fileName);
-        /// TODO ::: determine if it's even worth recording these
     }
 
     public emitted(stats: CompilationRecordStats) {
