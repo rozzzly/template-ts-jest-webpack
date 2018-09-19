@@ -1,10 +1,23 @@
 import * as webpack from 'webpack';
 import Tracker from './Tracker';
 
+export interface CompilationParams {
+    normalModuleFactory: webpack.compilation.NormalModuleFactory;
+    contextModuleFactor: webpack.compilation.ContextModuleFactory;
+    compilationDependencies: Set<webpack.compilation.Dependency>;
+}
+
 export type OnDone = (stats: webpack.Stats, id: string) => void;
 export type AfterEmit = (compilation: webpack.compilation.Compilation, id: string) => void;
 export type AfterFirstEmit = (compilation: webpack.compilation.Compilation, id: string) => void;
+export type OnRun = (compiler: webpack.Compiler, id: string) => void;
+export type OnWatchRun = (compiler: webpack.Compiler, id: string) => void;
 export type BeforeRun = (compiler: webpack.Compiler, id: string) => void;
+export type BeforeCompile = (compilationParams: CompilationParams, id: string) => void;
+export type OnCompile = (compilationParams: CompilationParams, id: string) => void;
+export type AfterCompile = (compilation: webpack.compilation.Compilation, id: string) => void;
+export type OnCompilation = (compilation: webpack.compilation.Compilation, id: string) => void;
+export type OnThisCompilation = (compilation: webpack.compilation.Compilation, id: string) => void;
 export type OnFailed = (error: Error, id: string) => void;
 export type OnInvalid = (fileName: string, changeTime: Date, id: string) => void;
 
@@ -13,18 +26,34 @@ export interface HookSuitePluginOptions {
     onDone?: OnDone;
     afterEmit?: AfterEmit;
     afterFirstEmit?: AfterFirstEmit;
+    onRun?: OnRun;
+    onWatchRun?: OnWatchRun;
     beforeRun?: BeforeRun;
+    beforeCompile?: BeforeCompile;
+    onCompile?: OnCompile;
+    afterCompile?: AfterCompile;
+    onCompilation?: OnCompilation;
+    onThisCompilation?: OnThisCompilation;
     onFailed?: OnFailed;
     onInvalid?: OnInvalid;
 }
 
+
 export default class HookSuitePlugin {
     protected id: string;
     protected isFirstEmit: boolean;
+
     protected onDone?: OnDone;
     protected afterEmit?: AfterEmit;
     protected afterFirstEmit?: AfterFirstEmit;
+    protected onRun?: OnRun;
+    protected onWatchRun?: OnWatchRun;
     protected beforeRun?: BeforeRun;
+    protected beforeCompile?: BeforeCompile;
+    protected onCompile?: OnCompile;
+    protected afterCompile?: AfterCompile;
+    protected onCompilation?: OnCompilation;
+    protected onThisCompilation?: OnThisCompilation;
     protected onFailed?: OnFailed;
     protected onInvalid?: OnInvalid;
 
@@ -45,8 +74,29 @@ export default class HookSuitePlugin {
         if (options.afterFirstEmit) {
             this.afterFirstEmit = options.afterFirstEmit;
         }
+        if (options.onRun) {
+            this.onRun = options.onRun;
+        }
+        if (options.onWatchRun) {
+            this.onRun = options.onWatchRun;
+        }
         if (options.beforeRun) {
             this.beforeRun = options.beforeRun;
+        }
+        if (options.beforeCompile) {
+            this.beforeCompile = options.beforeCompile;
+        }
+        if (options.onCompile) {
+            this.onCompile = options.onCompile;
+        }
+        if (options.afterCompile) {
+            this.afterCompile = options.afterCompile;
+        }
+        if (options.onCompilation) {
+            this.onCompilation = options.onCompilation;
+        }
+        if (options.onThisCompilation) {
+            this.onThisCompilation = options.onThisCompilation;
         }
         if (options.onFailed) {
             this.onFailed = options.onFailed;
@@ -94,10 +144,52 @@ export default class HookSuitePlugin {
                 });
             }
         }
+        if (this.onRun) {
+            compiler.hooks.run.tap(HookSuitePlugin.name, (_compiler) => {
+                // @ts-ignore
+                this.onRun(_compiler, this.id);
+            });
+        }
+        if (this.onWatchRun) {
+            compiler.hooks.watchRun.tap(HookSuitePlugin.name, (_compiler) => {
+                // @ts-ignore
+                this.onWatchRun(_compiler, this.id);
+            });
+        }
         if (this.beforeRun) {
             compiler.hooks.beforeRun.tap(HookSuitePlugin.name, (_compiler) => {
                 // @ts-ignore
                 this.beforeRun(_compiler, this.id);
+            });
+        }
+        if (this.beforeCompile) {
+            compiler.hooks.beforeCompile.tap(HookSuitePlugin.name, (compilationParams) => {
+                // @ts-ignore
+                this.beforeCompile(compilationParams, this.id);
+            });
+        }
+        if (this.onCompile) {
+            compiler.hooks.compile.tap(HookSuitePlugin.name, (compilationParams) => {
+                // @ts-ignore
+                this.onCompile(compilationParams, this.id);
+            });
+        }
+        if (this.afterCompile) {
+            compiler.hooks.afterCompile.tap(HookSuitePlugin.name, (compilation) => {
+                // @ts-ignore
+                this.afterCompile(compilation, this.id);
+            });
+        }
+        if (this.onCompilation) {
+            compiler.hooks.compilation.tap(HookSuitePlugin.name, (compilation) => {
+                // @ts-ignore
+                this.onCompilation(compilation, this.id);
+            });
+        }
+        if (this.onThisCompilation) {
+            compiler.hooks.thisCompilation.tap(HookSuitePlugin.name, (compilation) => {
+                // @ts-ignore
+                this.onTHisCompilation(compilation, this.id);
             });
         }
         if (this.onFailed) {
@@ -134,9 +226,9 @@ export class HookSuiteBridgePlugin extends HookSuitePlugin {
                 this.tracker.receiver.afterEmit(compilation, id);
                 if (opts.afterEmit) opts.afterEmit(compilation, id);
             },
-            beforeRun: (compiler, id) => {
-                this.tracker.receiver.beforeRun(compiler, id);
-                if (opts.beforeRun) opts.beforeRun(compiler, id);
+            beforeCompile: (compilationParams, id) => {
+                this.tracker.receiver.beforeCompile(compilationParams, id);
+                if (opts.beforeCompile) opts.beforeCompile(compilationParams, id);
             },
             onDone: (stats, id) => {
                 this.tracker.receiver.onDone(stats, id);

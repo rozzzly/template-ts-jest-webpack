@@ -7,7 +7,7 @@ import HookSuitePlugin, { HookSuiteBridgePlugin } from './dashboard/HookSuitePlu
 import chalk from 'chalk';
 import sharedCfg from './webpack/shared';
 import init from '../src/modules/app/server/entrypoint';
-import CompilerSet from './dashboard/CompilerSet';
+import Tracker from './dashboard/Tracker';
 
 
 const buildNotif = (stats: webpack.Stats, id: string): void => {
@@ -20,7 +20,7 @@ function launchStageTwo() {
     console.log('stage 2');
 }
 
-const master = new CompilerSet([ 'shared' ]);
+const tracker = new Tracker([ 'shared' ]);
 
 function launchStageOne() {
     const sharedCompiler = webpack(sharedCfg.mutate({
@@ -28,8 +28,10 @@ function launchStageOne() {
         hookSuite: new HookSuiteBridgePlugin({
             afterFirstEmit() {
                 launchStageTwo();
-            }
-        }, master, 'shared')
+            },
+            id: 'shared',
+            tracker: tracker
+        })
     }));
     sharedCompiler.watch({}, () => { /* */ });
 }

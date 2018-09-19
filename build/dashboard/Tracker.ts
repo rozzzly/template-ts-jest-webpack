@@ -1,7 +1,7 @@
 import * as webpack from 'webpack';
 
 import CompilerHandle from './CompilerHandle';
-import { OnDone, AfterEmit, AfterFirstEmit, BeforeRun, OnFailed, OnInvalid } from './HookSuitePlugin';
+import { OnDone, AfterEmit, AfterFirstEmit, OnFailed, OnInvalid, BeforeCompile, CompilationParams } from './HookSuitePlugin';
 
 export default class Tracker<CompilerIDs extends string> {
     public pool: {
@@ -11,18 +11,20 @@ export default class Tracker<CompilerIDs extends string> {
     public receiver: {
         onDone: OnDone;
         afterEmit: AfterEmit;
-        beforeRun: BeforeRun;
+        afterFirstEmit: AfterFirstEmit;
+        beforeCompile: BeforeCompile;
         onFailed: OnFailed;
         onInvalid: OnInvalid;
     };
 
     public constructor(compilerIDs: CompilerIDs[]) {
         this.receiver = {
-            onDone: this.onDone,
-            afterEmit: this.afterEmit,
-            beforeRun: this.beforeRun,
-            onFailed: this.onFailed,
-            onInvalid: this.onInvalid
+            onDone: this.onDone.bind(this),
+            afterEmit: this.afterEmit.bind(this),
+            afterFirstEmit: this.afterFirstEmit.bind(this),
+            beforeCompile: this.beforeCompile.bind(this),
+            onFailed: this.onFailed.bind(this),
+            onInvalid: this.onInvalid.bind(this)
         };
 
         this.pool = compilerIDs.reduce((reduction, id) => ({
@@ -60,6 +62,10 @@ export default class Tracker<CompilerIDs extends string> {
         }
     }
 
+    private afterFirstEmit(compilation: webpack.compilation.Compilation, id: string): void {
+        // noop;
+    }
+
     private afterEmit(compilation: webpack.compilation.Compilation, id: string): void {
         const $id = this.checkID(id);
         /// TODO ::: pass some useful data
@@ -71,7 +77,7 @@ export default class Tracker<CompilerIDs extends string> {
         });
     }
 
-    private beforeRun(compiler: webpack.Compiler, id: string): void {
+    private beforeCompile(compilationParams: CompilationParams, id: string): void {
         const $id = this.checkID(id);
         this.pool[$id].start();
     }

@@ -31,6 +31,7 @@ export default configProxy(({
                     options: {
                         onlyCompileBundledFiles: true,
                         transpileOnly: true,
+                        silent: true
                         // experimentalWatchApi: true
                     }
                 }]
