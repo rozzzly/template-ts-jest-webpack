@@ -4,7 +4,7 @@ import * as nodeExternals from 'webpack-node-externals';
 import baseCfg from './base';
 import { ROOT_DIR, BIN_DIR, CACHE_GROUPS } from '../constants';
 import { createCacheGroups, join, configProxy } from '../util';
-import HookSuitePlugin from '../HookSuitePlugin';
+
 
 
 export default configProxy(({
@@ -14,6 +14,7 @@ export default configProxy(({
         hookSuite
     }
 }) => merge(baseCfg, {
+    name: 'shared',
     entry: {
         runtime: [
             './src/modules/app/shared/App'
@@ -37,6 +38,6 @@ export default configProxy(({
             name: '[name]_[hash:6]',
             path: join(BIN_DIR, '[name].manifest.json')
         }),
-        hookSuite as HookSuitePlugin
+        hookSuite
     ]
 }));

@@ -43,6 +43,7 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typescript": "^3.0.3",
+    "typical-ts": "^0.2.1",
     "webpack": "^4.17.2",
     "webpack-cli": "^3.1.0",
     "webpack-dev-middleware": "^3.2.0",
