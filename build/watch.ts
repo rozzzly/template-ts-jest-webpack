@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import sharedCfg from './webpack/shared';
 import init from '../src/modules/app/server/entrypoint';
 import Tracker from './dashboard/Tracker';
+import { configProxy } from './util';
 
 
 const buildNotif = (stats: webpack.Stats, id: string): void => {
@@ -23,7 +24,7 @@ function launchStageTwo() {
 const tracker = new Tracker([ 'shared' ]);
 
 function launchStageOne() {
-    const sharedCompiler = webpack(sharedCfg.mutate({
+    const sharedCompiler = webpack(configProxy(sharedCfg, {
         mode: 'production',
         hookSuite: new HookSuiteBridgePlugin({
             afterFirstEmit() {

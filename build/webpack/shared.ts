@@ -3,17 +3,12 @@ import * as nodeExternals from 'webpack-node-externals';
 
 import baseCfg from './base';
 import { ROOT_DIR, BIN_DIR, CACHE_GROUPS } from '../constants';
-import { createCacheGroups, join, configProxy } from '../util';
+import { createCacheGroups, join, configProxy, ExtractInternals } from '../util';
+import HookSuitePlugin from '../dashboard/HookSuitePlugin';
 
-
-
-export default configProxy(({
-    merge,
-    isDev,
-    options: {
-        hookSuite
-    }
-}) => merge(baseCfg, {
+export default configProxy<{
+    hookSuite: HookSuitePlugin
+}>(baseCfg, $ => ({
     name: 'shared',
     entry: {
         runtime: [
@@ -21,7 +16,7 @@ export default configProxy(({
         ]
     },
     output: {
-        filename: isDev('[name].shared.js', '[name]_[hash:6].shared.js')
+        filename: $.isDev('[name].shared.js', '[name]_[hash:6].shared.js')
     },
     optimization: {
         // runtimeChunk: 'single',
@@ -38,6 +33,6 @@ export default configProxy(({
             name: '[name]_[hash:6]',
             path: join(BIN_DIR, '[name].manifest.json')
         }),
-        hookSuite
+        $.opts.hookSuite
     ]
 }));
