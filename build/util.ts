@@ -48,7 +48,7 @@ export interface ConfigProxyHandle<Opts extends {}> {
 
 
 
-export interface ConfigProxy<Opts extends {}> extends webpack.Configuration {
+export interface ConfigProxy<Opts extends {} = {}> extends webpack.Configuration {
 }
 
 
@@ -56,7 +56,7 @@ const isConfigProxy = <O extends {}>(value: unknown): value is ConfigProxy<O> =>
     (value as any)[SYM_CONFIG_PROXY_FLAG] === true
 );
 
-export type ExtractInternals<T> = (
+export type ExposeInternals<T> = (
     (T extends ConfigProxy<infer Opts>
         ? {
             opts: Opts,
@@ -67,7 +67,7 @@ export type ExtractInternals<T> = (
     )
 );
 
-const exposeInternals = <C extends ConfigProxy<any>>(value: C): ExtractInternals<C> => (
+const exposeInternals = <C extends ConfigProxy<any>>(value: C): ExposeInternals<C> => (
     ((isConfigProxy(value))
         ? (value as any)[SYM_CONFIG_PROXY_INTERNAL]
         : (() => { throw new TypeError('Attempted extract opts from a non-config proxy!!'); })()
@@ -129,17 +129,25 @@ export interface DefaultOpts {
 
 export type ConfigProxyFactory<Opts extends {}> = (handle: ConfigProxyHandle<Opts>) => webpack.Configuration;
 
+
+
 export interface ConfigProxyConstructor {
-    <OwnOpts extends { }, Opts extends OwnOpts & DefaultOpts = OwnOpts & DefaultOpts>(
-        factory: ConfigProxyFactory<Opts>,
-        defaultOpts?: Partial<Opts>
-    ): ConfigProxy<Opts>;
-    <OwnOpts extends { }, InheritedOpts extends {}, BaseProxy extends ConfigProxy<InheritedOpts>, Opts extends OwnOpts & InheritedOpts = OwnOpts & InheritedOpts> (
+    merge<OwnOpts extends { }, BaseProxy extends ConfigProxy<any>>(
         base: BaseProxy,
-        factory: ConfigProxyFactory<Opts>
-        // defaultOpts?: Partial<Opts>
-    ): ConfigProxy<Opts>;
-    (...args: any[]): ConfigProxy<{}>;
+        factory: ConfigProxyFactory<OwnOpts & ExposeInternals<BaseProxy>['opts']>,
+        defaultOpts?: Partial<OwnOpts & ExposeInternals<BaseProxy>['opts']>
+    ): ConfigProxy<OwnOpts & ExposeInternals<BaseProxy>['opts']>;
+    <OwnOpts extends { }>(
+        factory: ConfigProxyFactory<OwnOpts & DefaultOpts>,
+        defaultOpts?: Partial<OwnOpts & DefaultOpts>
+    ): ConfigProxy<OwnOpts & DefaultOpts>;
+
+
+    // <OwnOpts extends { }, BaseProxy = unknown>(
+    //     arg0: ConfigProxyFactory<OwnOpts & DefaultOpts> | BaseProxy,
+    //     defaultOpts?: Partial<OwnOpts & DefaultOpts> | ConfigProxyFactory<OwnOpts & ExposeInternals<BaseProxy>['opts']>
+    // ): ConfigProxy<OwnOpts & DefaultOpts>;
+    // (...args: any[]): ConfigProxy<{}>;
     // <OwnOpts extends { }, Opts = OwnOpts & DefaultOpts>(
     //     base: webpack.Configuration,
     //     factory: ConfigProxyFactory<Opts>,
