@@ -129,30 +129,31 @@ export interface DefaultOpts {
 
 export type ConfigProxyFactory<Opts extends {}> = (handle: ConfigProxyHandle<Opts>) => webpack.Configuration;
 
+export interface ConfigProxyConstructor {
+    <OwnOpts extends { }, Opts extends OwnOpts & DefaultOpts = OwnOpts & DefaultOpts>(
+        factory: ConfigProxyFactory<Opts>,
+        defaultOpts?: Partial<Opts>
+    ): ConfigProxy<Opts>;
+    <OwnOpts extends { }, InheritedOpts extends {}, BaseProxy extends ConfigProxy<InheritedOpts>, Opts extends OwnOpts & InheritedOpts = OwnOpts & InheritedOpts> (
+        base: BaseProxy,
+        factory: ConfigProxyFactory<Opts>
+        // defaultOpts?: Partial<Opts>
+    ): ConfigProxy<Opts>;
+    (...args: any[]): ConfigProxy<{}>;
+    // <OwnOpts extends { }, Opts = OwnOpts & DefaultOpts>(
+    //     base: webpack.Configuration,
+    //     factory: ConfigProxyFactory<Opts>,
+    //     defaultOpts?: Partial<Opts>
+    // ): ConfigProxy<Opts>;
+    // <Opts extends {}, BaseProxy extends ConfigProxy<Opts>>(
+    //     base: BaseProxy,
+    //     opts: Opts
+    // ): ConfigProxy<Opts>;
+}
 
-// Signature A, A+
-export function configProxy<OwnOpts extends { }, Opts = OwnOpts & DefaultOpts>(
-    factory: ConfigProxyFactory<Opts>,
-    defaultOpts?: Partial<Opts>
-): ConfigProxy<Opts>;
-// Signature C, C+
-export function configProxy<OwnOpts extends { }, BaseProxy extends ConfigProxy<any>, Opts = ExtractInternals<BaseProxy>['opts']>(
-    base: BaseProxy,
-    factory: ConfigProxyFactory<Opts>,
-    defaultOpts?: Partial<Opts>
-): ConfigProxy<Opts>;
-// Signature B, B+
-export function configProxy<OwnOpts extends { }, Opts = OwnOpts & DefaultOpts>(
-    base: webpack.Configuration,
-    factory: ConfigProxyFactory<Opts>,
-    defaultOpts?: Partial<Opts>
-): ConfigProxy<Opts>;
-// Signature D
-export function configProxy<BaseProxy extends ConfigProxy<any>, Opts = ExtractInternals<BaseProxy>['opts']>(
-    base: BaseProxy,
-    opts: Partial<Opts>
-): ConfigProxy<Opts>;
-export function configProxy(...args: any[]): ConfigProxy<any> {
+
+
+export const configProxy: ConfigProxyConstructor = (...args: any[]): ConfigProxy<any> => {
     let local: {
         opts: any,
         defaultOpts: any,

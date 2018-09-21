@@ -3,12 +3,12 @@ import * as nodeExternals from 'webpack-node-externals';
 
 import baseCfg from './base';
 import { ROOT_DIR, BIN_DIR, CACHE_GROUPS } from '../constants';
-import { createCacheGroups, join, configProxy, ExtractInternals } from '../util';
+import { createCacheGroups, join, configProxy, ExtractInternals, ConfigProxyHandle } from '../util';
 import HookSuitePlugin from '../dashboard/HookSuitePlugin';
 
-export default configProxy<{
-    hookSuite: HookSuitePlugin
-}>(baseCfg, $ => ({
+type z  = typeof baseCfg;
+
+export default configProxy<{food: 'bar'}>(baseCfg, $ => ({
     name: 'shared',
     entry: {
         runtime: [
