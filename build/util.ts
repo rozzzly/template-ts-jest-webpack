@@ -1,7 +1,5 @@
 import * as webpack from 'webpack';
 import * as merge from 'webpack-merge';
-
-import { Spread } from 'typical-ts/src/object/Spread';
 import { join } from 'path';
 
 

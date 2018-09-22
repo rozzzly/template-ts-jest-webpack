@@ -1,7 +1,3 @@
 {
-    "typescript.tsdk": "node_modules\\typescript\\lib",
-    "awooga.originalColorCustomizations": {
-        "editor.background": "#400000"
-    },
-    "workbench.colorCustomizations": {},
+    "typescript.tsdk": "node_modules\\typescript\\lib"
 }
