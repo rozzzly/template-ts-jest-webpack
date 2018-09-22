@@ -5,9 +5,11 @@ import * as wdm from 'webpack-dev-middleware';
 import * as whm from 'webpack-hot-middleware';
 import HookSuitePlugin, { HookSuiteBridgePlugin } from './dashboard/HookSuitePlugin';
 import chalk from 'chalk';
+import clientCfg from './webpack/client';
 import sharedCfg from './webpack/shared';
 import init from '../src/modules/app/server/entrypoint';
 import Tracker from './dashboard/Tracker';
+import { configProxy } from './util';
 
 
 const buildNotif = (stats: webpack.Stats, id: string): void => {
@@ -17,14 +19,22 @@ const buildNotif = (stats: webpack.Stats, id: string): void => {
 
 
 function launchStageTwo() {
-    console.log('stage 2');
+    const clientCompiler = webpack(configProxy(clientCfg, {
+        hookSuite: new HookSuiteBridgePlugin({
+            afterFirstEmit() {
+                console.log('both lol');
+            },
+            id: 'client',
+            tracker: tracker
+        })
+    }));
+    clientCompiler.watch({}, () => { /* */ });
 }
 
-const tracker = new Tracker([ 'shared' ]);
+const tracker = new Tracker([ 'shared', 'client' ]);
 
 function launchStageOne() {
-    const sharedCompiler = webpack(sharedCfg.mutate({
-        mode: 'production',
+    const sharedCompiler = webpack(configProxy(sharedCfg, {
         hookSuite: new HookSuiteBridgePlugin({
             afterFirstEmit() {
                 launchStageTwo();

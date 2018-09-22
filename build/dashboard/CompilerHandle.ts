@@ -100,7 +100,7 @@ export default class CompilerHandle<CompilerID extends string> {
                 )
             )
         });
-        console.log(this.records[this.records.length - 1]);
+        console.log(this.id, this.records[this.records.length - 1]);
         // only track x number of records, discard oldest records first
         while (this.records.length > CompilerHandle.MAX_RECORDS) {
             this.records.shift();

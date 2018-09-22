@@ -1,11 +1,13 @@
-import * as merge from 'webpack-merge';
 import * as webpack from 'webpack';
 
 import baseCfg from './base';
-import { createCacheGroups, join } from '../util';
+import { createCacheGroups, join, configProxy } from '../util';
 import { CACHE_GROUPS, BIN_DIR, ROOT_DIR } from '../constants';
+import HookSuitePlugin from '../dashboard/HookSuitePlugin';
 
-export default merge(baseCfg, {
+export default configProxy<{
+    hookSuite: HookSuitePlugin
+}, typeof baseCfg>(baseCfg, $ => ({
     name: 'client',
     target: 'web',
     entry: {
@@ -26,11 +28,12 @@ export default merge(baseCfg, {
         }
     },
     plugins: [
-        ...([Object.keys(CACHE_GROUPS.shared)].map(dllName => (
+        ...Object.keys(CACHE_GROUPS.shared).map(dllName => (
             new webpack.DllReferencePlugin({
                 context: ROOT_DIR,
                 manifest: join(BIN_DIR, `${dllName}.manifest.json`)
             })
-        )))
+        )),
+        $.opts.hookSuite
     ]
-});
+}));

@@ -3,7 +3,7 @@ import { Switch, Route } from 'react-router';
 
 import routes from './routes';
 
-export const MOUNT_POINT_ID: string = '__APP_M0UNT_P0INT__';
+export const MOUNT_POINT_ID: string = '__APP_MOUNT_P0INT__';
 
 export const App: React.SFC = ({}) => (
     < div id='AppContainer'>
