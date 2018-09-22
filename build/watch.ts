@@ -7,9 +7,10 @@ import HookSuitePlugin, { HookSuiteBridgePlugin } from './dashboard/HookSuitePlu
 import chalk from 'chalk';
 import clientCfg from './webpack/client';
 import sharedCfg from './webpack/shared';
-import init from '../src/modules/app/server/entrypoint';
+// import init from '../src/modules/app/server/entrypoint';
 import Tracker from './dashboard/Tracker';
 import { configProxy } from './util';
+import render from './dashboard/ui';
 
 
 const buildNotif = (stats: webpack.Stats, id: string): void => {
@@ -46,4 +47,5 @@ function launchStageOne() {
     sharedCompiler.watch({}, () => { /* */ });
 }
 
-launchStageOne();
+//launchStageOne();
+render();
