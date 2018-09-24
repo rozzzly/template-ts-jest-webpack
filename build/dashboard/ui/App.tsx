@@ -1,38 +1,45 @@
 import * as React from 'react';
 import Chalk from 'chalk';
 import * as blessed from 'blessed';
-import { Box } from './stub';
+import { Box, Element } from './stub';
 import { Grid } from 'react-blessed-contrib';
+import StatusBar from './StatusBar';
+import Tracker from '../Tracker';
 
+export interface AppProps {
+    tracker: Tracker<string>;
+}
 
-export const App: React.SFC = ({}) => (
-    <Grid rows={12} cols={12}>
+export const App: React.SFC<AppProps> = ({ tracker }) => (
+    <>
         <Box
-            row={0}
-            col={0}
-            rowSpan={2}
-            colSpan={12}
-            border={false}
-            content={`${Chalk.bgGreen.black('shared:')} ${Chalk.green('125ms')} / ${Chalk.bgHex('#cccccc').black('shared:')} ${Chalk.white('—')} / ${Chalk.bgRed.black('server:')} ${Chalk.red('5 errors, 2 warning')}`}
-        />
+            top={0}
+            left={0}
+            width={'100%'}
+        >
+            <StatusBar tracker={tracker} />
+        </Box>
         <Box
-            row={2}
-            col={0}
-            rowSpan={10}
-            colSpan={8}
+            top={10}
+            left={0}
+            width={'50%'}
+            label={'Webpack Log'}
             border={{type: 'line'}}
             style={{border: {fg: 'blue'}}}>
             Log Box
         </Box>
         <Box
-            row={2}
-            col={8}
-            rowSpan={10}
-            colSpan={4}
+            top={10}
+            left={'50%'}
+            width={'100%'}
             border={{type: 'line'}}
             style={{border: {fg: 'blue'}}}>
             Build Stats
         </Box>
-    </Grid>
+
+    </>
 );
 export default App;
+
+
+//

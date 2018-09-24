@@ -38,6 +38,7 @@ export default configProxy<{
         $.isDev(new webpack.HotModuleReplacementPlugin()),
         new ForkTsCheckerWebpackPlugin($.stripKeys({
             context: ROOT_DIR,
+            silent: true,
             // tslint: true,
             checkSyntacticErrors: true,
             watch: $.isDev(['./src']) // optional but improves performance (fewer stat calls)

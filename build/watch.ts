@@ -22,9 +22,6 @@ const buildNotif = (stats: webpack.Stats, id: string): void => {
 function launchStageTwo() {
     const clientCompiler = webpack(configProxy(clientCfg, {
         hookSuite: new HookSuiteBridgePlugin({
-            afterFirstEmit() {
-                console.log('both lol');
-            },
             id: 'client',
             tracker: tracker
         })
@@ -32,7 +29,7 @@ function launchStageTwo() {
     clientCompiler.watch({}, () => { /* */ });
 }
 
-const tracker = new Tracker([ 'shared', 'client' ]);
+const tracker = new Tracker([ 'shared', 'client', 'server' ]);
 
 function launchStageOne() {
     const sharedCompiler = webpack(configProxy(sharedCfg, {
@@ -47,5 +44,5 @@ function launchStageOne() {
     sharedCompiler.watch({}, () => { /* */ });
 }
 
-//launchStageOne();
-render();
+setTimeout(() => launchStageOne(), 2000);
+render(tracker);

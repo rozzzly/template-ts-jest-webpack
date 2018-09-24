@@ -1,5 +1,5 @@
 require('ts-node').register({
-    cache: true,
+    // cache: true,
     compilerOptions: {
         module: 'commonjs',
         typeRoots: [

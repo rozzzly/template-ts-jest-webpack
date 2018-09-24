@@ -65,11 +65,15 @@ export default class CompilerHandle<CompilerID extends string> {
     public id: CompilerID;
     public phase: CompilerPhase;
     public status: CompilationStatus;
-    public compiler: webpack.Compiler;
     public records: CompilationRecord[];
 
     private tally: CompilerTallyBook;
     private startedAt: number;
+
+
+    public get runtime(): number {
+        return Date.now() - this.startedAt;
+    }
 
     public constructor(id: CompilerID) {
         this.id = id;
@@ -100,7 +104,7 @@ export default class CompilerHandle<CompilerID extends string> {
                 )
             )
         });
-        console.log(this.id, this.records[this.records.length - 1]);
+        // console.log(this.id, this.records[this.records.length - 1]);
         // only track x number of records, discard oldest records first
         while (this.records.length > CompilerHandle.MAX_RECORDS) {
             this.records.shift();
@@ -108,7 +112,6 @@ export default class CompilerHandle<CompilerID extends string> {
     }
 
     public start(): void {
-        console.log('running ' + this.phase);
         this.tally.run++;
         if (this.phase === null) {
             this.record({
@@ -127,6 +130,7 @@ export default class CompilerHandle<CompilerID extends string> {
             errors: [error]
         });
         this.phase = 'idle';
+        this.status = 'failed';
     }
 
     public doneClean(stats: CompilationRecordStats): void {
@@ -137,6 +141,7 @@ export default class CompilerHandle<CompilerID extends string> {
             ...stats
         });
         this.phase = 'idle';
+        this.status = 'clean';
     }
 
     public doneDirty(stats: CompilationRecordStats): void {
@@ -147,12 +152,12 @@ export default class CompilerHandle<CompilerID extends string> {
             ...stats
         });
         this.phase = 'idle';
+        this.status = 'dirty';
     }
 
     public invalidated(fileName: string, changeTime: Date): void {
         this.tally.invalid++;
         this.status = 'invalid';
-        console.log('invalidated', fileName);
     }
 
     public emitted(stats: CompilationRecordStats) {
