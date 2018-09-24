@@ -8,8 +8,8 @@ import Tracker from '../Tracker';
 
 export default function(tracker: Tracker<string>) {
     const screen = blessed.screen({
-        autoPadding: true,
-        smartCSR: true,
+        // autoPadding: true,
+        // smartCSR: true,
         title: 'simmer dashboard',
         fullUnicode: true
     });

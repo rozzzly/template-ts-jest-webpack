@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as cliSpinners from 'cli-spinners';
+import { lib as emoji } from 'emojilib';
 import Chalk from 'chalk';
 import Tracker from '../Tracker';
 import CompilerHandle from '../CompilerHandle';
@@ -16,7 +17,7 @@ export interface StatusBarProps {
 export default class StatusBar extends React.Component<StatusBarProps> {
 
     public static defaultProps = {
-        speed: 128,
+        speed: 100,
         paused: false
     };
 
@@ -33,6 +34,8 @@ export default class StatusBar extends React.Component<StatusBarProps> {
         );
     }
 
+    /// TODO ::: componentWillUnmount is deprecated --> remove internal time management -->
+    ///         move `Tracker` higher in Component tree, send subset of `CompilerHandle` data to `StatusBar` (make it an sfc)
     public componentWillReceiveProps(nextProps: StatusBarProps) {
         if (this.ticker && nextProps.paused) { // running and about to pause
             clearInterval(this.ticker);
@@ -56,30 +59,58 @@ export default class StatusBar extends React.Component<StatusBarProps> {
     }
 
     private renderStatusBarItem(handle: CompilerHandle<string>): string {
+        let label: string = ` [ ${handle.id} ] `;
         let result: string = ` [ ${handle.id} ] `;
+        let symbol: string = '';
+        let message: string = '';
+        let timestamp: string = '';
 
+        const spinner = StatusBar.renderSpinner();
+        const record = handle.currentRecord!;
         if (handle.phase === 'idle') {
             if (handle.status === 'clean') {
-                result = Chalk.bgGreen.hex('#010101').bold(result);
+                label = Chalk.bgGreen.hex('#010101').bold(result);
+                symbol = emoji.heavy_check_mark.char;
+                message = Chalk.green('built');
+                timestamp = Chalk.dim(`in ${record.duration}ms`);
+                return [label, symbol, timestamp].join(' ');
             } else if (handle.status === 'failed') {
-                result = Chalk.bgYellow.hex('#010101').bold(result);
+                label = Chalk.bgRed.hex('#010101').bold(result);
+                symbol = ((Math.floor(Date.now() / 1000) % 2 === 0)
+                    ? emoji.rotating_light.skull
+                    : emoji.rotating_light.char
+                );
+                message = Chalk.bgRed('fatal crash');
+                timestamp = Chalk.dim(`after ${record.duration}`);
+                return [label, symbol, message, timestamp].join(' ');
             } else if (handle.status === 'dirty') {
-                result = Chalk.bgGreen.hex('#010101').bold(result);
+                if (record.errors && record.errors.length) {
+                    label = Chalk.bgRed.hex('#010101').bold(result);
+                    symbol = emoji.x.char;
+                    message = Chalk.yellow(`built with ${record.errors!.length} errors and ${record.warnings!.length} warnings`);
+                    timestamp = Chalk.dim(`in ${record.duration}ms`);
+                } else {
+                    label = Chalk.bgYellow.hex('#010101').bold(result);
+                    symbol = emoji.alert.char;
+                    message = Chalk.yellow(`built with ${record.errors!.length} errors and ${record.warnings!.length} warnings`);
+                    timestamp = Chalk.dim(`in ${record.duration}ms`);
+                }
+                return [label, symbol, message, timestamp].join(' ');
             } else { /// should never be the called
-                result = Chalk.bgMagenta.hex('#010101').bold(result);
+                label = Chalk.bgMagenta.hex('#010101').bold(result);
+                return label;
             }
         } else if (handle.phase === 'running') {
-            result = (
-                `${
-                    Chalk.bgCyan.hex('#010101').bold(result)
-                } ${Chalk.cyan(
-                    `${
-                        StatusBar.renderSpinner()
-                    } ${handle.runtime}ms`
-                )}`
-            );
+            label = Chalk.bgCyan.hex('#010101').bold(label);
+            symbol = Chalk.cyan(spinner);
+            message = Chalk.cyan('building');
+            timestamp = Chalk.dim(`${handle.runtime}ms`);
+            return [label, symbol, message, timestamp].join(' ');
         } else {
-            result = Chalk.bgHex('#999999').white.bold(result);
+            label = Chalk.bgHex('#999999').hex('#fefefe').bold(result);
+            message = 'uninitiated';
+            return [label, message].join(' ');
+
         }
 
         return result;

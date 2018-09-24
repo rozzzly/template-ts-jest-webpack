@@ -12,7 +12,7 @@ window.addEventListener('load', () => {
         mountPoint.id = MOUNT_POINT_ID;
         document.body.appendChild(mountPoint);
     } else {
-        throw new Error('m0unt point not found');
+        throw new Error('mount point not found');
     }
 
     React.render(render(), mountPoint);

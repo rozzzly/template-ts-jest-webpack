@@ -70,6 +70,13 @@ export default class CompilerHandle<CompilerID extends string> {
     private tally: CompilerTallyBook;
     private startedAt: number;
 
+    public get currentRecord(): CompilationRecord | null {
+        if (this.records.length) {
+            return this.records[this.records.length - 1];
+        } else {
+            return null;
+        }
+    }
 
     public get runtime(): number {
         return Date.now() - this.startedAt;

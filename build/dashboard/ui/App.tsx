@@ -20,17 +20,17 @@ export const App: React.SFC<AppProps> = ({ tracker }) => (
             <StatusBar tracker={tracker} />
         </Box>
         <Box
-            top={10}
+            top={1}
             left={0}
-            width={'50%'}
+            width={'75%'}
             label={'Webpack Log'}
             border={{type: 'line'}}
             style={{border: {fg: 'blue'}}}>
             Log Box
         </Box>
         <Box
-            top={10}
-            left={'50%'}
+            top={1}
+            left={'25%'}
             width={'100%'}
             border={{type: 'line'}}
             style={{border: {fg: 'blue'}}}>
