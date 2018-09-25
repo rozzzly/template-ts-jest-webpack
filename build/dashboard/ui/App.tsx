@@ -8,17 +8,12 @@ import Tracker from '../Tracker';
 
 export interface AppProps {
     tracker: Tracker<string>;
+    time: number;
 }
 
-export const App: React.SFC<AppProps> = ({ tracker }) => (
+export const App: React.SFC<AppProps> = ({ tracker, time }) => (
     <>
-        <Box
-            top={0}
-            left={0}
-            width={'100%'}
-        >
-            <StatusBar tracker={tracker} />
-        </Box>
+        <StatusBar tracker={tracker} time={time}/>
         <Box
             top={1}
             left={0}

@@ -1,15 +1,15 @@
 import * as React from 'react';
 import * as cliSpinners from 'cli-spinners';
-import { lib as emoji } from 'emojilib';
 import Chalk from 'chalk';
+import { lib as emoji } from 'emojilib';
+import { Box } from './stub';
 import Tracker from '../Tracker';
 import CompilerHandle from '../CompilerHandle';
-import { clearInterval } from 'timers';
 
-console.log(cliSpinners);
 
 export interface StatusBarProps {
     speed: number;
+    time: number;
     paused: boolean;
     tracker: Tracker<string>;
 }
@@ -28,9 +28,17 @@ export default class StatusBar extends React.Component<StatusBarProps> {
 
     public render() {
         return (
-            this.props.tracker.map(h => (
-                this.renderStatusBarItem(h)
-            )).join('  —  ')
+            <Box
+               top={0}
+                left={0}
+                width={'100%'}
+            >
+                {
+                    this.props.tracker.map(h => (
+                        this.renderStatusBarItem(h)
+                    )).join('  —  ')
+                }
+            </Box>
         );
     }
 
@@ -49,7 +57,7 @@ export default class StatusBar extends React.Component<StatusBarProps> {
 
     public componentDidMount() {
         if (!this.props.paused) {
-            this.ticker = setInterval(() => this.forceUpdate(), this.props.speed);
+            //this.ticker = setInterval(() => this.forceUpdate(), this.props.speed);
         }
     }
     public componentWillUnmount() {
@@ -73,7 +81,7 @@ export default class StatusBar extends React.Component<StatusBarProps> {
                 symbol = emoji.heavy_check_mark.char;
                 message = Chalk.green('built');
                 timestamp = Chalk.dim(`in ${record.duration}ms`);
-                return [label, symbol, timestamp].join(' ');
+                return [label, symbol, message, timestamp].join(Chalk.reset(' '));
             } else if (handle.status === 'failed') {
                 label = Chalk.bgRed.hex('#010101').bold(result);
                 symbol = ((Math.floor(Date.now() / 1000) % 2 === 0)
@@ -82,7 +90,7 @@ export default class StatusBar extends React.Component<StatusBarProps> {
                 );
                 message = Chalk.bgRed('fatal crash');
                 timestamp = Chalk.dim(`after ${record.duration}`);
-                return [label, symbol, message, timestamp].join(' ');
+                return [label, symbol, message, timestamp].join(Chalk.reset(' '));
             } else if (handle.status === 'dirty') {
                 if (record.errors && record.errors.length) {
                     label = Chalk.bgRed.hex('#010101').bold(result);
@@ -95,21 +103,21 @@ export default class StatusBar extends React.Component<StatusBarProps> {
                     message = Chalk.yellow(`built with ${record.errors!.length} errors and ${record.warnings!.length} warnings`);
                     timestamp = Chalk.dim(`in ${record.duration}ms`);
                 }
-                return [label, symbol, message, timestamp].join(' ');
+                return [label, symbol, message, timestamp].join(Chalk.reset(' '));
             } else { /// should never be the called
                 label = Chalk.bgMagenta.hex('#010101').bold(result);
-                return label;
+                return [label, 'huh wtf'].join(Chalk.reset(' '));
             }
         } else if (handle.phase === 'running') {
             label = Chalk.bgCyan.hex('#010101').bold(label);
-            symbol = Chalk.cyan(spinner);
+            symbol = spinner;
             message = Chalk.cyan('building');
-            timestamp = Chalk.dim(`${handle.runtime}ms`);
-            return [label, symbol, message, timestamp].join(' ');
+            timestamp = `${handle.runtime}ms`;
+            return [label, symbol, message, timestamp].join(Chalk.reset(' '));
         } else {
             label = Chalk.bgHex('#999999').hex('#fefefe').bold(result);
             message = 'uninitiated';
-            return [label, message].join(' ');
+            return [label, message].join(Chalk.reset(' '));
 
         }
 

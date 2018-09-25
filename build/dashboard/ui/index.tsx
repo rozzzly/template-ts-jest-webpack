@@ -9,12 +9,17 @@ import Tracker from '../Tracker';
 export default function(tracker: Tracker<string>) {
     const screen = blessed.screen({
         // autoPadding: true,
-        // smartCSR: true,
+        smartCSR: true,
+        // fastCSR: true,
         title: 'simmer dashboard',
         fullUnicode: true
     });
     screen.key(['escape', 'q', 'C-c'], (ch, key) => (
         process.exit(0)
     ));
-    render(<App tracker={tracker} />, screen);
+
+    screen.alloc();
+    setInterval(() => {
+        render(<App tracker={tracker} time={Date.now()}/>, screen)
+    }, 100);
 }
