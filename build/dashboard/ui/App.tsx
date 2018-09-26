@@ -1,4 +1,4 @@
-import *  as ink from 'ink';
+import { h, SFC }  from 'ink';
 import StatusBar from './StatusBar';
 import Tracker from '../Tracker';
 
@@ -6,10 +6,11 @@ export interface AppProps {
     tracker: Tracker<string>;
     time: number;
 }
+{/* <StatusBar tracker={tracker} time={time}/> */}
 
-export const App: ink.SFC<AppProps> = ({ tracker, time }) => (
+export const App: SFC<AppProps> = ({ tracker, time }) => (
     <div>
-        <StatusBar tracker={tracker} time={time}/>
+        lol
     </div>
 );
 export default App;
