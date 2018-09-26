@@ -1,12 +1,4 @@
 require('ts-node').register({
-    // cache: true,
-    compilerOptions: {
-        module: 'commonjs',
-        'jsxFactory': 'ink.h',
-        typeRoots: [
-            `./node_modules/@types`,
-            `./stubs`
-        ]
-    }
+    // cache: true
 });
 require('./watch.ts');

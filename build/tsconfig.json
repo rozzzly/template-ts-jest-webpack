@@ -1,6 +1,12 @@
 {
     "extends": "../tsconfig.json",
     "compilerOptions": {
-        "jsxFactory": "h"
+        "module": "commonjs",
+        "jsxFactory": "ink.h",
+        "rootDir": ".",
+        "typeRoots": [
+            "../node_modules/@types",
+            "../stubs"
+        ]
     }
 }
