@@ -1,8 +1,6 @@
-import * as React from 'react';
-import * as cliSpinners from 'cli-spinners';
+import { h, Component, Div } from 'ink';
 import Chalk from 'chalk';
 import { lib as emoji } from 'emojilib';
-import { Box } from './stub';
 import Tracker from '../Tracker';
 import CompilerHandle from '../CompilerHandle';
 
@@ -14,7 +12,7 @@ export interface StatusBarProps {
     tracker: Tracker<string>;
 }
 
-export default class StatusBar extends React.Component<StatusBarProps> {
+export default class StatusBar extends Component<StatusBarProps> {
 
     public static defaultProps = {
         speed: 100,
@@ -28,17 +26,13 @@ export default class StatusBar extends React.Component<StatusBarProps> {
 
     public render() {
         return (
-            <Box
-               top={0}
-                left={0}
-                width={'100%'}
-            >
+            <Div>
                 {
                     this.props.tracker.map(h => (
                         this.renderStatusBarItem(h)
                     )).join('  —  ')
                 }
-            </Box>
+            </Div>
         );
     }
 

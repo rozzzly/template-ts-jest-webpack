@@ -1,25 +1,9 @@
-import * as React from 'react';
-import * as blessed from 'blessed';
-import { render } from 'react-blessed';
+import * as ink from 'ink';
 import App from './App';
 import Tracker from '../Tracker';
 
 
 
 export default function(tracker: Tracker<string>) {
-    const screen = blessed.screen({
-        // autoPadding: true,
-        smartCSR: true,
-        // fastCSR: true,
-        title: 'simmer dashboard',
-        fullUnicode: true
-    });
-    screen.key(['escape', 'q', 'C-c'], (ch, key) => (
-        process.exit(0)
-    ));
-
-    screen.alloc();
-    setInterval(() => {
-        render(<App tracker={tracker} time={Date.now()}/>, screen)
-    }, 100);
+    const unmount = ink.render(<App tracker={tracker} time={Date.now()}/>)
 }

@@ -1,4 +1,5 @@
 import * as React from 'react-dom';
+import * as ink from 'ink';
 import { MOUNT_POINT_ID } from '../shared/App';
 import { render } from './render';
 

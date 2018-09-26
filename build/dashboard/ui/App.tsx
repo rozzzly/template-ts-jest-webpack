@@ -1,8 +1,4 @@
-import * as React from 'react';
-import Chalk from 'chalk';
-import * as blessed from 'blessed';
-import { Box, Element } from './stub';
-import { Grid } from 'react-blessed-contrib';
+import *  as ink from 'ink';
 import StatusBar from './StatusBar';
 import Tracker from '../Tracker';
 
@@ -11,28 +7,10 @@ export interface AppProps {
     time: number;
 }
 
-export const App: React.SFC<AppProps> = ({ tracker, time }) => (
-    <>
+export const App: ink.SFC<AppProps> = ({ tracker, time }) => (
+    <div>
         <StatusBar tracker={tracker} time={time}/>
-        <Box
-            top={1}
-            left={0}
-            width={'75%'}
-            label={'Webpack Log'}
-            border={{type: 'line'}}
-            style={{border: {fg: 'blue'}}}>
-            Log Box
-        </Box>
-        <Box
-            top={1}
-            left={'25%'}
-            width={'100%'}
-            border={{type: 'line'}}
-            style={{border: {fg: 'blue'}}}>
-            Build Stats
-        </Box>
-
-    </>
+    </div>
 );
 export default App;
 

@@ -20,7 +20,11 @@
     "pretty": true,
     "lib": ["esnext", "dom"],
     "rootDir": ".",
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "typeRoots": [
+      "./node_modules/@types",
+      "./stubs"
+    ]
   },
   "exclude": [
     "node_modules",
