@@ -1,4 +1,4 @@
-import { h, Component, Div } from 'ink';
+import * as ink from 'ink';
 import Chalk from 'chalk';
 import { lib as emoji } from 'emojilib';
 import Tracker from '../Tracker';
@@ -12,7 +12,7 @@ export interface StatusBarProps {
     tracker: Tracker<string>;
 }
 
-export default class StatusBar extends Component<StatusBarProps> {
+export default class StatusBar extends ink.Component<StatusBarProps> {
 
     public static defaultProps = {
         speed: 100,
@@ -26,13 +26,13 @@ export default class StatusBar extends Component<StatusBarProps> {
 
     public render() {
         return (
-            <Div>
+            <div>
                 {
                     this.props.tracker.map(h => (
                         this.renderStatusBarItem(h)
                     )).join('  —  ')
                 }
-            </Div>
+            </div>
         );
     }
 
