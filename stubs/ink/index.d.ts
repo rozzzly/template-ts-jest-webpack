@@ -58,7 +58,7 @@ declare module 'ink' {
         constructor(props?: P, context?: any);
 
         static displayName?: string;
-        static defaultProps?: any;
+        // static defaultProps?: Partial<P>;
 
         state: Readonly<S>;
         props: RenderableProps<P>;
@@ -187,11 +187,13 @@ declare module 'ink' {
 type Defaultize<Props, Defaults> = (
     // Distribute over unions
     (Props extends any
-        ? (
-            // Make any properties included in Default optional
-            & Partial<Pick<Props, Extract<keyof Props, keyof Defaults>>>
-            // Include the remaining properties from Props
-            & Pick<Props, Exclude<keyof Props, keyof Defaults>>
+        ? (string extends keyof Props
+            ? Props
+            : (
+                & Pick<Props, Exclude<keyof Props, keyof Defaults>>
+                & Partial<Pick<Props, Extract<keyof Props, keyof Defaults>>>
+                & Partial<Pick<Defaults, Exclude<keyof Defaults, keyof Props>>>
+            )
         )
         : never
     )

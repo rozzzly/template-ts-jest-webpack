@@ -23,7 +23,7 @@ export class App extends ink.Component<AppProps, AppState> {
             <div>
                 This is the app!
                 <br />
-                The time is: <ink.Color red>{this.state.time}</ink.Color>
+                <StatusBar tracker={this.props.tracker} />
             </div>
         );
     }
