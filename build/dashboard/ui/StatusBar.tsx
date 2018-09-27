@@ -20,7 +20,7 @@ export default class StatusBar extends ink.Component<StatusBarProps> {
     };
 
     private static SPINNER_START: number = Date.now();
-    private static SPINNER_CYCLE: number = cliSpinners.clock.frames.length  * cliSpinners.clock.interval;
+
 
     private ticker: any;
 
@@ -119,9 +119,6 @@ export default class StatusBar extends ink.Component<StatusBarProps> {
     }
 
     private static renderSpinner(): string {
-        const delta = Date.now() - StatusBar.SPINNER_START;
-        const cycleDelta = delta % StatusBar.SPINNER_CYCLE;
-        const frameIndex = Math.floor((cycleDelta / this.SPINNER_CYCLE) * cliSpinners.clock.frames.length);
-        return cliSpinners.clock.frames[frameIndex];
+        return '';
     }
 }
