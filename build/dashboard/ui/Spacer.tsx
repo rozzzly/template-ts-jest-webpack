@@ -1,5 +1,9 @@
 import * as ink from 'ink';
 
+export const Line: ink.SFC = ({}, { console }) => (
+    <Spacer character={'─'} count={console.width} />
+);
+
 export interface SpacerProps {
     count: number;
     character: string | ink.VNode;

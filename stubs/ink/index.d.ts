@@ -1,6 +1,6 @@
-declare module 'ink' {
 
-    import Chalk from 'chalk/types';
+declare module 'ink' {
+    import { Stream } from 'stream';
 
     export type Key = string | number;
     export type Ref<T> = (instance: T) => void;
@@ -41,7 +41,7 @@ declare module 'ink' {
         displayName?: string;
         defaultProps?: Partial<P>;
     }
-    export  type AnyComponent<P = {}, S = {}> = FunctionalComponent<P> | Component<P, S>;
+    export type AnyComponent<P = {}, S = {}> = FunctionalComponent<P> | Component<P, S>;
 
     export interface Component<P = {}, S = {}> {
         componentWillMount?(): void;
@@ -84,8 +84,16 @@ declare module 'ink' {
 		...children: ComponentChildren[]
 	): VNode<any>;
 
+    export type RenderOptions = (
+        | {
+            stdin?: NodeJS.ReadStream;
+            stdout?: NodeJS.WriteStream;
+        }
+        | NodeJS.WriteStream
+    );
+
     export function renderToString(tree: JSX.Element, prevTree?: JSX.Element): string;
-    export function render(tree: JSX.Element): JSX.Element;
+    export function render(tree: JSX.Element, options?: RenderOptions): JSX.Element;
 
     export const Fragment: SFC;
     export const Bold: SFC;
@@ -168,6 +176,7 @@ declare module 'ink' {
         interface ElementChildrenAttribute {
             children: {};
         }
+        export type Fragment = import('ink').Fragment;
 
         type LibraryManagedAttributes<Component, Props> =
             Component extends { defaultProps: infer Defaults }

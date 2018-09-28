@@ -4,6 +4,7 @@ import Tracker from '../Tracker';
 
 export interface AppProps {
     tracker: Tracker<string>;
+    stdout: NodeJS.WriteStream;
 }
 
 export interface AppState {
@@ -27,10 +28,24 @@ export class App extends ink.Component<AppProps, AppState> {
             </div>
         );
     }
+
+    public getChildContext() {
+        return {
+            console: {
+                width: this.props.stdout.columns || 120,
+                height: this.props.stdout.rows || 40
+            }
+        };
+    }
+
     public componentDidMount() {
         this.timer = setInterval(() => this.setState({
             time: Date.now()
         }), 150);
+    }
+
+    public componentWillUnmount() {
+        clearInterval(this.timer);
     }
 }
 

@@ -4,12 +4,20 @@ import Chalk from 'chalk';
 import { lib as emoji } from 'emojilib';
 import Tracker from '../Tracker';
 import CompilerHandle from '../CompilerHandle';
-import { Spacer } from './Spacer';
+import { Spacer, Line } from './Spacer';
 
 
+export interface StatusBarItemProps {
+
+}
+
+export const StatusBarItem: ink.SFC<StatusBarItemProps> = () => {
+
+};
 export interface StatusBarProps {
     tracker: Tracker<string>;
 }
+
 
 export default class StatusBar extends ink.Component<StatusBarProps> {
 
@@ -21,13 +29,15 @@ export default class StatusBar extends ink.Component<StatusBarProps> {
                         this.renderStatusBarItem(h)
                     ))
                 }
+                <br />
+                <Line />
             </div>
         );
     }
 
     private renderStatusBarItem(handle: CompilerHandle<string>)  {
         let label: string = ` [ ${handle.id} ] `;
-        const record = handle.currentRecord!;
+        const record = handle.state!;
         if (handle.phase === 'idle') {
             if (handle.status === 'clean') {
                 return (
@@ -36,15 +46,19 @@ export default class StatusBar extends ink.Component<StatusBarProps> {
                         <ink.Color bgGreen hex='#010101' bold>{ label }</ink.Color>
                         <Spacer count={2} character={' '} />
                         <ink.Color green>built</ink.Color>
-                        {record.duration}ms
+                        <Spacer count={1} character={' '} />
+                        ({record.duration}ms)
                     </span>
                 );
             } else if (handle.status === 'failed') {
                 return (
                     <span>
+                        <Spacer count={2} character={' '} />
                         <ink.Color bgRed hex='#010101' bold>{ label }</ink.Color>
+                        <Spacer count={2} character={' '} />
                         <ink.Color red>fatal crash</ink.Color>
-                        {record.duration}ms
+                        <Spacer count={1} character={' '} />
+                        ({record.duration}ms)
                     </span>
                 );
             } else if (handle.status === 'dirty') {
@@ -52,8 +66,11 @@ export default class StatusBar extends ink.Component<StatusBarProps> {
             } else { /// should never be the called
                 return (
                     <span>
+                        <Spacer count={2} character={' '} />
                         <ink.Color bgMagenta hex='#010101' bold>{ label }</ink.Color>
+                        <Spacer count={2} character={' '} />
                         <ink.Color magenta>building</ink.Color>
+
                     </span>
                 );
             }
@@ -61,16 +78,21 @@ export default class StatusBar extends ink.Component<StatusBarProps> {
             // return [label, symbol, message, timestamp].join(Chalk.reset(' '));
             return (
                 <span>
+                    <Spacer count={2} character={' '} />
                     <ink.Color bgCyan hex='#010101' bold>{ label }</ink.Color>
+                    <Spacer count={2} character={' '} />
                     <Spinner cyan />
+                    <Spacer count={2} character={' '} />
                     <ink.Color cyan>building</ink.Color>
-                    {handle.runtime}ms
+                    ({handle.runtime}ms)
                 </span>
             );
         } else {
             return (
                 <span>
+                    <Spacer count={2} character={' '} />
                     <ink.Color bgHex='#999999' hex='#fefefe' bold>{ label }</ink.Color>
+                    <Spacer count={2} character={' '} />
                     uninitiated
                 </span>
             );
