@@ -9,11 +9,13 @@ export default class Tracker<CompilerIDs extends string> {
         [CompilerID in CompilerIDs]: CompilerHandle<CompilerID>
     };
     private ids: CompilerIDs[];
+    private running: number;
+    private runnerCbTimer: any;
+    public runnerCb: null | (() => void);
+
 
     public receiver: {
         onDone: OnDone;
-        afterEmit: AfterEmit;
-        afterFirstEmit: AfterFirstEmit;
         beforeCompile: BeforeCompile;
         onFailed: OnFailed;
         onInvalid: OnInvalid;
@@ -22,13 +24,12 @@ export default class Tracker<CompilerIDs extends string> {
     public constructor(compilerIDs: CompilerIDs[]) {
         this.receiver = {
             onDone: this.onDone.bind(this),
-            afterEmit: this.afterEmit.bind(this),
-            afterFirstEmit: this.afterFirstEmit.bind(this),
             beforeCompile: this.beforeCompile.bind(this),
             onFailed: this.onFailed.bind(this),
             onInvalid: this.onInvalid.bind(this)
         };
         this.ids = compilerIDs;
+        this.running = 0;
         this.pool = compilerIDs.reduce((reduction, id) => ({
             ...(reduction as any),
             [id]: new CompilerHandle(id)
@@ -88,42 +89,19 @@ export default class Tracker<CompilerIDs extends string> {
     private onDone(stats: webpack.Stats, id: string): void {
         const $id = this.checkID(id);
         if (stats.hasErrors() || stats.hasWarnings()) {
-            const $stats = stats.toJson({ chunks: false });
-            this.pool[$id].doneDirty({
-                hash: $stats.hash,
-                errors: $stats.errors,
-                warnings: $stats.warnings,
-                emits: []
-            });
+            this.pool[$id].doneDirty(stats);
         } else {
-            const $stats = stats.toJson({ chunks: false });
-            this.pool[$id].doneClean({
-                hash: $stats.hash,
-                errors: $stats.errors,
-                warnings: $stats.warnings,
-                emits: []
-            });
+            this.pool[$id].doneClean(stats);
         }
-    }
-
-    private afterFirstEmit(compilation: webpack.compilation.Compilation, id: string): void {
-        // noop;
-    }
-
-    private afterEmit(compilation: webpack.compilation.Compilation, id: string): void {
-        const $id = this.checkID(id);
-        /// TODO ::: pass some useful data
-        this.pool[$id].emitted({
-            emits: [],
-            errors: [],
-            warnings: [],
-            hash: String(compilation.hash)
-        });
+        this.running--;
+        this.updateRunnerCb();
     }
 
     private beforeCompile(compilationParams: CompilationParams, id: string): void {
         const $id = this.checkID(id);
         this.pool[$id].start();
+        this.running++;
+        this.updateRunnerCb();
     }
 
     private onFailed(error: Error, id: string): void {
@@ -134,5 +112,26 @@ export default class Tracker<CompilerIDs extends string> {
     private onInvalid(fileName: string, changeTime: Date, id: string): void {
         const $id = this.checkID(id);
         this.pool[$id].invalidated(fileName, changeTime);
+    }
+
+    private callRunnerCb(): void {
+        if (this.runnerCb) {
+            this.runnerCb();
+        }
+    }
+
+    private updateRunnerCb(): void {
+        if (this.runnerCb) {
+            if (this.running === 0 && this.runnerCbTimer) {
+                clearInterval(this.runnerCbTimer);
+            } else if (this.running >= 1 && !this.runnerCbTimer) {
+                this.runnerCbTimer = setInterval(() => this.callRunnerCb(), 150);
+            }
+            this.callRunnerCb();
+        } else {
+            if (this.runnerCbTimer) {
+                clearInterval(this.runnerCbTimer);
+            }
+        }
     }
 }

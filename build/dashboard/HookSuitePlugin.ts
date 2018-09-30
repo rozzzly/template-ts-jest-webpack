@@ -222,10 +222,6 @@ export class HookSuiteBridgePlugin extends HookSuitePlugin {
     public constructor({ tracker, ...opts }: HookSuiteBridgePluginOptions) {
         super({
             ...opts,
-            afterEmit: (compilation, id) => {
-                this.tracker.receiver.afterEmit(compilation, id);
-                if (opts.afterEmit) opts.afterEmit(compilation, id);
-            },
             beforeCompile: (compilationParams, id) => {
                 this.tracker.receiver.beforeCompile(compilationParams, id);
                 if (opts.beforeCompile) opts.beforeCompile(compilationParams, id);

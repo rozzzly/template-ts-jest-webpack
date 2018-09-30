@@ -17,15 +17,11 @@ export class App extends ink.Component<AppProps, AppState> {
         time: Date.now()
     };
 
-    private timer: any;
-
     public render() {
         return (
-            <div>
-                This is the app!
-                <br />
+            <span>
                 <StatusBar tracker={this.props.tracker} />
-            </div>
+            </span>
         );
     }
 
@@ -36,16 +32,6 @@ export class App extends ink.Component<AppProps, AppState> {
                 height: this.props.stdout.rows || 40
             }
         };
-    }
-
-    public componentDidMount() {
-        this.timer = setInterval(() => this.setState({
-            time: Date.now()
-        }), 150);
-    }
-
-    public componentWillUnmount() {
-        clearInterval(this.timer);
     }
 }
 

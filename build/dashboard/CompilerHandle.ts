@@ -1,5 +1,15 @@
 import * as webpack from 'webpack';
 
+const asTimestamp: (value?: Date | number) => number = (value) => (
+    ((value === undefined)
+        ? -1
+        : ((typeof value === 'number')
+            ? value
+            : value.valueOf()
+        )
+    )
+);
+
 export interface CompilerTallyBook {
     run: number;
     done: number;
@@ -10,52 +20,8 @@ export interface CompilerTallyBook {
     failed: number;
 }
 
-export type CompilerPhase = (
-    | null /// prior to first run
-    | 'idle' // between runs
-    | 'running' // running
-);
-
-
-
-export interface CompilationRecordStatsShorthand {
-    hash?: string;
-    errors?: any[];
-    warnings?: any[];
-    /**
-     * tuple is: [filePath, fileSize]
-     * note: fileSize is in bytes
-     */
-    emits?: [string, number][];
-}
-
-export interface CompilationRecordStats {
-    hash: string;
-    errors: any[];
-    warnings: any[];
-    emits: [string, number][];
-}
-
-export interface CompilationRecordShorthand extends CompilationRecordStatsShorthand {
-    /** in ms */
-    duration?: number;
-    /** tuple is: [startTime, endTime] */
-    timestamp?: [number, number];
-    kind: CompilationStatus | 'init' | 'emitted';
-}
-
-/**
- * @note External run record which ensures duration/timestamp is always there
- */
-export interface CompilationRecord extends CompilationRecordShorthand {
-    duration: number;
-    timestamp: [number, number];
-}
-
-
 export type CompilerEmit = [string, number, boolean?];
 export namespace CompilerState {
-
     export type CompilationStatus = (
         | null // prior to first run
         | 'invalid' // compilation is invalid (meaning compiler is running, or about to be)
@@ -63,9 +29,14 @@ export namespace CompilerState {
         | 'dirty' // compiled code has errors/warnings
         | 'failed' // internal (to webpack/plugin/loader) error led to premature abort of compilation
     );
-
-    export interface Inactive extends Base<null> {
+    interface Base<Status extends CompilationStatus> {
+        status: Status;
+        start: number;
+        duration: number;
+        end?: number;
     }
+    export interface Inactive extends Base<null> { }
+    export interface Invalid extends Base<'invalid'> { }
     export interface Clean extends Base<'clean'> {
         hash: string;
         end: number;
@@ -79,41 +50,42 @@ export namespace CompilerState {
         emits: CompilerEmit[];
     }
     export interface Failed extends Base<'failed'> {
-        hash: string;
         end: number;
         error: any;
-        emits: CompilerEmit[];
     }
-    export interface Invalid extends Base<'invalid'> { }
-    interface Base<Status extends CompilationStatus> {
-        status: Status;
-        start: number;
-        duration: number;
-        end?: number;
-    }
-}
-    export type CompilerState = (
-        | CompilerState.Inactive
-        | CompilerState.Invalid
-        | CompilerState.Clean
-        | CompilerState.Dirty
-        | CompilerState.Failed
+    export type Lookup<Status extends CompilationStatus> = (
+        (Status extends 'failed'
+            ? Failed
+            : (Status extends 'dirty'
+                ? Dirty
+                : (Status extends 'clean'
+                    ? Clean
+                    : (Status extends Invalid
+                        ? Invalid
+                        : Inactive
+                    )
+                )
+            )
+        )
     );
-// }
-const lol: CompilerState = {
-    status: null,
-    duration: 4,
-    start: 3
-};
-//const foo: CompilerState = undefined as any;
-//foo.
 
-const staticDuration: <Status extends CompilerState.CompilationStatus, State extends {
+    export type State = (
+        | Inactive
+        | Invalid
+        | Clean
+        | Dirty
+        | Failed
+    );
+
+}
+export type CompilerState = CompilerState.State;
+
+const staticState: <Status extends CompilerState.CompilationStatus, State extends {
     status: Status;
     start: number;
     end?: number;
     [key: string]: any;
-}>(state: State) => State & { duration: number; end: number; } = ({ end = Date.now(), ...rest}: any) => ({
+}>(state: State) => CompilerState.Lookup<Status> = ({ end = Date.now(), ...rest }: any) => ({
     ...rest,
     end,
     duration: end - rest.start // discard any value from duration --> might contain old value spread out of getter
@@ -122,7 +94,7 @@ const dynamicDuration: <Status extends CompilerState.CompilationStatus, State ex
     status: Status;
     start?: number;
     [key: string]: any;
-}>(state: State) => State & { start: number; duration: number }  = ({ start = Date.now(), ...rest }: any) => ({
+}>(state: State) => CompilerState.Lookup<Status> = ({ start = Date.now(), ...rest }: any) => ({
     ...rest,
     start,
     get duration(): number {
@@ -138,7 +110,6 @@ export default class CompilerHandle<CompilerID extends string> {
 
     private tally: CompilerTallyBook;
     public history: CompilerState[];
-
 
     public get status(): CompilerState.CompilationStatus {
         return this.state.status;
@@ -159,8 +130,6 @@ export default class CompilerHandle<CompilerID extends string> {
                 // update in-place
                 this.history[this.history.length - 1] = value;
             } else {
-                // will have no effect if `end` is already set (it's idempotent)
-                this.history[this.history.length - 1] = staticDuration(value);
                 // push new state
                 this.history.push(value);
                 // only track x number of records, discard oldest records first
@@ -176,8 +145,6 @@ export default class CompilerHandle<CompilerID extends string> {
 
     public constructor(id: CompilerID) {
         this.id = id;
-        this.phase = null;
-        this.status = null;
         this.tally = {
             run: 0,
             done: 0,
@@ -194,6 +161,7 @@ export default class CompilerHandle<CompilerID extends string> {
 
     public start(): void {
         this.tally.run++;
+        this.normalizeDynamicState();
         this.state = dynamicDuration({
             status: 'invalid'
         });
@@ -201,53 +169,72 @@ export default class CompilerHandle<CompilerID extends string> {
 
     public failed(error: Error): void {
         this.tally.failed++;
-        this.record({
-            kind: 'failed',
-            errors: [error]
+        this.normalizeDynamicState();
+        this.state = staticState({
+            status: 'failed',
+            error: error,
+            start: this.state.start,
+            end: this.state.end
         });
-        this.phase = 'idle';
-        this.status = 'failed';
     }
 
-    public doneClean(stats: CompilationRecordStats): void {
+    public doneClean(stats: webpack.Stats): void {
         this.tally.done++;
         this.tally.doneClean++;
-        this.state = staticDuration({
-            status: 'clean'
+
+        const $stats = stats.toJson({ chunks: false });
+        this.normalizeDynamicState(stats);
+        this.state = staticState({
+            status: 'clean',
+            hash: stats.hash,
+            emits: [],
+            start: asTimestamp(stats.startTime),
+            end: asTimestamp(stats.endTime)
         });
-        this.record({
-            kind: 'clean',
-            ...stats
-        });
-        this.phase = 'idle';
-        this.status = 'clean';
     }
 
-    public doneDirty(stats: CompilationRecordStats): void {
+    public doneDirty(stats: webpack.Stats): void {
         this.tally.done++;
         this.tally.doneDirty++;
-        this.record({
-            kind: 'dirty',
-            ...stats
+        const $stats = stats.toJson({ chunks: false });
+        this.normalizeDynamicState(stats);
+        this.state = staticState({
+            status: 'dirty',
+            hash: stats.hash,
+            emits: [],
+            start: asTimestamp(stats.startTime),
+            end: asTimestamp(stats.endTime),
+            errors: $stats.errors,
+            warnings: $stats.warnings,
         });
-        this.phase = 'idle';
-        this.status = 'dirty';
     }
 
     public invalidated(fileName: string, changeTime: Date): void {
         this.tally.invalid++;
-        this.status = 'invalid';
-    }
-
-    public emitted(stats: CompilationRecordStats) {
-        this.tally.emit++;
-        this.record({
-            kind: 'emitted',
-            ...stats
+        this.state = dynamicDuration({
+            status: 'invalid'
         });
     }
 
-    private resetClock(): void {
-        this.startedAt = Date.now();
+    private normalizeDynamicState(stats?: webpack.Stats): void {
+        if (this.state.status === 'invalid') {
+            if (stats && stats.startTime && stats.endTime) {
+                this.state = staticState({
+                    ...this.state,
+                    start: asTimestamp(stats.startTime),
+                    end: asTimestamp(stats.endTime)
+                });
+            } else { // use own timestamps
+                this.state = staticState({
+                    ...this.state
+                });
+            }
+        } else if (this.state.status === null) {
+            this.state = staticState({
+                ...this.state
+            });
+        } else {
+            throw new Error('unexpected status');
+        }
     }
 }
