@@ -1,6 +1,8 @@
 import * as ink from 'ink';
+import * as ansiEscapes from 'ansi-escapes';
 import StatusBar from './StatusBar';
 import Tracker from '../Tracker';
+import ErrorDisplay from './ErrorDisplay';
 
 export interface AppProps {
     tracker: Tracker<string>;
@@ -13,25 +15,46 @@ export interface AppState {
 
 export class App extends ink.Component<AppProps, AppState> {
 
-    public state = {
-        time: Date.now()
-    };
+    public constructor(props: AppProps) {
+        super(props);
+        this.onResize = this.onResize.bind(this);
+    }
 
     public render() {
         return (
             <span>
                 <StatusBar tracker={this.props.tracker} />
+                <ErrorDisplay tracker={this.props.tracker } />
             </span>
         );
     }
 
     public getChildContext() {
+        const stdout = this.props.stdout;
         return {
             console: {
-                width: this.props.stdout.columns || 120,
-                height: this.props.stdout.rows || 40
+                get width(): number {
+                    return stdout.columns || 120;
+                },
+                get height(): number {
+                    return stdout.rows || 40;
+                }
             }
         };
+    }
+
+    public componentDidMount() {
+        this.props.stdout.on('resize', this.onResize);
+        this.props.tracker.runnerCb = () => this.forceUpdate();
+    }
+
+    public componentWillUnmount() {
+        this.props.stdout.off('resize', this.onResize);
+        this.props.tracker.runnerCb = null;
+    }
+    private onResize() {
+        this.props.stdout.write(ansiEscapes.clearScreen);
+        this.forceUpdate();
     }
 }
 

@@ -47,6 +47,7 @@
     "ink-table": "^1.0.3",
     "jest": "^23.6.0",
     "non-bogus-fork-ts-checker-webpack-plugin": "file:stubs/non-bogus-fork-ts-checker-webpack-plugin",
+    "string-width": "^2.1.1",
     "ts-jest": "^23.10.2",
     "ts-loader": "^5.2.1",
     "ts-node": "^7.0.1",

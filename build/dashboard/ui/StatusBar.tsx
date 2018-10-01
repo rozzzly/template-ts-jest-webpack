@@ -1,24 +1,25 @@
 import * as ink from 'ink';
 import * as Spinner from 'ink-spinner';
+import * as strWidth from 'string-width';
 import Chalk from 'chalk';
+
 import { lib as emoji } from 'emojilib';
 import Tracker from '../Tracker';
 import CompilerHandle, { CompilerState } from '../CompilerHandle';
 import { Spacer, Line } from './Spacer';
 
-
 export interface StatusBarItemProps {
     id: string;
     index: number;
-    state: CompilerState;
+    handleState: CompilerState;
 }
 
-export const StatusBarItem: ink.SFC<StatusBarItemProps> = ({ id, index, state }) => {
+export const StatusBarItem: ink.SFC<StatusBarItemProps> = ({ id, index,  handleState }) => {
     const label =  ` [ ${id} ] `;
-    if (state.status === null) {
+    if (handleState.status === null) {
         return (
             <span>
-                <Spacer count={ index ?  2 : 1 } character={' '} />
+                <Spacer count={ index ? 2 : 1 } character={' '} />
                 <ink.Color bgHex='#999999' hex='#fefefe' bold>
                     { label }
                 </ink.Color>
@@ -28,10 +29,10 @@ export const StatusBarItem: ink.SFC<StatusBarItemProps> = ({ id, index, state })
                 </ink.Color>
             </span>
         );
-    } else if (state.status === 'clean') {
+    } else if (handleState.status === 'clean') {
         return (
             <span>
-                <Spacer count={ index ?  2 : 1 } character={' '} />
+                <Spacer count={ index ? 2 : 1 } character={' '} />
                 <ink.Color bgGreen hex='#010101' bold>
                     { label }
                 </ink.Color>
@@ -39,31 +40,31 @@ export const StatusBarItem: ink.SFC<StatusBarItemProps> = ({ id, index, state })
                 <ink.Color green>clean</ink.Color>
                 <Spacer count={1} character={' '} />
                 <ink.Color hex='#999999'>
-                    { `(${state.duration}ms)` }
+                    { `(${handleState.duration}ms)` }
                 </ink.Color>
             </span>
         );
-    } else if (state.status === 'dirty') {
+    } else if (handleState.status === 'dirty') {
         return (
             <span>
-                <Spacer count={ index ?  2 : 1 } character={' '} />
+                <Spacer count={ index ? 2 : 1 } character={' '} />
                 <ink.Color bgRed hex='#010101' bold>
                     { label }
                 </ink.Color>
                 <Spacer count={1} character={' '} />
                 <ink.Color red>
-                    { state.errors.length } errors / { state.warnings.length } warnings
+                    { handleState.errors.length } errors / { handleState.warnings.length } warnings
                 </ink.Color>
                 <Spacer count={1} character={' '} />
                 <ink.Color hex='#999999'>
-                    { `(${state.duration}ms)` }
+                    { `(${handleState.duration}ms)` }
                 </ink.Color>
             </span>
         );
-    } else if (state.status === 'invalid') {
+    } else if (handleState.status === 'invalid') {
         return (
             <span>
-                <Spacer count={ index ?  2 : 1 } character={' '} />
+                <Spacer count={ index ? 2 : 1 } character={' '} />
                 <ink.Color bgBlue hex='#010101' bold>
                     { label }
                 </ink.Color>
@@ -75,14 +76,14 @@ export const StatusBarItem: ink.SFC<StatusBarItemProps> = ({ id, index, state })
                 </ink.Color>
                 <Spacer count={1} character={' '} />
                 <ink.Color hex='#999999'>
-                    { `(${state.duration}ms)` }
+                    { `(${handleState.duration}ms)` }
                 </ink.Color>
             </span>
         );
-    } else if (state.status === 'failed') {
+    } else if (handleState.status === 'failed') {
         return (
             <span>
-                <Spacer count={ index ?  2 : 1 } character={' '} />
+                <Spacer count={ index ? 2 : 1 } character={' '} />
                 <ink.Color bgYellow hex='#010101' bold>
                     { label }
                 </ink.Color>
@@ -92,7 +93,7 @@ export const StatusBarItem: ink.SFC<StatusBarItemProps> = ({ id, index, state })
                 </ink.Color>
                 <Spacer count={1} character={' '} />
                 <ink.Color hex='#999999'>
-                    { `(${state.duration}ms)` }
+                    { `(${handleState.duration}ms)` }
                 </ink.Color>
             </span>
         );
@@ -108,26 +109,49 @@ export interface StatusBarProps {
     tracker: Tracker<string>;
 }
 
-export default class StatusBar extends ink.Component<StatusBarProps> {
 
-    public render() {
-        let index = 0;
-        return (
-            <div>
-                {
-                    this.props.tracker.map((handle, id) => (
-                        <StatusBarItem state={handle.state} index={index++} id={id} />
-                    ))
-                }
-            </div>
-        );
-    }
+const StatusBarInner: ink.SFC<StatusBarProps> = ({ tracker }) => {
+    let index = 0;
+    return (
+        <span>
+            {
+                tracker.map((handle, id) => (
+                    <StatusBarItem handleState={handle.state} id={id} index={index++} />
+                ))
+            }
+            <Spacer count={1} character={' '} />
+        </span>
+    );
+};
 
-    public componentDidMount() {
-        this.props.tracker.runnerCb = () => this.forceUpdate();
-    }
+const boxEdges = {
+    topLeft: '┌',
+    topRight: '┐',
+    bottomRight: '┘',
+    bottomLeft: '└',
+    vertical: '│',
+    horizontal: '─'
+};
+Object.keys(boxEdges).forEach((key: keyof typeof boxEdges) => {
+    boxEdges[key] = Chalk.hex('#999999')(boxEdges[key]);
+});
 
-    public componentWillUnmount() {
-        this.props.tracker.runnerCb = null;
-    }
-}
+
+export const StatusBar: ink.SFC<StatusBarProps> = ({ tracker }, { console }) => {
+    const content = ink.renderToString(<StatusBarInner tracker={tracker} />);
+    const width = strWidth(content);
+
+    const filler = ' '.repeat(console.width - 2 - width);
+    const top = boxEdges.topLeft + boxEdges.horizontal.repeat(console.width - 2) + boxEdges.topRight;
+    const bottom = boxEdges.bottomLeft + boxEdges.horizontal.repeat(console.width - 2) + boxEdges.bottomRight;
+    const middle = boxEdges.vertical + content + filler + boxEdges.vertical;
+
+
+    return (
+        <span>
+             { [top, middle, bottom].join('\n') }
+        </span>
+    );
+};
+
+export default StatusBar;
