@@ -1,6 +1,7 @@
 import * as ink from 'ink';
 import StatusBar from './StatusBar';
 import Tracker from '../Tracker';
+import ErrorDisplay from './ErrorDisplay';
 
 export interface AppProps {
     tracker: Tracker<string>;
@@ -21,6 +22,7 @@ export class App extends ink.Component<AppProps, AppState> {
         return (
             <span>
                 <StatusBar tracker={this.props.tracker} />
+                <ErrorDisplay tracker={this.props.tracker } />
             </span>
         );
     }
@@ -32,6 +34,14 @@ export class App extends ink.Component<AppProps, AppState> {
                 height: this.props.stdout.rows || 40
             }
         };
+    }
+
+    public componentDidMount() {
+        this.props.tracker.runnerCb = () => this.forceUpdate();
+    }
+
+    public componentWillUnmount() {
+        this.props.tracker.runnerCb = null;
     }
 }
 

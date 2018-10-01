@@ -18,7 +18,7 @@ export default configProxy<{
     },
     output: {
         publicPath: '/assets',
-        filename: '[name].client.js'
+        filename: $.isDev('[name].client.js', '[name]_[hash:6].client.js')
     },
     optimization: {
         splitChunks: {

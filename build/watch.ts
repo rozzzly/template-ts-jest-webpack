@@ -7,6 +7,7 @@ import HookSuitePlugin, { HookSuiteBridgePlugin } from './dashboard/HookSuitePlu
 import chalk from 'chalk';
 import clientCfg from './webpack/client';
 import sharedCfg from './webpack/shared';
+import serverCfg from './webpack/server';
 // import init from '../src/modules/app/server/entrypoint';
 import Tracker from './dashboard/Tracker';
 import { configProxy } from './util';
@@ -20,13 +21,18 @@ const buildNotif = (stats: webpack.Stats, id: string): void => {
 
 
 function launchStageTwo() {
-    const clientCompiler = webpack(configProxy(clientCfg, {
+    const sharedCompiler = webpack([configProxy(clientCfg, {
         hookSuite: new HookSuiteBridgePlugin({
             id: 'client',
             tracker: tracker
         })
-    }));
-    clientCompiler.watch({}, () => { /* */ });
+    }), configProxy(serverCfg, {
+        hookSuite: new HookSuiteBridgePlugin({
+            id: 'server',
+            tracker: tracker
+        })
+    })]);
+    sharedCompiler.watch({}, () => { /* */ });
 }
 
 const tracker = new Tracker([ 'shared', 'client', 'server' ]);
@@ -44,5 +50,5 @@ function launchStageOne() {
     sharedCompiler.watch({}, () => { /* */ });
 }
 
-setTimeout(() => launchStageOne(), 2000);
 render(tracker);
+launchStageOne();
