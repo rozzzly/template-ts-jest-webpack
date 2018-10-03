@@ -30,7 +30,11 @@ function onReady() {
 let app: express.Application;
 let multiCompiler: webpack.MultiCompiler;
 function launchStageTwo() {
+<<<<<<< HEAD
     multiCompiler = webpack([configProxy(clientCfg, {
+=======
+    const sharedCompiler = webpack([configProxy(clientCfg, {
+>>>>>>> e4919c309f47c127a5ee77d86b11a613d54748b8
         hookSuite: new HookSuiteBridgePlugin({
             id: 'client',
             tracker: tracker
@@ -41,6 +45,7 @@ function launchStageTwo() {
             tracker: tracker
         })
     })]);
+<<<<<<< HEAD
     app = express();
     const wdmInstance = wdm(multiCompiler, {
         serverSideRender: true,
@@ -52,6 +57,9 @@ function launchStageTwo() {
     }));
 
     multiCompiler.watch({}, () => { /* */ });
+=======
+    sharedCompiler.watch({}, () => { /* */ });
+>>>>>>> e4919c309f47c127a5ee77d86b11a613d54748b8
 }
 
 const tracker = new CompilerTracker([ 'shared', 'client', 'server' ]);
