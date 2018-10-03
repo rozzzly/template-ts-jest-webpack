@@ -1,5 +1,5 @@
 import * as ink from 'ink';
-import Tracker from '../Tracker';
+import CompilerTracker from '../CompilerTracker';
 
 
 export interface ErrorDisplayItemProps {
@@ -27,7 +27,7 @@ export const ErrorDisplayItem: ink.SFC<ErrorDisplayItemProps> = ({ id, errors, w
 
 
 export interface ErrorDisplayProps {
-    tracker: Tracker<string>;
+    tracker: CompilerTracker<string>;
 }
 
 export const ErrorDisplay: ink.SFC<ErrorDisplayProps> = ({ tracker }) => (

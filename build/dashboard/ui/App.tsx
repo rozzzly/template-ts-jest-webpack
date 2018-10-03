@@ -1,11 +1,11 @@
 import * as ink from 'ink';
 import * as ansiEscapes from 'ansi-escapes';
 import StatusBar from './StatusBar';
-import Tracker from '../Tracker';
+import CompilerTracker from '../CompilerTracker';
 import ErrorDisplay from './ErrorDisplay';
 
 export interface AppProps {
-    tracker: Tracker<string>;
+    tracker: CompilerTracker<string>;
     stdout: NodeJS.WriteStream;
 }
 
@@ -17,7 +17,7 @@ export class App extends ink.Component<AppProps, AppState> {
 
     public constructor(props: AppProps) {
         super(props);
-        this.onResize = this.onResize.bind(this);
+        this.cleanRender = this.cleanRender.bind(this);
     }
 
     public render() {
@@ -34,25 +34,25 @@ export class App extends ink.Component<AppProps, AppState> {
         return {
             console: {
                 get width(): number {
-                    return stdout.columns || 120;
+                    return !!stdout.columns ? stdout.columns : 120;
                 },
                 get height(): number {
-                    return stdout.rows || 40;
+                    return !!stdout.rows ? stdout.rows :  40;
                 }
             }
         };
     }
 
     public componentDidMount() {
-        this.props.stdout.on('resize', this.onResize);
+        this.props.stdout.on('resize', this.cleanRender);
         this.props.tracker.runnerCb = () => this.forceUpdate();
     }
 
     public componentWillUnmount() {
-        this.props.stdout.off('resize', this.onResize);
+        this.props.stdout.off('resize', this.cleanRender);
         this.props.tracker.runnerCb = null;
     }
-    private onResize() {
+    private cleanRender() {
         this.props.stdout.write(ansiEscapes.clearScreen);
         this.forceUpdate();
     }

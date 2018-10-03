@@ -10,7 +10,7 @@ export async function handleRequest(req: express.Request, res: express.Response)
     if (req.url === '/404') res.status(404);
     if (!match) {
         /// TODO ::: implement (better) 404
-        res.redirect('/404');
+        r es.redirect('/404');
     } else {
         const context: StaticRouterContext = {};
         const app = renderApp({ location: req.url, context });

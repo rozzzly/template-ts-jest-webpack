@@ -3,7 +3,7 @@ import * as webpack from 'webpack';
 import CompilerHandle from './CompilerHandle';
 import { OnDone, AfterEmit, AfterFirstEmit, OnFailed, OnInvalid, BeforeCompile, CompilationParams } from './HookSuitePlugin';
 
-export default class Tracker<CompilerIDs extends string> {
+export default class CompilerTracker<CompilerIDs extends string> {
 
     public pool: {
         [CompilerID in CompilerIDs]: CompilerHandle<CompilerID>

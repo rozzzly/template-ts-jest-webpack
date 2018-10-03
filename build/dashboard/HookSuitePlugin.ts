@@ -1,5 +1,5 @@
 import * as webpack from 'webpack';
-import Tracker from './Tracker';
+import CompilerTracker from './CompilerTracker';
 
 export interface CompilationParams {
     normalModuleFactory: webpack.compilation.NormalModuleFactory;
@@ -212,12 +212,12 @@ export { HookSuitePlugin };
 
 export interface HookSuiteBridgePluginOptions extends HookSuitePluginOptions {
     id: string; // _required_ unlike HookSuitePluginOptions
-    tracker: Tracker<string>; // tracker instance this will call back to
+    tracker: CompilerTracker<string>; // tracker instance this will call back to
 }
 
 export class HookSuiteBridgePlugin extends HookSuitePlugin {
     protected id: string;
-    protected tracker: Tracker<string>;
+    protected tracker: CompilerTracker<string>;
 
     public constructor({ tracker, ...opts }: HookSuiteBridgePluginOptions) {
         super({

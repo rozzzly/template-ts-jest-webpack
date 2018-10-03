@@ -3,6 +3,7 @@ import { join } from './util';
 export const ROOT_DIR = join(__dirname, '..');
 export const SRC_DIR = join(ROOT_DIR, 'src');
 export const BIN_DIR = join(ROOT_DIR, 'bin');
+export const PUBLIC_PATH = '/';
 export const NODE_MODULES_REGEX = /[\\/]node_modules[\\/]/;
 export const CACHE_GROUPS = {
     client: {

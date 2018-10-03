@@ -4,7 +4,7 @@ import * as strWidth from 'string-width';
 import Chalk from 'chalk';
 
 import { lib as emoji } from 'emojilib';
-import Tracker from '../Tracker';
+import CompilerTracker from '../CompilerTracker';
 import CompilerHandle, { CompilerState } from '../CompilerHandle';
 import { Spacer, Line } from './Spacer';
 
@@ -106,7 +106,7 @@ export const StatusBarItem: ink.SFC<StatusBarItemProps> = ({ id, index,  handleS
     }
 };
 export interface StatusBarProps {
-    tracker: Tracker<string>;
+    tracker: CompilerTracker<string>;
 }
 
 
