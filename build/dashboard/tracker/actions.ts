@@ -4,7 +4,7 @@ import { CompilerStatePatch } from './CompilerPhase';
 
 export namespace ActionIDs {
     export type UPDATE_COMPILER = typeof UPDATE_COMPILER;
-    export const UPDATE_COMPILER: 'dashboard.tracker:updateCompiler' = 'dashboard.tracker:updateCompiler';
+    export const UPDATE_COMPILER: 'dashboard.tracker:UPDATE_COMPILER' = 'dashboard.tracker:UPDATE_COMPILER';
 }
 
 export type ActionIDs = (

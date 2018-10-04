@@ -1,7 +1,7 @@
 import * as webpack from 'webpack';
 
 import CompilerHandle from './CompilerHandle';
-import { OnDone, AfterEmit, AfterFirstEmit, OnFailed, OnInvalid, BeforeCompile, CompilationParams } from './HookSuitePlugin';
+import { OnDone, OnFailed, OnInvalid, BeforeCompile, CompilationParams } from './HookSuitePlugin';
 
 export default class CompilerTracker<CompilerIDs extends string> {
 

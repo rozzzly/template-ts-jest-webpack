@@ -1,5 +1,5 @@
 import * as ink from 'ink';
-import CompilerTracker from '../../../src/modules/dashboard/CompilerTracker';
+import CompilerTracker from '../CompilerTracker';
 
 
 export interface ErrorDisplayItemProps {

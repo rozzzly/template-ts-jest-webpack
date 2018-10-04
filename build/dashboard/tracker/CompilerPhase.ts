@@ -9,31 +9,39 @@ export type CompilerPhase = (
     | 'dirty' // compiled code has errors/warnings
     | 'failed' // internal (to webpack/plugin/loader) error led to premature abort of compilation
 );
+
+export namespace Time {
+    export interface Instant {
+        startTimestamp: number;
+    }
+    export interface Period extends Instant {
+        startTimestamp: number;
+        endTimestamp: number;
+        duration: number;
+    }
+}
+
 export namespace CompilerState {
+
     interface Base<Phase extends CompilerPhase> {
         id: string;
         phase: Phase;
-        startTimestamp: number;
     }
     export interface Inactive extends Base<null> { }
-    export interface Invalid extends Base<'invalid'> { }
-    export interface Clean extends Base<'clean'> {
+    export interface Invalid extends Base<'invalid'>, Time.Instant {
+        invalidatedBy?: string;
+    }
+    export interface Clean extends Base<'clean'>, Time.Period {
         hash: string;
-        endTimestamp: number;
-        duration: number;
         emits: CompilerEmit[];
     }
-    export interface Dirty extends Base<'dirty'> {
+    export interface Dirty extends Base<'dirty'>, Time.Period {
         hash: string;
-        endTimestamp: number;
-        duration: number;
         warnings: any[];
         errors: any[];
         emits: CompilerEmit[];
     }
-    export interface Failed extends Base<'failed'> {
-        endTimestamp: number;
-        duration: number;
+    export interface Failed extends Base<'failed'>, Time.Period {
         error: any;
     }
     export type Lookup<Phase extends CompilerPhase> = (
@@ -65,7 +73,7 @@ export namespace CompilerState {
 export type CompilerState = CompilerState.Union;
 
 export namespace CompilerStatePatch {
-    export type Inactive = Omit<CompilerState.Inactive, 'startTimestamp'>;
+    export type Inactive = CompilerState.Inactive;
     export type Invalid = Omit<CompilerState.Invalid, 'startTimestamp'>;
     export type Clean = Omit<CompilerState.Clean, 'duration'>;
     export type Dirty = Omit<CompilerState.Dirty, 'duration'>;
