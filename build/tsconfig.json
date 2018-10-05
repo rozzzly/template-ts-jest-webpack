@@ -2,12 +2,13 @@
     "extends": "../tsconfig.json",
     "compilerOptions": {
         "module": "commonjs",
+        "moduleResolution": "node",
         "jsx": "react",
         "jsxFactory": "ink.h",
-        "rootDir": "./",
-        "typeRoots": [
-            "../node_modules/@types",
-            "../stubs"
-        ]
+        // "rootDir": ".",
+        // "typeRoots": [
+        //     "../node_modules/@types"
+        //     "../stubs",
+        // ]
     }
 }

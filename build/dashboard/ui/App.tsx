@@ -21,9 +21,9 @@ export interface AppState {
 }
 
 
-@connect((state: State) => ({
-    compilers: state.tracker.compilers
-}))
+// @connect((state: State) => ({
+//     compilers: state.tracker.compilers
+// }))
 export class App extends ink.Component<AppProps, AppState> {
 
     public constructor(props: AppProps) {
