@@ -1,8 +1,12 @@
 import * as ink from 'ink';
 import * as ansiEscapes from 'ansi-escapes';
+
+import { connect } from 'react-redux';
 import StatusBar from './StatusBar';
 import CompilerTracker from '../CompilerTracker';
 import ErrorDisplay from './ErrorDisplay';
+import State from '../state';
+import { CompilerState } from '../tracker/CompilerPhase';
 
 export interface AppProps {
     tracker: CompilerTracker<string>;
@@ -11,8 +15,15 @@ export interface AppProps {
 
 export interface AppState {
     time: number;
+    compilers: {
+        [id: string]: CompilerState;
+    };
 }
 
+
+@connect((state: State) => ({
+    compilers: state.tracker.compilers
+}))
 export class App extends ink.Component<AppProps, AppState> {
 
     public constructor(props: AppProps) {

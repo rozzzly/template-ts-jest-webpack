@@ -1,0 +1,8 @@
+{
+    "private": true,
+    "version": "0.0.1",
+    "name": "ink-redux",
+    "main": "index.js",
+    "description": "react-redux typings depend on jsx pragma being react",
+    "dependencies": {}
+}

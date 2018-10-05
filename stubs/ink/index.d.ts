@@ -1,4 +1,3 @@
-
 declare module 'ink' {
     import { Stream } from 'stream';
 
@@ -7,7 +6,7 @@ declare module 'ink' {
     export type ComponentChild = VNode<any> | string | number | null;
     export type ComponentChildren = ComponentChild[] | ComponentChild | object | string | number | null;
 
-    export type ComponentFactory<P = {}> = ComponentConstructor<P> | FunctionalComponent<P>;
+    export type ComponentFactory<P = {}> = ComponentConstructor<P> | StatelessComponent<P>;
     export type Fragment = ComponentFactory;
 
     export interface Attributes {
@@ -29,19 +28,19 @@ declare module 'ink' {
         key?: Key | null;
     }
 
-    export interface FunctionalComponent<P = {}> {
+    export interface StatelessComponent<P = {}> {
         (props: RenderableProps<P>, context?: any): VNode<any> | null;
         displayName?: string;
         defaultProps?: Partial<P>;
     }
-    export type SFC<P = {}> = FunctionalComponent<P>;
+    export type SFC<P = {}> = StatelessComponent<P>;
 
     export interface ComponentConstructor<P = {}, S = {}> {
         new (props: P, context?: any): Component<P, S>;
         displayName?: string;
         defaultProps?: Partial<P>;
     }
-    export type AnyComponent<P = {}, S = {}> = FunctionalComponent<P> | Component<P, S>;
+    export type ComponentType<P = {}, S = {}> = StatelessComponent<P> | Component<P, S>;
 
     export interface Component<P = {}, S = {}> {
         componentWillMount?(): void;
@@ -54,7 +53,7 @@ declare module 'ink' {
         componentDidUpdate?(previousProps: Readonly<P>, previousState: Readonly<S>, previousContext: any): void;
     }
 
-    export abstract class Component<P = {}, S = {}> {
+    export class Component<P = {}, S = {}> {
         constructor(props?: P, context?: any);
 
         static displayName?: string;
@@ -70,7 +69,15 @@ declare module 'ink' {
 
         forceUpdate(callback?: () => void): void;
 
-        abstract render(props?: RenderableProps<P>, state?: Readonly<S>, context?: any): ComponentChild;
+        render(props?: RenderableProps<P>, state?: Readonly<S>, context?: any): ComponentChild;
+        /**
+         * @deprecated
+         * https://reactjs.org/docs/refs-and-the-dom.html#legacy-api-string-refs
+         */
+        refs: {
+            [key: string]: Component | Element;
+        };
+    }
     }
 
     export function h<P>(
