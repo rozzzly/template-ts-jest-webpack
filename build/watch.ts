@@ -3,21 +3,39 @@ import * as webpack from 'webpack';
 import * as express from 'express';
 import * as wdm from 'webpack-dev-middleware';
 import * as whm from 'webpack-hot-middleware';
-import HookSuitePlugin, { HookSuiteBridgePlugin } from './dashboard/HookSuitePlugin';
-import chalk from 'chalk';
 import clientCfg from './webpack/client';
 import sharedCfg from './webpack/shared';
 import serverCfg from './webpack/server';
 // import init from '../src/modules/app/server/entrypoint';
-import CompilerTracker from './dashboard/CompilerTracker';
+import CompilerTrackerPlugin from './dashboard/CompilerTrackerPlugin';
 import { configProxy } from './util';
 import render from './dashboard/ui';
 import { PUBLIC_PATH } from './constants';
+import store from './dashboard/store';
 
 
-const buildNotif = (stats: webpack.Stats, id: string): void => {
-    const duration = stats.toJson({chunks: false}).time;
-    console.log(`${chalk.magenta(id)} built in ${chalk.greenBright(duration)}ms`);
+const configs = {
+    shared: configProxy(sharedCfg, {
+        hookSuite: new CompilerTrackerPlugin({
+            id: 'shared',
+            store,
+            afterFirstEmit() {
+                launchStageTwo();
+            }
+        })
+    }),
+    client: configProxy(clientCfg, {
+        hookSuite: new CompilerTrackerPlugin({
+            id: 'client',
+            store
+        })
+    }),
+    server: configProxy(serverCfg, {
+        hookSuite: new CompilerTrackerPlugin({
+            id: 'server',
+            store
+        })
+    })
 };
 
 let ready: number = 0;
@@ -28,46 +46,53 @@ function onReady() {
     }
 }
 let app: express.Application;
+const noop =  (): any => { /* noop */ };
+const noopLogger = {
+    debug: noop,
+    info: noop,
+    error: noop,
+    warn: noop,
+    trace: noop,
+    methodFactory: noop,
+    getLevel: () => 0 as 0,
+    getLogger: () =>  noopLogger,
+    disableAll: noop,
+    enableAll: noop,
+    noConflict: noop,
+    setLevel: noop,
+    setDefaultLevel: noop,
+    levels: {
+        TRACE: 0 as 0,
+        DEBUG: 1 as 1,
+        INFO: 2 as 2,
+        WARN: 3 as 3,
+        ERROR: 4 as 4,
+        SILENT: 5 as 5
+    }
+}
 let multiCompiler: webpack.MultiCompiler;
 function launchStageTwo() {
-    multiCompiler = webpack([configProxy(clientCfg, {
-        hookSuite: new HookSuiteBridgePlugin({
-            id: 'client',
-            tracker: tracker
-        })
-    }), configProxy(serverCfg, {
-        hookSuite: new HookSuiteBridgePlugin({
-            id: 'server',
-            tracker: tracker
-        })
-    })]);
+    multiCompiler = webpack([ configs.client, configs.server ]);
     app = express();
     const wdmInstance = wdm(multiCompiler, {
-        serverSideRender: true,
         writeToDisk: true,
-        publicPath: PUBLIC_PATH
+        serverSideRender: true,
+        publicPath: PUBLIC_PATH,
+        stats: false, // disables outputting stats,
+        logger: noopLogger,
+        reporter: noop,
     });
+    app.use(wdmInstance);
     app.use(whm(multiCompiler, {
-
+        log: false
     }));
 
     multiCompiler.watch({}, () => { /* */ });
 }
 
-const tracker = new CompilerTracker([ 'shared', 'client', 'server' ]);
-
 function launchStageOne() {
-    const sharedCompiler = webpack(configProxy(sharedCfg, {
-        hookSuite: new HookSuiteBridgePlugin({
-            afterFirstEmit() {
-                launchStageTwo();
-            },
-            id: 'shared',
-            tracker: tracker
-        })
-    }));
+    const sharedCompiler = webpack(configs.shared);
     sharedCompiler.watch({}, () => { /* */ });
 }
-
-render(['shared', 'client', 'server']);
+render();
 launchStageOne();

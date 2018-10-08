@@ -10,11 +10,7 @@ export interface SpacerProps {
 }
 
 export const Spacer: React.SFC<SpacerProps> = ({ character, count }) => {
-    return (
-        <span>
-            { character.repeat(count) }
-        </span>
-    );
+    return <> {character.repeat(count)} </>;
 };
 Spacer.defaultProps = {
     character: ' ',

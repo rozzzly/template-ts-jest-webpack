@@ -1,5 +1,9 @@
-import { createStore } from 'redux';
+import { createStore, Store as ReduxStore } from 'redux';
 import getRootReducer from './rootReducer';
+import { State } from './state';
+import { Actions } from './Actions';
 
-export const store = createStore(getRootReducer());
+export type Store = ReduxStore<State, Actions>;
+export const store: Store = createStore(getRootReducer());
+
 export default store;

@@ -1,5 +1,5 @@
 import { Action } from 'redux';
-import { CompilerStatePatch } from './CompilerPhase';
+import { CompilerStatePatch } from './state';
 
 
 export namespace ActionIDs {

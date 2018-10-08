@@ -1,30 +1,26 @@
+import * as ansiEscapes from 'ansi-escapes';
 import * as React from 'react';
-import * as ink from 'ink';
-// import * as ansiEscapes from 'ansi-escapes';
+import { Box } from 'ink';
 
-import { connect } from 'react-redux';
-// import StatusBar from './StatusBar';
-// import CompilerTracker from '../CompilerTracker';
-// import ErrorDisplay from './ErrorDisplay';
-import State from '../state';
-import { CompilerState } from '../tracker/CompilerPhase';
+import StatusBar from './StatusBar';
+
 
 export interface AppProps {
     stdout: NodeJS.WriteStream;
-    compilers: {
-        [id: string]: CompilerState;
-    };
 }
 
-class App extends React.Component<AppProps> {
+export class App extends React.Component<AppProps> {
 
+    private timer?: NodeJS.Timer;
 
     public render(): React.ReactNode {
         return (
-            <ink.Box>
-                { Date.now() }
-                { Object.keys(this.props.compilers).join(',') }
-            </ink.Box>
+            <Box alignItems='flex-start' flexDirection='column'>
+                <StatusBar />
+                <Box flexGrow={1}>
+                    { String(Date.now()) }
+                </Box>
+            </Box>
         );
     }
 
@@ -42,37 +38,19 @@ class App extends React.Component<AppProps> {
     //     };
     // }
 
-    // public componentDidMount() {
-    //     this.props.stdout.on('resize', this.cleanRender);
-    //     this.props.tracker.runnerCb = () => this.forceUpdate();
-    // }
+    public componentDidMount() {
+        // this.props.stdout.on('resize', this.cleanRender);
+        // this.timer = setInterval(this.cleanRender.bind(this), 333);
+    }
 
-    // public componentWillUnmount() {
-    //     this.props.stdout.off('resize', this.cleanRender);
-    //     this.props.tracker.runnerCb = null;
-    // }
-    // private cleanRender() {
-    //     this.props.stdout.write(ansiEscapes.clearScreen);
-    //     this.forceUpdate();
-    // }
+    public componentWillUnmount() {
+        // this.props.stdout.off('resize', this.cleanRender);
+        // if (this.timer) clearInterval(this.timer);
+    }
+    private cleanRender() {
+        // this.props.stdout.write(ansiEscapes.clearScreen);
+        // this.forceUpdate();
+    }
 }
 
-const ConnectedApp = connect((state: State) => ({
-    compilers: state.tracker.compilers
-}))(App);
-
-export {
-    ConnectedApp as App,
-    ConnectedApp as default
-};
-
-// export const App: ink.SFC<AppProps> = ({ tracker, time }) => (
-//     <div>
-//         <br />
-//         <StatusBar tracker={tracker} time={time}/>
-//     </div>
-// );
-
-
-
-//
+export default App;

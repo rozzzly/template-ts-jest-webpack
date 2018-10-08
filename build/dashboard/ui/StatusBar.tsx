@@ -1,158 +1,141 @@
-import * as ink from 'ink';
+import { Color, Box } from 'ink';
 import * as React from 'react';
-import * as Spinner from 'ink-spinner';
-import * as strWidth from 'string-width';
-import Chalk from 'chalk';
 
 import { lib as emoji } from 'emojilib';
-import CompilerTracker from '../CompilerTracker';
-import CompilerHandle, { CompilerState } from '../CompilerHandle';
 import { Spacer, Line } from './Spacer';
+import { CompilerState, CompilerStateMap } from '../tracker/state';
+import { State } from '../state';
+import { connect } from 'react-redux';
 
 export interface StatusBarItemProps {
     id: string;
     index: number;
-    handleState: CompilerState;
+    compiler: CompilerState;
 }
 
-export const StatusBarItem: React.SFC<StatusBarItemProps> = ({ id, index,  handleState }) => {
+export const StatusBarItem: React.SFC<StatusBarItemProps> = ({ id, index,  compiler }) => {
     const label =  ` [ ${id} ] `;
-    if (handleState.status === null) {
+    if (compiler.phase === null) {
         return (
-            <span>
+            <Box>
                 <Spacer count={ index ? 2 : 1 } character={' '} />
-                <ink.Color bgHex='#999999' hex='#fefefe' bold>
+                <Color bgHex='#999999' hex='#fefefe' bold>
                     { label }
-                </ink.Color>
+                </Color>
                 <Spacer count={1} character={' '} />
-                <ink.Color hex='#999999'>
+                <Color hex='#999999'>
                     inactive
-                </ink.Color>
-            </span>
+                </Color>
+            </Box>
         );
-    } else if (handleState.status === 'clean') {
+    } else if (compiler.phase === 'clean') {
         return (
-            <span>
+            <Box alignItems='flex-start' flexDirection='column'>
                 <Spacer count={ index ? 2 : 1 } character={' '} />
-                <ink.Color bgGreen hex='#010101' bold>
+                <Color bgGreen hex='#010101' bold>
                     { label }
-                </ink.Color>
+                </Color>
                 <Spacer count={1} character={' '} />
-                <ink.Color green>clean</ink.Color>
+                <Color green>clean</Color>
                 <Spacer count={1} character={' '} />
-                <ink.Color hex='#999999'>
-                    { `(${handleState.duration}ms)` }
-                </ink.Color>
-            </span>
+                <Color hex='#999999'>
+                    { `(${compiler.duration}ms)` }
+                </Color>
+            </Box>
         );
-    } else if (handleState.status === 'dirty') {
+    } else if (compiler.phase === 'dirty') {
         return (
-            <span>
+            <Box alignItems='flex-start' flexDirection='column'>
                 <Spacer count={ index ? 2 : 1 } character={' '} />
-                <ink.Color bgRed hex='#010101' bold>
+                <Color bgRed hex='#010101' bold>
                     { label }
-                </ink.Color>
+                </Color>
                 <Spacer count={1} character={' '} />
-                <ink.Color red>
-                    { handleState.errors.length } errors / { handleState.warnings.length } warnings
-                </ink.Color>
+                <Color red>
+                    { compiler.errors.length } errors / { compiler.warnings.length } warnings
+                </Color>
                 <Spacer count={1} character={' '} />
-                <ink.Color hex='#999999'>
-                    { `(${handleState.duration}ms)` }
-                </ink.Color>
-            </span>
+                <Color hex='#999999'>
+                    { `(${compiler.duration}ms)` }
+                </Color>
+            </Box>
         );
-    } else if (handleState.status === 'invalid') {
+    } else if (compiler.phase === 'invalid') {
         return (
-            <span>
+            <Box alignItems='flex-start' flexDirection='column'>
                 <Spacer count={ index ? 2 : 1 } character={' '} />
-                <ink.Color bgBlue hex='#010101' bold>
+                <Color bgBlue hex='#010101' bold>
                     { label }
-                </ink.Color>
+                </Color>
                 <Spacer count={1} character={' '} />
-                <Spinner blue />
-                <Spacer count={1} character={' '} />
-                <ink.Color blue>
+                <Color blue>
                     building
-                </ink.Color>
+                </Color>
                 <Spacer count={1} character={' '} />
-                <ink.Color hex='#999999'>
-                    { `(${handleState.duration}ms)` }
-                </ink.Color>
-            </span>
+                <Color hex='#999999'>
+                    { `(${Date.now() - compiler.startTimestamp}ms)` }
+                </Color>
+            </Box>
         );
-    } else if (handleState.status === 'failed') {
+    } else if (compiler.phase === 'failed') {
         return (
-            <span>
+            <Box alignItems='flex-start' flexDirection='column'>
                 <Spacer count={ index ? 2 : 1 } character={' '} />
-                <ink.Color bgYellow hex='#010101' bold>
+                <Color bgYellow hex='#010101' bold>
                     { label }
-                </ink.Color>
+                </Color>
                 <Spacer count={1} character={' '} />
-                <ink.Color yellow>
+                <Color yellow>
                     fatal error
-                </ink.Color>
+                </Color>
                 <Spacer count={1} character={' '} />
-                <ink.Color hex='#999999'>
-                    { `(${handleState.duration}ms)` }
-                </ink.Color>
-            </span>
+                <Color hex='#999999'>
+                    { `(${compiler.duration}ms)` }
+                </Color>
+            </Box>
         );
     } else {
         return (
-            <span>
+            <Box alignItems='flex-start' flexDirection='column'>
                 wtf
-            </span>
+            </Box>
         );
     }
 };
+
+// const boxEdges = {
+//     topLeft: '┌',
+//     topRight: '┐',
+//     bottomRight: '┘',
+//     bottomLeft: '└',
+//     vertical: '│',
+//     horizontal: '─'
+// };
+// Object.keys(boxEdges).forEach((key: keyof typeof boxEdges) => {
+    //     boxEdges[key] = Chalk.hex('#999999')(boxEdges[key]);
+// });
+
 export interface StatusBarProps {
-    tracker: CompilerTracker<string>;
+    compilers: CompilerStateMap;
 }
 
+const _StatusBar: React.SFC<StatusBarProps> = ({ compilers }) => {
+    // const content = ink.renderToString(<StatusBarInner tracker={tracker} />);
 
-const StatusBarInner: React.SFC<StatusBarProps> = ({ tracker }) => {
-    let index = 0;
+
     return (
-        <span>
+        <Box>
             {
-                tracker.map((handle, id) => (
-                    <StatusBarItem handleState={handle.state} id={id} index={index++} />
+                Object.keys(compilers).map((id, index) => (
+                    <StatusBarItem compiler={compilers[id]} id={id} key={id} index={index} />
                 ))
             }
-            <Spacer count={1} character={' '} />
-        </span>
+        </Box>
     );
 };
 
-const boxEdges = {
-    topLeft: '┌',
-    topRight: '┐',
-    bottomRight: '┘',
-    bottomLeft: '└',
-    vertical: '│',
-    horizontal: '─'
-};
-Object.keys(boxEdges).forEach((key: keyof typeof boxEdges) => {
-    boxEdges[key] = Chalk.hex('#999999')(boxEdges[key]);
-});
-
-
-export const StatusBar: React.SFC<StatusBarProps> = ({ tracker }, { console }) => {
-    // const content = ink.renderToString(<StatusBarInner tracker={tracker} />);
-    const width = strWidth(content);
-
-    const filler = ' '.repeat(console.width - 2 - width);
-    const top = boxEdges.topLeft + boxEdges.horizontal.repeat(console.width - 2) + boxEdges.topRight;
-    const bottom = boxEdges.bottomLeft + boxEdges.horizontal.repeat(console.width - 2) + boxEdges.bottomRight;
-    const middle = boxEdges.vertical + content + filler + boxEdges.vertical;
-
-
-    return (
-        <span>
-             { [top, middle, bottom].join('\n') }
-        </span>
-    );
-};
+export const StatusBar = connect((state: State) => ({
+    compilers: state.tracker.compilers
+}))(_StatusBar);
 
 export default StatusBar;
