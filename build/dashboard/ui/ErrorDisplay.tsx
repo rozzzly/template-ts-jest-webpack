@@ -1,3 +1,4 @@
+import * as React from 'react';
 import * as ink from 'ink';
 import CompilerTracker from '../CompilerTracker';
 

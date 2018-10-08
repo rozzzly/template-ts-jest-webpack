@@ -69,5 +69,5 @@ function launchStageOne() {
     sharedCompiler.watch({}, () => { /* */ });
 }
 
-render(tracker);
+render(['shared', 'client', 'server']);
 launchStageOne();

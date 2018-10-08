@@ -1,14 +1,16 @@
 declare module 'ink' {
-    import * as react from 'react';
+    import * as React from 'react';
 
-    export const h: typeof react.createElement;
-    export function renderToString(tree: JSX.Element): string;
-    export function render(tree: JSX.Element, prevTree?: JSX.Element): JSX.Element;
-    export function mount(tree: JSX.Element, stream: NodeJS.WritableStream): () => void;
+    export interface RenderOptions {
+        stdout: NodeJS.WriteStream,
+        stdin: NodeJS.ReadStream,
+        debug: boolean
+    }
 
-    export class Component<P = {}, S = {}> extends react.Component<P, S> {}
-    export type SFC<P = {}> = React.SFC<P>
-    export class StringComponent extends Component<{}, {}> { }
+    export type Unmount = () => void;
+
+    // export function renderToString<P>(tree: React.ReactElement<P>): string;
+    export function render<P>(tree: React.ReactElement<P>, options?: NodeJS.WriteStream | Partial<RenderOptions>): Unmount;
 
 
     export interface ColorProps {
@@ -73,7 +75,7 @@ declare module 'ink' {
         bgWhiteBright?: boolean;
     }
 
-    export const Color: SFC<ColorProps>;
+    export const Color: React.SFC<ColorProps>;
 
     export interface BoxProps {
         width?: number;
@@ -114,7 +116,7 @@ declare module 'ink' {
         )
     }
 
-    export const Box: SFC<BoxProps>;
+    export const Box: React.SFC<BoxProps>;
 
     export interface TextProps {
         bold?: boolean;
@@ -123,13 +125,13 @@ declare module 'ink' {
         strikethrough?: boolean;
     }
 
-    export const Text: SFC<TextProps>;
+    export const Text: React.SFC<TextProps>;
 
-    export const StdinContext: react.Context<{
+    export const StdinContext: React.Context<{
         stdin: NodeJS.ReadStream
         setRawMode: (isEnabled: boolean) => void;
     }>;
-    export const StdoutContext: react.Context<{
+    export const StdoutContext: React.Context<{
         stdout: NodeJS.WriteStream
     }>;
 }

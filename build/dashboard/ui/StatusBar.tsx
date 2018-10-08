@@ -1,4 +1,5 @@
 import * as ink from 'ink';
+import * as React from 'react';
 import * as Spinner from 'ink-spinner';
 import * as strWidth from 'string-width';
 import Chalk from 'chalk';
@@ -14,7 +15,7 @@ export interface StatusBarItemProps {
     handleState: CompilerState;
 }
 
-export const StatusBarItem: ink.SFC<StatusBarItemProps> = ({ id, index,  handleState }) => {
+export const StatusBarItem: React.SFC<StatusBarItemProps> = ({ id, index,  handleState }) => {
     const label =  ` [ ${id} ] `;
     if (handleState.status === null) {
         return (
@@ -110,7 +111,7 @@ export interface StatusBarProps {
 }
 
 
-const StatusBarInner: ink.SFC<StatusBarProps> = ({ tracker }) => {
+const StatusBarInner: React.SFC<StatusBarProps> = ({ tracker }) => {
     let index = 0;
     return (
         <span>
@@ -137,8 +138,8 @@ Object.keys(boxEdges).forEach((key: keyof typeof boxEdges) => {
 });
 
 
-export const StatusBar: ink.SFC<StatusBarProps> = ({ tracker }, { console }) => {
-    const content = ink.renderToString(<StatusBarInner tracker={tracker} />);
+export const StatusBar: React.SFC<StatusBarProps> = ({ tracker }, { console }) => {
+    // const content = ink.renderToString(<StatusBarInner tracker={tracker} />);
     const width = strWidth(content);
 
     const filler = ' '.repeat(console.width - 2 - width);
