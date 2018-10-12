@@ -69,7 +69,7 @@ const noopLogger = {
         ERROR: 4 as 4,
         SILENT: 5 as 5
     }
-}
+};
 let multiCompiler: webpack.MultiCompiler;
 function launchStageTwo() {
     multiCompiler = webpack([ configs.client, configs.server ]);
@@ -80,7 +80,7 @@ function launchStageTwo() {
         publicPath: PUBLIC_PATH,
         stats: false, // disables outputting stats,
         logger: noopLogger,
-        reporter: noop,
+        reporter: noop
     });
     app.use(wdmInstance);
     app.use(whm(multiCompiler, {

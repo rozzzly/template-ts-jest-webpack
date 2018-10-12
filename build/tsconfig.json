@@ -3,11 +3,5 @@
     "compilerOptions": {
         "module": "commonjs",
         "moduleResolution": "node",
-        "jsx": "react"
-        // "rootDir": ".",
-        // "typeRoots": [
-        //     "../node_modules/@types"
-        //     "../stubs",
-        // ]
     }
 }

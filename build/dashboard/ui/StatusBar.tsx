@@ -117,25 +117,30 @@ export const StatusBarItem: React.SFC<StatusBarItemProps> = ({ id, index,  compi
 
 export interface StatusBarProps {
     compilers: CompilerStateMap;
+    test: boolean;
 }
 
-const _StatusBar: React.SFC<StatusBarProps> = ({ compilers }) => {
+@connect((state: State) => ({
+
+    compilers: state.tracker.compilers
+}))
+export class StatusBar extends React.Component<StatusBarProps> {
     // const content = ink.renderToString(<StatusBarInner tracker={tracker} />);
 
 
-    return (
-        <Box>
-            {
-                Object.keys(compilers).map((id, index) => (
-                    <StatusBarItem compiler={compilers[id]} id={id} key={id} index={index} />
-                ))
-            }
-        </Box>
-    );
-};
+    public render(): React.ReactNode {
+        const { compilers } = this.props;
+        return (
+            <div>
+                {
+                    Object.keys(compilers).map((id, index) => (
+                        <StatusBarItem compiler={compilers[id]} id={id} key={index}  index={index} />
+                    ))
+                }
+            </div>
+        );
+    }
 
-export const StatusBar = connect((state: State) => ({
-    compilers: state.tracker.compilers
-}))(_StatusBar);
+}
 
 export default StatusBar;

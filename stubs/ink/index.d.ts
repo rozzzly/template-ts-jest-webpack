@@ -116,7 +116,7 @@ declare module 'ink' {
         )
     }
 
-    export const Box: React.SFC<BoxProps>;
+    export const Box: React.ComponentType<BoxProps>;
 
     export interface TextProps {
         bold?: boolean;

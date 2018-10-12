@@ -1,5 +1,3 @@
-import * as ink from 'ink';
-
 import LoggerState from './logger/state';
 import TrackerState from './tracker/state';
 
