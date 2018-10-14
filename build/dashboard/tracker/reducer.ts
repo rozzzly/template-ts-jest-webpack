@@ -5,7 +5,7 @@ import { initialState } from './state';
 
 export const reducer: Reducer<State, Actions> = (state = initialState, action) => {
     if (action.type === ActionIDs.UPDATE_COMPILER) {
-        const nState = { ...state };
+        const nState = { ...state, compilers: { ...state.compilers }};
         const nCompiler = action.payload;
         const oCompiler = state.compilers[nCompiler.id] || false;
 
@@ -27,7 +27,7 @@ export const reducer: Reducer<State, Actions> = (state = initialState, action) =
             //     oCompiler.phase === 'invalid'
             // ) {
             //    if (oCompiler.invalidatedBy) {
-            //         // if invalidating a compilation inprogress without the
+            //         // if invalidating a compilation in progress without the
             //         (nState.compilers[nCompiler.id] as any).invalidatedBy = oCompiler.invalidatedBy;
             //     }
             // }
@@ -60,15 +60,16 @@ export const reducer: Reducer<State, Actions> = (state = initialState, action) =
             };
         }
         // count # of compilers that are not running / `phase` is not `invalid`
-        nState.idleCompilers = (
+        nState.activeCompilers = (
             (Object.keys(nState.compilers)
                 .filter(id => (
-                   nState.compilers[id].phase !== 'invalid'
+                   nState.compilers[id].phase === 'invalid'
                 ))
                 .length
             )
         );
-        return state;
+
+        return nState;
     } else {
         return state;
     }

@@ -109,12 +109,12 @@ export type CompilerStatePatch = CompilerStatePatch.Union;
 export type CompilerStateMap = Record<string, CompilerState>;
 
 export const initialState: State = {
-    idleCompilers: 0,
+    activeCompilers: 0,
     compilers: {}
 };
 
 export interface State {
-    idleCompilers: number;
+    activeCompilers: number;
     compilers: CompilerStateMap;
 }
 
