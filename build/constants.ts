@@ -8,13 +8,14 @@ export const NODE_MODULES_REGEX = /[\\/]node_modules[\\/]/;
 export const CACHE_GROUPS = {
     client: {
         app: /[\\/]src[\\/]modules[\\/]app[\\/]client[\\/]/,
-        vendor: NODE_MODULES_REGEX
+        vendors: NODE_MODULES_REGEX
     },
     shared: {
         app: /[\\/]src[\\/]modules[\\/]app[\\/]shared[\\/]/,
         frontend: /[\\/]src[\\/]modules[\\/]frontend[\\/]/
     },
     server: {
-        app: /[\\/]src[\\/]modules[\\/]app[\\/]server[\\/]/
+        app: /[\\/]src[\\/]modules[\\/]app[\\/]server[\\/]/,
+        vendors: false
     }
 };

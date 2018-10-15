@@ -4,7 +4,7 @@ import { join } from 'path';
 
 
 export type ChunkGroupsShortForm = {
-    [chunkName: string]: webpack.Options.CacheGroupsOptions['test']
+    [chunkName: string]: webpack.Options.CacheGroupsOptions['test'] | boolean;
 };
 
 export type ChunkGroupsFullForm = {
@@ -14,11 +14,15 @@ export type ChunkGroupsFullForm = {
 export function createCacheGroups(shortForms: ChunkGroupsShortForm): webpack.Options.SplitChunksOptions['cacheGroups']  {
     const chunks: webpack.Options.SplitChunksOptions['cacheGroups'] = {};
     Object.keys(shortForms).forEach(chunkName => {
-        chunks[chunkName] = {
-            chunks: 'all',
-            name: chunkName,
-            test: shortForms[chunkName]
-        };
+        if (shortForms[chunkName] === false) {
+            chunks[chunkName] = false;
+        } else {
+            chunks[chunkName] = {
+                chunks: 'all',
+                name: chunkName,
+                test: shortForms[chunkName] as webpack.Options.CacheGroupsOptions['test']
+            };
+        }
     });
     return chunks;
 }
@@ -31,11 +35,14 @@ export type SYM_CONFIG_PROXY_FLAG = typeof SYM_CONFIG_PROXY_FLAG;
 export const SYM_CONFIG_PROXY_INTERNAL: unique symbol = Symbol('SYM_CONFIG_PROXY_INTERNAL');
 export type SYM_CONFIG_PROXY_INTERNAL = typeof SYM_CONFIG_PROXY_INTERNAL;
 
+export type Condition = boolean | (() => boolean);
 
 export interface ConfigHelper<Opts extends {}> {
     opts: Opts;
     stripItems<T extends unknown[]>(...value: T): T;
     stripKeys<T extends {}>(value: T): T;
+    cond<C>(condition: Condition, consequent: C): C;
+    cond<C, A>(condition: Condition, consequent: C, antiConsequent: A): C | A;
     isDev(): boolean;
     isDev<C>(consequent: C): C;
     isDev<C, A>(consequent: C, antiConsequent: A): C | A;
@@ -91,6 +98,17 @@ const makeHandle = <Opts extends DefaultOpts>(opts: Opts): ConfigHelper<Opts> =>
                 )
             ), {} as T)
         );
+    },
+    cond<C, A>(
+        condition: Condition,
+        consequent: C,
+        antiConsequent: A | SYM_STRIP = SYM_STRIP
+    ): C | A {
+        if (typeof condition === 'boolean') {
+            return condition ? consequent : antiConsequent as A;
+        } else {
+            return condition() ? consequent : antiConsequent as A;
+        }
     },
     isDev<C, A>(
         consequent: C | SYM_STRIP = SYM_STRIP,

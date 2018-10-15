@@ -73,7 +73,6 @@ const noopLogger = {
 let multiCompiler: webpack.MultiCompiler;
 function launchStageTwo() {
     multiCompiler = webpack([ configs.client, configs.server ]);
-
     app = express();
     const wdmInstance = wdm(multiCompiler, {
         writeToDisk: true,
