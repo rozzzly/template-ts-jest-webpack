@@ -1,157 +1,136 @@
-import * as ink from 'ink';
-import * as Spinner from 'ink-spinner';
-import * as strWidth from 'string-width';
-import Chalk from 'chalk';
-
+import { Color, Box } from 'ink';
+import { connect } from 'react-redux';
+import * as React from 'react';
 import { lib as emoji } from 'emojilib';
-import CompilerTracker from '../CompilerTracker';
-import CompilerHandle, { CompilerState } from '../CompilerHandle';
+
 import { Spacer, Line } from './Spacer';
+import { CompilerState, CompilerStateMap } from '../tracker/state';
+import { State } from '../state';
 
 export interface StatusBarItemProps {
     id: string;
     index: number;
-    handleState: CompilerState;
+    compiler: CompilerState;
 }
 
-export const StatusBarItem: ink.SFC<StatusBarItemProps> = ({ id, index,  handleState }) => {
+export const StatusBarItem: React.SFC<StatusBarItemProps> = ({ id, index,  compiler }) => {
     const label =  ` [ ${id} ] `;
-    if (handleState.status === null) {
+    if (compiler.phase === null) {
         return (
-            <span>
-                <Spacer count={ index ? 2 : 1 } character={' '} />
-                <ink.Color bgHex='#999999' hex='#fefefe' bold>
+            <Box>
+                { index === 0 ? '  ' : ' ' }
+                <Color bgHex='#999999' hex='#fefefe' bold>
                     { label }
-                </ink.Color>
-                <Spacer count={1} character={' '} />
-                <ink.Color hex='#999999'>
+                </Color>
+                { ' ' }
+                <Color hex='#999999'>
                     inactive
-                </ink.Color>
-            </span>
+                </Color>
+            </Box>
         );
-    } else if (handleState.status === 'clean') {
+    } else if (compiler.phase === 'clean') {
         return (
-            <span>
-                <Spacer count={ index ? 2 : 1 } character={' '} />
-                <ink.Color bgGreen hex='#010101' bold>
+            <Box>
+                { index === 0 ? '  ' : ' ' }
+                <Color bgGreen hex='#010101' bold>
                     { label }
-                </ink.Color>
-                <Spacer count={1} character={' '} />
-                <ink.Color green>clean</ink.Color>
-                <Spacer count={1} character={' '} />
-                <ink.Color hex='#999999'>
-                    { `(${handleState.duration}ms)` }
-                </ink.Color>
-            </span>
+                </Color>
+                {' '}
+                <Color green>clean</Color>
+                {' '}
+                <Color hex='#999999'>
+                    { `(${compiler.duration}ms)` }
+                </Color>
+            </Box>
         );
-    } else if (handleState.status === 'dirty') {
+    } else if (compiler.phase === 'dirty') {
         return (
-            <span>
-                <Spacer count={ index ? 2 : 1 } character={' '} />
-                <ink.Color bgRed hex='#010101' bold>
+            <Box>
+                { index === 0 ? '  ' : ' ' }
+                <Color bgRed hex='#010101' bold>
                     { label }
-                </ink.Color>
-                <Spacer count={1} character={' '} />
-                <ink.Color red>
-                    { handleState.errors.length } errors / { handleState.warnings.length } warnings
-                </ink.Color>
-                <Spacer count={1} character={' '} />
-                <ink.Color hex='#999999'>
-                    { `(${handleState.duration}ms)` }
-                </ink.Color>
-            </span>
+                </Color>
+                { ' ' }
+                <Color red>
+                    { `${compiler.errors.length} errors / ${compiler.warnings.length} warnings`}
+                </Color>
+                { ' ' }
+                <Color hex='#999999'>
+                    { `(${compiler.duration}ms)` }
+                </Color>
+            </Box>
         );
-    } else if (handleState.status === 'invalid') {
+    } else if (compiler.phase === 'invalid') {
         return (
-            <span>
-                <Spacer count={ index ? 2 : 1 } character={' '} />
-                <ink.Color bgBlue hex='#010101' bold>
+            <Box>
+                { index === 0 ? '  ' : ' ' }
+                <Color bgBlue hex='#010101' bold>
                     { label }
-                </ink.Color>
-                <Spacer count={1} character={' '} />
-                <Spinner blue />
-                <Spacer count={1} character={' '} />
-                <ink.Color blue>
+                </Color>
+                { ' ' }
+                <Color blue>
                     building
-                </ink.Color>
-                <Spacer count={1} character={' '} />
-                <ink.Color hex='#999999'>
-                    { `(${handleState.duration}ms)` }
-                </ink.Color>
-            </span>
+                </Color>
+                { ' ' }
+                <Color hex='#999999'>
+                    { `(${Date.now() - compiler.startTimestamp}ms)` }
+                </Color>
+            </Box>
         );
-    } else if (handleState.status === 'failed') {
+    } else if (compiler.phase === 'failed') {
         return (
-            <span>
-                <Spacer count={ index ? 2 : 1 } character={' '} />
-                <ink.Color bgYellow hex='#010101' bold>
+            <Box>
+                { index === 0 ? '  ' : ' ' }
+                <Color bgYellow hex='#010101' bold>
                     { label }
-                </ink.Color>
-                <Spacer count={1} character={' '} />
-                <ink.Color yellow>
+                </Color>
+                { ' ' }
+                <Color yellow>
                     fatal error
-                </ink.Color>
-                <Spacer count={1} character={' '} />
-                <ink.Color hex='#999999'>
-                    { `(${handleState.duration}ms)` }
-                </ink.Color>
-            </span>
+                </Color>
+                { ' ' }
+                <Color hex='#999999'>
+                    { `(${compiler.duration}ms)` }
+                </Color>
+            </Box>
         );
     } else {
         return (
-            <span>
+            <>
                 wtf
-            </span>
+            </>
         );
     }
 };
+
+// const boxEdges = {
+//     topLeft: '┌',
+//     topRight: '┐',
+//     bottomRight: '┘',
+//     bottomLeft: '└',
+//     vertical: '│',
+//     horizontal: '─'
+// };
+// Object.keys(boxEdges).forEach((key: keyof typeof boxEdges) => {
+    //     boxEdges[key] = Chalk.hex('#999999')(boxEdges[key]);
+// });
+
 export interface StatusBarProps {
-    tracker: CompilerTracker<string>;
+    compilers: Record<string, CompilerState>;
 }
 
+const _StatusBar: React.SFC<StatusBarProps> = ({ compilers }) => (
+    <Box flexDirection='row'>
+        {
+            ...Object.keys(compilers).map((id, index) => (
+                <StatusBarItem compiler={compilers[id]} id={id} key={index} index={index} />
+            ))
+        }
+    </Box>
+);
 
-const StatusBarInner: ink.SFC<StatusBarProps> = ({ tracker }) => {
-    let index = 0;
-    return (
-        <span>
-            {
-                tracker.map((handle, id) => (
-                    <StatusBarItem handleState={handle.state} id={id} index={index++} />
-                ))
-            }
-            <Spacer count={1} character={' '} />
-        </span>
-    );
-};
-
-const boxEdges = {
-    topLeft: '┌',
-    topRight: '┐',
-    bottomRight: '┘',
-    bottomLeft: '└',
-    vertical: '│',
-    horizontal: '─'
-};
-Object.keys(boxEdges).forEach((key: keyof typeof boxEdges) => {
-    boxEdges[key] = Chalk.hex('#999999')(boxEdges[key]);
-});
-
-
-export const StatusBar: ink.SFC<StatusBarProps> = ({ tracker }, { console }) => {
-    const content = ink.renderToString(<StatusBarInner tracker={tracker} />);
-    const width = strWidth(content);
-
-    const filler = ' '.repeat(console.width - 2 - width);
-    const top = boxEdges.topLeft + boxEdges.horizontal.repeat(console.width - 2) + boxEdges.topRight;
-    const bottom = boxEdges.bottomLeft + boxEdges.horizontal.repeat(console.width - 2) + boxEdges.bottomRight;
-    const middle = boxEdges.vertical + content + filler + boxEdges.vertical;
-
-
-    return (
-        <span>
-             { [top, middle, bottom].join('\n') }
-        </span>
-    );
-};
+export const StatusBar = connect((state: State) => ({
+    compilers: state.tracker.compilers
+}))(_StatusBar);
 
 export default StatusBar;

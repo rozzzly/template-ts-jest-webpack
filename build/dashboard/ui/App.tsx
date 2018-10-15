@@ -1,72 +1,79 @@
-import * as ink from 'ink';
 import * as ansiEscapes from 'ansi-escapes';
+import * as React from 'react';
+import { Box } from 'ink';
+import { connect } from 'react-redux';
+
 import StatusBar from './StatusBar';
-import CompilerTracker from '../CompilerTracker';
-import ErrorDisplay from './ErrorDisplay';
+import State from '../State';
+
 
 export interface AppProps {
-    tracker: CompilerTracker<string>;
     stdout: NodeJS.WriteStream;
+    activeCompilers: number;
 }
 
-export interface AppState {
-    time: number;
-}
+class _App extends React.Component<AppProps> {
 
-export class App extends ink.Component<AppProps, AppState> {
+    private timer?: NodeJS.Timer;
 
-    public constructor(props: AppProps) {
-        super(props);
-        this.cleanRender = this.cleanRender.bind(this);
+    public componentDidCatch(error: Error, info: React.ErrorInfo) {
+        process.stderr.write(String(error));
+        process.stderr.write(String(info));
+        process.exit(-1);
     }
 
-    public render() {
+    public render(): React.ReactNode {
         return (
-            <span>
-                <StatusBar tracker={this.props.tracker} />
-                <ErrorDisplay tracker={this.props.tracker } />
-            </span>
+            <Box alignItems='flex-start' flexDirection='column'>
+                <StatusBar />
+                <Box flexGrow={1}>
+                    { this.props.activeCompilers + ' ' + String(Date.now()) }
+                </Box>
+            </Box>
         );
     }
 
-    public getChildContext() {
-        const stdout = this.props.stdout;
-        return {
-            console: {
-                get width(): number {
-                    return !!stdout.columns ? stdout.columns : 120;
-                },
-                get height(): number {
-                    return !!stdout.rows ? stdout.rows :  40;
-                }
-            }
-        };
-    }
+    // public getChildContext() {
+    //     const stdout = this.props.stdout;
+    //     return {
+    //         console: {
+    //             get width(): number {
+    //                 return !!stdout.columns ? stdout.columns : 120;
+    //             },
+    //             get height(): number {
+    //                 return !!stdout.rows ? stdout.rows :  40;
+    //             }
+    //         }
+    //     };
+    // }
 
     public componentDidMount() {
-        this.props.stdout.on('resize', this.cleanRender);
-        this.props.tracker.runnerCb = () => this.forceUpdate();
+        // this.props.stdout.on('resize', this.cleanRender.bind(this));
+        if (this.props.activeCompilers) {
+            this.timer = setInterval(() => this.forceUpdate(), 333);
+        }
+    }
+
+    public componentDidUpdate(prevProps: AppProps) {
+        if (prevProps.activeCompilers && !this.props.activeCompilers && this.timer) {
+             clearInterval(this.timer);
+        } else if (!prevProps.activeCompilers && this.props.activeCompilers && !this.timer) {
+            this.timer = setInterval(() => this.forceUpdate(), 333);
+        }
     }
 
     public componentWillUnmount() {
-        this.props.stdout.off('resize', this.cleanRender);
-        this.props.tracker.runnerCb = null;
+        if (this.timer) clearInterval(this.timer);
+        // this.props.stdout.off('resize', this.cleanRender);
     }
     private cleanRender() {
-        this.props.stdout.write(ansiEscapes.clearScreen);
-        this.forceUpdate();
+        // this.props.stdout.write(ansiEscapes.clearScreen);
+        // this.forceUpdate();
     }
 }
 
+export const App = connect((state: State) => ({
+    activeCompilers: state.tracker.activeCompilers
+}))(_App);
 
-
-// export const App: ink.SFC<AppProps> = ({ tracker, time }) => (
-//     <div>
-//         <br />
-//         <StatusBar tracker={tracker} time={time}/>
-//     </div>
-// );
 export default App;
-
-
-//

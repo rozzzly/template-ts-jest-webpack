@@ -6,9 +6,13 @@
     "configurations": [
         {
             "type": "node",
-            "request": "launch",
-            "name": "Launch Program",
-            "program": "${workspaceFolder}\\build\\index.js",
+            "name": "attach wslNode",
+            "request": "attach",
+            // "useWSL": true,
+            "port": 9229,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/mnt/c/Users/rozzzly/Projects/template-ts-jest-webpack",
+            // "program": "${workspaceFolder}\\build\\index.js",
             "stopOnEntry": true,
             "outFiles": [
                 "${workspaceFolder}/**/*.js"

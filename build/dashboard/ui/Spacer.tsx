@@ -1,28 +1,16 @@
-import * as ink from 'ink';
+import * as React from 'react';
 
-export const Line: ink.SFC = ({}, { console }) => (
+export const Line: React.SFC = ({}, { console }) => (
     <Spacer character={'─'} count={console.width} />
 );
 
 export interface SpacerProps {
     count: number;
-    character: string | ink.VNode;
+    character: string;
 }
 
-export const Spacer: ink.SFC<SpacerProps> = ({ character, count }) => {
-    if (typeof character === 'string') {
-        return (
-            <span>
-                { character.repeat(count) }
-            </span>
-        );
-    } else {
-        return (
-            <span>
-                { ([] as ink.VNode[]).fill(character, 0, count) }
-            </span>
-        );
-    }
+export const Spacer: React.SFC<SpacerProps> = ({ character, count }) => {
+    return <> {character.repeat(count)} </>;
 };
 Spacer.defaultProps = {
     character: ' ',

@@ -8,10 +8,10 @@ export type ChunkGroupsShortForm = {
 };
 
 export type ChunkGroupsFullForm = {
-    [chunkName: string]: webpack.Options.CacheGroupsOptions;
+    [chunkName: string]: webpack.Options.CacheGroupsOptions | false;
 };
 
-export function createCacheGroups(shortForms: ChunkGroupsShortForm): ChunkGroupsFullForm {
+export function createCacheGroups(shortForms: ChunkGroupsShortForm): webpack.Options.SplitChunksOptions['cacheGroups']  {
     const chunks: webpack.Options.SplitChunksOptions['cacheGroups'] = {};
     Object.keys(shortForms).forEach(chunkName => {
         chunks[chunkName] = {
@@ -214,7 +214,6 @@ export const configProxy: ConfigProxyFactory = (...args: any[]): ConfigProxy<any
     });
     return proxy;
 };
-
 
 
 export { join };

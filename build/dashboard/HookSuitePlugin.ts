@@ -1,5 +1,4 @@
 import * as webpack from 'webpack';
-import CompilerTracker from './CompilerTracker';
 
 export interface CompilationParams {
     normalModuleFactory: webpack.compilation.NormalModuleFactory;
@@ -62,7 +61,7 @@ export default class HookSuitePlugin {
         if (options.id) {
             this.id = options.id;
         } else {
-            this.id = 'unnamed-' + Date.now();
+            this.id = 'unnamed-' + Math.floor((Math.random() * 100000000));
         }
 
         if (options.onDone) {
@@ -208,37 +207,3 @@ export default class HookSuitePlugin {
 }
 
 export { HookSuitePlugin };
-
-
-export interface HookSuiteBridgePluginOptions extends HookSuitePluginOptions {
-    id: string; // _required_ unlike HookSuitePluginOptions
-    tracker: CompilerTracker<string>; // tracker instance this will call back to
-}
-
-export class HookSuiteBridgePlugin extends HookSuitePlugin {
-    protected id: string;
-    protected tracker: CompilerTracker<string>;
-
-    public constructor({ tracker, ...opts }: HookSuiteBridgePluginOptions) {
-        super({
-            ...opts,
-            beforeCompile: (compilationParams, id) => {
-                this.tracker.receiver.beforeCompile(compilationParams, id);
-                if (opts.beforeCompile) opts.beforeCompile(compilationParams, id);
-            },
-            onDone: (stats, id) => {
-                this.tracker.receiver.onDone(stats, id);
-                if (opts.onDone) opts.onDone(stats, id);
-            },
-            onFailed: (error, id) => {
-                this.tracker.receiver.onFailed(error, id);
-                if (opts.onFailed) opts.onFailed(error, id);
-            },
-            onInvalid: (fileName, changeTime, id) => {
-                this.tracker.receiver.onInvalid(fileName, changeTime, id);
-                if (opts.onInvalid) opts.onInvalid(fileName, changeTime, id);
-            }
-        });
-        this.tracker = tracker;
-    }
-}
