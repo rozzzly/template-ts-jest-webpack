@@ -16,10 +16,12 @@ export default configProxy<{
         ]
     },
     output: {
-        filename: $.isDev('[name].shared.js', '[name]_[hash:6].shared.js')
+        filename: $.isDev('[name].shared.js', '[name]_[hash:6].shared.js'),
+        library: '[name]_[hash:6]',
+        libraryTarget: 'global',
+        globalObject: `(typeof window !== 'undefined' ? window : global)`
     },
     optimization: {
-        // runtimeChunk: 'single',
         splitChunks: {
             minSize: 100,
             chunks: 'all',

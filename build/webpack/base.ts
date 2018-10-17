@@ -4,7 +4,7 @@ import { BIN_DIR, NODE_MODULES_REGEX, ROOT_DIR } from '../constants';
 import { configProxy } from '../util';
 
 export default configProxy<{
-
+    hmr: boolean
 }>($ => ({
     mode: $.opts.mode,
     devtool: 'inline-source-map',
@@ -35,7 +35,7 @@ export default configProxy<{
         ]
     },
     plugins: $.stripItems(
-        $.isDev(new webpack.HotModuleReplacementPlugin()),
+        $.cond($.opts.hmr && $.isDev(), new webpack.HotModuleReplacementPlugin()),
         new ForkTsCheckerWebpackPlugin($.stripKeys({
             context: ROOT_DIR,
             silent: true,
@@ -44,4 +44,6 @@ export default configProxy<{
             watch: $.isDev(['./src']) // optional but improves performance (fewer stat calls)
         }))
     )
-}));
+}), {
+    hmr: true
+});

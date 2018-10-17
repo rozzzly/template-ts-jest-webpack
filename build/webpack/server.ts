@@ -11,10 +11,14 @@ export default configProxy<{
     name: 'server',
     target: 'node',
     entry: {
-        entrypoint: $.isDev([
-            'webpack/hot/poll?1000',
+        entrypoint: $.cond(
+            $.opts.hmr && $.isDev,
+            [
+                'webpack/hot/poll?1000',
+                './src/modules/app/server/entrypoint'
+            ],
             './src/modules/app/server/entrypoint'
-        ], './src/modules/app/server/entrypoint')
+        )
     },
     output: {
         filename: $.isDev('[name].server.js', '[name]_[hash:6].server.js'),
@@ -39,9 +43,14 @@ export default configProxy<{
         ...Object.keys(CACHE_GROUPS.shared).map(dllName => (
             new webpack.DllReferencePlugin({
                 context: ROOT_DIR,
+                sourceType: 'commonjs2',
                 manifest: join(BIN_DIR, `${dllName}.manifest.json`)
             })
         )),
+        // new webpack.DllReferencePlugin({
+        //     context: ROOT_DIR,
+        //     manifest: join(BIN_DIR, `runtime.manifest.json`)
+        // }),
         $.opts.hookSuite
     ]
 }));

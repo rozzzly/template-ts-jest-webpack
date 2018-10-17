@@ -16,6 +16,7 @@ import store from './dashboard/store';
 
 const configs = {
     shared: configProxy(sharedCfg, {
+        hmr: false,
         hookSuite: new CompilerTrackerPlugin({
             id: 'shared',
             store,
@@ -25,12 +26,14 @@ const configs = {
         })
     }),
     client: configProxy(clientCfg, {
+        hmr: false,
         hookSuite: new CompilerTrackerPlugin({
             id: 'client',
             store
         })
     }),
     server: configProxy(serverCfg, {
+        hmr: false,
         hookSuite: new CompilerTrackerPlugin({
             id: 'server',
             store
@@ -42,6 +45,10 @@ let ready: number = 0;
 function onReady() {
     ready++;
     if (ready >= 3) {
+        (global as any).window = {}; // stub window
+        require('./bin/runtime.shared.js');
+        require('./bin/app.shared.js');
+        require('./bin/frontend.shared.js');
         require('./bin/entrypoint.server.js')(app);
     }
 }
