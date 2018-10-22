@@ -98,8 +98,11 @@ function launchStageTwo() {
 }
 
 function launchStageOne() {
-    const sharedCompiler = webpack(configs.shared);
-    sharedCompiler.watch({}, () => { /* */ });
+    //const sharedCompiler = webpack(configs.shared);
+    //sharedCompiler.watch({}, () => { /* */ });
+    store.dispatch({ type: 'dashboard.tracker:UPDATE_COMPILER', payload: { id: 'server', phase: 'invalid' }});
 }
-render();
-launchStageOne();
+setTimeout(() => {
+    render();
+    launchStageOne();
+}, 500);

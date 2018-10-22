@@ -3,6 +3,7 @@ import * as webpack from 'webpack';
 import HookSuitePlugin, { HookSuitePluginOptions } from './HookSuitePlugin';
 import { Store } from './store';
 import { updateCompiler } from './tracker/actions';
+import { addLog } from './logger/actions';
 
 export interface CompilerTrackerPluginOptions extends HookSuitePluginOptions {
     id: string; // _required_ unlike HookSuitePluginOptions
@@ -30,7 +31,6 @@ export class CompilerTrackerPlugin extends HookSuitePlugin {
                     this.store.dispatch(updateCompiler({
                         id,
                         phase: 'dirty',
-                        emits: [],
                         hash: $stats.hash,
                         startTimestamp: stats.startTime as any,
                         endTimestamp: stats.endTime as any,
@@ -43,7 +43,6 @@ export class CompilerTrackerPlugin extends HookSuitePlugin {
                     this.store.dispatch(updateCompiler({
                         id,
                         phase: 'clean',
-                        emits: [],
                         hash: $stats.hash,
                         startTimestamp: stats.startTime as any,
                         endTimestamp: stats.endTime as any

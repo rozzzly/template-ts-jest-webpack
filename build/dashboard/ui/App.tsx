@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 
 import StatusBar from './StatusBar';
 import State from '../State';
+import ScrollView from './ScrollView/ScrollView';
 
 
 export interface AppProps {
@@ -12,11 +13,24 @@ export interface AppProps {
     activeCompilers: number;
 }
 
-class _App extends React.Component<AppProps> {
+export interface AppState {
+    rows: number;
+    cols: number;
+}
+
+class App extends React.Component<AppProps, AppState> {
 
     private timer?: NodeJS.Timer;
 
+    public constructor(props: AppProps) {
+        super(props);
+        // "Only use this pattern if you intentionally want to ignore prop updates."
+        //      @see https://reactjs.org/docs/react-component.html#constructor
+        this.state = { rows: props.stdout.rows || 0, cols: props.stdout.columns || 0 };
+    }
+
     public componentDidCatch(error: Error, info: React.ErrorInfo) {
+        process.stderr.write(ansiEscapes.clearScreen);
         process.stderr.write(String(error));
         process.stderr.write(String(info));
         process.exit(-1);
@@ -25,30 +39,14 @@ class _App extends React.Component<AppProps> {
     public render(): React.ReactNode {
         return (
             <Box alignItems='flex-start' flexDirection='column'>
-                <StatusBar />
-                <Box flexGrow={1}>
-                    { this.props.activeCompilers + ' ' + String(Date.now()) }
-                </Box>
+                <StatusBar bordered={true} width={this.state.cols} />
+                <ScrollView rows={this.state.rows} cols={this.state.cols} />
             </Box>
         );
     }
 
-    // public getChildContext() {
-    //     const stdout = this.props.stdout;
-    //     return {
-    //         console: {
-    //             get width(): number {
-    //                 return !!stdout.columns ? stdout.columns : 120;
-    //             },
-    //             get height(): number {
-    //                 return !!stdout.rows ? stdout.rows :  40;
-    //             }
-    //         }
-    //     };
-    // }
-
     public componentDidMount() {
-        // this.props.stdout.on('resize', this.cleanRender.bind(this));
+        this.props.stdout.on('resize', this.onResize.bind(this));
         if (this.props.activeCompilers) {
             this.timer = setInterval(() => this.forceUpdate(), 333);
         }
@@ -58,7 +56,7 @@ class _App extends React.Component<AppProps> {
         if (prevProps.activeCompilers && !this.props.activeCompilers && this.timer) {
              clearInterval(this.timer);
         } else if (!prevProps.activeCompilers && this.props.activeCompilers && !this.timer) {
-            this.timer = setInterval(() => this.forceUpdate(), 333);
+            this.timer = setInterval(() => this.forceUpdate(), 150);
         }
     }
 
@@ -66,14 +64,20 @@ class _App extends React.Component<AppProps> {
         if (this.timer) clearInterval(this.timer);
         // this.props.stdout.off('resize', this.cleanRender);
     }
-    private cleanRender() {
-        // this.props.stdout.write(ansiEscapes.clearScreen);
-        // this.forceUpdate();
+    private onResize() {
+        this.props.stdout.write(ansiEscapes.clearScreen);
+        this.setState({
+             rows: this.props.stdout.rows || 0,
+             cols: this.props.stdout.columns || 0
+        });
     }
 }
 
-export const App = connect((state: State) => ({
+const ConnectedApp = connect((state: State) => ({
     activeCompilers: state.tracker.activeCompilers
-}))(_App);
+}))(App);
 
-export default App;
+export {
+    ConnectedApp as App,
+    ConnectedApp as default
+};

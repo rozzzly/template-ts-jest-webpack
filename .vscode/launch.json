@@ -14,6 +14,9 @@
             "remoteRoot": "/mnt/c/Users/rozzzly/Projects/template-ts-jest-webpack",
             // "program": "${workspaceFolder}\\build\\index.js",
             "stopOnEntry": true,
+            "runtimeArgs": [
+                "--preserver-symlinks"
+            ],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ]

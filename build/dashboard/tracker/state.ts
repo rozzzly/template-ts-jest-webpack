@@ -1,6 +1,6 @@
 import { Omit } from 'typelevel-ts';
 
-export type CompilerEmit = [string, number, boolean?];
+export type CompilationEmit = [string, number, boolean?];
 
 export type CompilerPhase = (
     | null // prior to first run
@@ -21,10 +21,12 @@ export namespace Time {
     }
 }
 
+export type CompilerID = string;
+
 export namespace CompilerState {
 
     interface Base<Phase extends CompilerPhase> {
-        id: string;
+        id: CompilerID;
         phase: Phase;
     }
     export interface Inactive extends Base<null> { }
@@ -33,13 +35,11 @@ export namespace CompilerState {
     }
     export interface Clean extends Base<'clean'>, Time.Period {
         hash: string;
-        emits: CompilerEmit[];
     }
     export interface Dirty extends Base<'dirty'>, Time.Period {
         hash: string;
-        warnings: any[];
-        errors: any[];
-        emits: CompilerEmit[];
+        warnings: number;
+        errors: number;
     }
     export interface Failed extends Base<'failed'>, Time.Period {
         error: any;
@@ -76,7 +76,13 @@ export namespace CompilerStatePatch {
     export type Inactive = CompilerState.Inactive;
     export type Invalid = Omit<CompilerState.Invalid, 'startTimestamp'>;
     export type Clean = Omit<CompilerState.Clean, 'duration'>;
-    export type Dirty = Omit<CompilerState.Dirty, 'duration'>;
+    export type Dirty = (
+        & Omit<CompilerState.Dirty, 'duration' | 'errors' | 'warnings'>
+        & {
+            warnings: any[];
+            errors: any[];
+        }
+    );
     export type Failed = Omit<CompilerState.Failed, 'startTimestamp' | 'endTimestamp' | 'duration'>;
 
     export type Lookup<Phase extends CompilerPhase> = (
@@ -106,16 +112,33 @@ export namespace CompilerStatePatch {
 
 export type CompilerStatePatch = CompilerStatePatch.Union;
 
-export type CompilerStateMap = Record<string, CompilerState>;
+export type CompilerStateMap = Record<CompilerID, CompilerState>;
 
-export const initialState: State = {
-    activeCompilers: 0,
-    compilers: {}
-};
+export type CompilationHash = string;
+export interface CompilationRecord extends Time.Period {
+    compiler: string;
+    hash: string;
+    errors: any[];
+    warnings: any[];
+    emits: CompilationEmit[];
+}
+export type CompilationRecordMap = Record<string, CompilationRecord>;
 
 export interface State {
     activeCompilers: number;
     compilers: CompilerStateMap;
+    builds: {
+        entries: CompilationRecordMap;
+        index: CompilationHash[];
+    };
 }
-
 export default State;
+
+export const initialState: State = {
+    activeCompilers: 0,
+    compilers: {},
+    builds: {
+        entries: {},
+        index: []
+    }
+};

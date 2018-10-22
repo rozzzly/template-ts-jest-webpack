@@ -36,10 +36,51 @@ export const reducer: Reducer<State, Actions> = (state = initialState, action) =
                 ...nCompiler,
                 duration: nCompiler.endTimestamp - nCompiler.startTimestamp
             };
+            nState.builds = {
+                entries: {
+                    ...nState.builds.entries,
+                    [nCompiler.hash]: {
+                        compiler: nCompiler.id,
+                        hash: nCompiler.hash,
+                        errors: [],
+                        warnings: [],
+                        emits: [],
+                        startTimestamp: nCompiler.startTimestamp,
+                        endTimestamp: nCompiler.endTimestamp,
+                        duration: nCompiler.endTimestamp - nCompiler.startTimestamp
+                    }
+                },
+                index: [
+                    ...nState.builds.index,
+                    nCompiler.hash
+                ]
+            };
         } else if (nCompiler.phase === 'dirty') {
+            const [ warnings, errors, ...rest ] = (nCompiler as any);
             nState.compilers[nCompiler.id] = {
-                ...nCompiler,
+                ...rest,
+                warnings: warnings.length,
+                errors: errors.length,
                 duration: nCompiler.endTimestamp - nCompiler.startTimestamp
+            };
+            nState.builds = {
+                entries: {
+                    ...nState.builds.entries,
+                    [nCompiler.hash]: {
+                        compiler: nCompiler.id,
+                        hash: nCompiler.hash,
+                        errors: errors,
+                        warnings: warnings,
+                        emits: [],
+                        startTimestamp: nCompiler.startTimestamp,
+                        endTimestamp: nCompiler.endTimestamp,
+                        duration: nCompiler.endTimestamp - nCompiler.startTimestamp
+                    }
+                },
+                index: [
+                    ...nState.builds.index,
+                    nCompiler.hash
+                ]
             };
         } else if (nCompiler.phase === 'failed') {
             const endTimestamp = Date.now();

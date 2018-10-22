@@ -4,7 +4,7 @@ export interface IncomingLogMessage {
     data?: any;
 }
 
-export interface LogMessage {
+export interface LogMessage extends IncomingLogMessage {
     id: string;
     dataStr?: string;
     timestamp: number;
