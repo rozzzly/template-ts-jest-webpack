@@ -1,12 +1,11 @@
 export interface IncomingLogMessage {
     channel: string | null;
-    message: string;
-    data?: any;
+    kind: string;
+    [extra: string]: any;
 }
 
 export interface LogMessage extends IncomingLogMessage {
     id: string;
-    dataStr?: string;
     timestamp: number;
 }
 

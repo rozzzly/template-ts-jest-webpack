@@ -100,7 +100,7 @@ export const reducer: Reducer<State, Actions> = (state = initialState, action) =
                 duration: endTimestamp - startTimestamp
             };
         }
-        // count # of compilers that are not running / `phase` is not `invalid`
+        // count # of compilers that are are running (ie: their `phase` is `invalid`)
         nState.activeCompilers = (
             (Object.keys(nState.compilers)
                 .filter(id => (

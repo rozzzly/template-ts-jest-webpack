@@ -106,3 +106,35 @@ setTimeout(() => {
     render();
     launchStageOne();
 }, 500);
+
+setTimeout(() => {
+    store.dispatch({
+        type: 'dashboard.logger:ADD_LOG',
+        payload: {
+            kind: 'LogItem',
+            channel: null,
+            message: 'foo'
+        }
+    });
+    store.dispatch({
+        type: 'dashboard.logger:ADD_LOG',
+        payload: {
+            kind: 'LogItem',
+            channel: null,
+            label: 'error',
+            message: 'dis an error yo'
+        }
+    });
+}, 3000);
+
+setTimeout(() => {
+    store.dispatch({
+        type: 'dashboard.logger:ADD_LOG',
+        payload: {
+            kind: 'wtfffff',
+            channel: null,
+            label: 'error',
+            message: 'dis an error yo'
+        }
+    });
+}, 7000);
