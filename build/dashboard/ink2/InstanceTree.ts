@@ -1,16 +1,113 @@
+import { isEqual } from 'lodash';
+import { SplitText } from './textUtils';
+
 type NodeKind = (
     | 'ContainerNode'
     | 'TextNode'
 );
 
+interface TextStyle {
+    fgColor: any;
+    bold: boolean;
+    /// TODO pull these from string-ast
+}
+
+const defaultTextStyle: TextStyle = {
+    bold: false
+} as TextStyle;
+
 type YogaNode = any; /// TODO find/write type defs
 const YogaNode: YogaNode = {};
 
+interface YogaOptions {
+    height: (
+        | string
+        | number
+    );
+    width: (
+        | string
+        | number
+    );
+    flexDirection: (
+        | 'row'
+        | 'row-reverse'
+        | 'column'
+        | 'column-reverse'
+    );
+}
+
+const defaultYogaOptions: YogaOptions = {} as YogaOptions;
+
 abstract class BaseNode<K extends NodeKind> {
     public kind: K;
-    public parent: ContainerNode | null;
-    public yoga: YogaNode | null;
-    protected linked: boolean;
+    public parent: ContainerNode | null = null;
+    public yoga: YogaNode | null = null;
+    protected yogaOpts: {
+        current: YogaOptions;
+        diff: Partial<YogaOptions>;
+        staged: YogaOptions;
+        stale: boolean;
+    };
+
+    protected linked: boolean = false;
+    protected composedTextStyle: TextStyle;
+    protected ownTextStyle: Partial<TextStyle>;
+
+    public constructor(yogaOptions: Partial<YogaOptions> = {}) {
+        this.ownTextStyle = {};
+        this.yogaOpts = {
+            current: {} as YogaOptions,
+            diff: { ...defaultYogaOptions },
+            staged: { ...defaultYogaOptions },
+            stale: true
+        };
+    }
+
+    public setTextStyle(nStyle: Partial<TextStyle>) {
+        if (!isEqual(this.ownTextStyle, nStyle)) {
+            this.ownTextStyle = { ...nStyle };
+            this.cascadeTextStyle(this.parent ? this.parent.composedTextStyle : defaultTextStyle);
+        }
+    }
+
+    public cascadeTextStyle(inherited: TextStyle): boolean {
+        const nStyle = { ...inherited, ...this.ownTextStyle };
+        const changed = isEqual(this.composedTextStyle, nStyle);
+        this.composedTextStyle = nStyle;
+        return changed;
+    }
+
+    public setYogaOptions(opts: Partial<YogaOptions>): void {
+        const condensed = opts;
+        const incoming = { ...defaultYogaOptions, ...condensed };
+        if (!isEqual(this.yogaOpts.staged, incoming)) {
+            Object.keys(incoming).forEach((key: keyof YogaOptions) => {
+                if (this.yogaOpts.staged[key] !== incoming[key]) {
+                    this.yogaOpts.staged[key] = this.yogaOpts.diff[key] = incoming[key];
+                    if (this.yogaOpts.current[key] === incoming[key]) {
+                        delete this.yogaOpts.diff[key];
+                    }
+                }
+            });
+            this.yogaOpts.stale = true;
+        }
+
+        if (this.yoga && this.yogaOpts.stale) this.applyYogaOptions();
+    }
+
+    protected applyYogaOptions(): void {
+        if (!this.yoga) {
+            throw new Error('applyYogaOptions called before node is linked.');
+        } else if (this.yogaOpts.stale) {
+            const { diff } = this.yogaOpts;
+
+
+            // update "opts" state
+            this.yogaOpts.current = {...this.yogaOpts.staged };
+            this.yogaOpts.diff = {};
+            this.yogaOpts.stale = false;
+        }
+    }
 
     public dispose(): void {
         if (this.yoga) {
@@ -20,12 +117,19 @@ abstract class BaseNode<K extends NodeKind> {
             this.yoga.free();
             this.yoga = null;
         }
+        this.yogaOpts = {
+            current: { } as YogaOptions,
+            staged: { ...this.yogaOpts.staged } ,
+            diff: { ...this.yogaOpts.staged },
+            stale: true,
+        };
         this.parent = null;
         this.linked = false;
     }
 
     public createYoga() {
         this.yoga = YogaNode.create();
+        this.applyYogaOptions();
     }
 
     public link(parent: ContainerNode | null, index: number) {
@@ -35,8 +139,12 @@ abstract class BaseNode<K extends NodeKind> {
         this.parent = parent;
         this.linked = true;
         this.createYoga();
-        if (this.parent && this.parent.yoga) {
-            this.parent.yoga.insertChild(this.yoga, index);
+        if (this.parent) {
+            this.cascadeTextStyle(this.parent.composedTextStyle);
+
+            if (this.parent.yoga) {
+                this.parent.yoga.insertChild(this.yoga, index);
+            }
         }
     }
 }
@@ -55,6 +163,15 @@ class ContainerNode extends BaseNode<'ContainerNode'> {
         super.link(parent, index);
         for (let i = 0; i < this.children.length; i++) {
             this.children[i].link(this, i);
+        }
+    }
+
+    public cascadeTextStyle(inherited: TextStyle): boolean {
+        if (super.cascadeTextStyle(inherited)) {
+            this.children.forEach(child => child.cascadeTextStyle(this.composedTextStyle));
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -149,6 +266,21 @@ class ContainerNode extends BaseNode<'ContainerNode'> {
 
 class TextNode extends BaseNode<'TextNode'> {
     public kind: 'TextNode' = 'TextNode';
+    private text: SplitText;
+
+
+
+    public get textRaw(): string {
+        return this.text.raw;
+    }
+
+    public setText(text: string): void {
+        this.text = new SplitText(text);
+        this.setYogaOptions({
+            height: this.text.height,
+            width: this.text.width
+        });
+    }
 }
 
 type NodeInstance = (
