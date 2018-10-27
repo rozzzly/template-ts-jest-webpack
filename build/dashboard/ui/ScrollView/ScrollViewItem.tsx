@@ -43,7 +43,7 @@ export abstract class ScrollViewItem<P extends ScrollViewItemProps> {
     }
     public renderItem(highlighted: boolean, width: number, omitTop: number, omitBottom: number): string {
         const height = this.height(highlighted, width);
-        const rawLines = this.renderLines(highlighted, width - (highlight);
+        const rawLines = this.renderLines(highlighted, width - (highlighted ? 2 : 0));
         const lines = rawLines.slice(omitTop, height - omitBottom);
         const str = lines.map(line => this.wrapAndPad(highlighted, width, line)).join('\n');
         return str;
