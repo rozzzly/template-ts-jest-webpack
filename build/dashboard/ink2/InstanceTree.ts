@@ -1,12 +1,12 @@
 import { isEqual } from 'lodash';
 import { SplitText } from './textUtils';
 
-type NodeKind = (
+export type NodeKind = (
     | 'ContainerNode'
     | 'TextNode'
 );
 
-interface TextStyle {
+export interface TextStyle {
     fgColor: any;
     bold: boolean;
     /// TODO pull these from string-ast
@@ -16,10 +16,10 @@ const defaultTextStyle: TextStyle = {
     bold: false
 } as TextStyle;
 
-type YogaNode = any; /// TODO find/write type defs
-const YogaNode: YogaNode = {};
+export type YogaNode = any; /// TODO find/write type defs
+export const YogaNode: YogaNode = {};
 
-interface YogaOptions {
+export interface YogaOptions {
     height: (
         | string
         | number
@@ -38,7 +38,7 @@ interface YogaOptions {
 
 const defaultYogaOptions: YogaOptions = {} as YogaOptions;
 
-abstract class BaseNode<K extends NodeKind> {
+export abstract class BaseNode<K extends NodeKind> {
     public kind: K;
     public parent: ContainerNode | null = null;
     public yoga: YogaNode | null = null;
@@ -149,7 +149,7 @@ abstract class BaseNode<K extends NodeKind> {
     }
 }
 
-class ContainerNode extends BaseNode<'ContainerNode'> {
+export class ContainerNode extends BaseNode<'ContainerNode'> {
     public kind: 'ContainerNode' = 'ContainerNode';
     protected children: NodeInstance[] = [];
 
@@ -183,22 +183,25 @@ class ContainerNode extends BaseNode<'ContainerNode'> {
         }
     }
 
-    public prependChild(node: NodeInstance): void {
+    public prependChild(node: NodeInstance): NodeInstance {
         this.children.unshift(node);
         node.link(this, 0);
+        return node;
     }
 
-    public appendChild(node: NodeInstance): void {
+    public appendChild(node: NodeInstance): NodeInstance {
         this.children.push(node);
         node.link(this, this.children.length - 1);
+        return node;
     }
 
-    public insertAt(node: NodeInstance, index: number): void {
+    public insertAt(node: NodeInstance, index: number): NodeInstance {
         if (index < 0 || index > this.children.length) {
             throw new Error('out of bounds');
         } else {
             this.children = [...this.children.slice(0, index), node, ...this.children.slice(index)];
             node.link(this, index);
+            return node;
         }
 
     }
@@ -207,13 +210,13 @@ class ContainerNode extends BaseNode<'ContainerNode'> {
      * @param node the node to insert
      * @param referenceNode the node which the new node will be inserted insert after / if null: prepend to children
      */
-    public insertAfter(node: NodeInstance, referenceNode: NodeInstance | null): void {
+    public insertAfter(node: NodeInstance, referenceNode: NodeInstance | null): NodeInstance {
         if (referenceNode === null) {
-            this.prependChild(node);
+            return this.prependChild(node);
         } else {
             const index = this.children.indexOf(node);
             if (index !== -1) {
-                this.insertAt(node, index + 1);
+                return this.insertAt(node, index + 1);
             } else {
                 throw new Error('Given reference node is not a child.');
             }
@@ -224,13 +227,13 @@ class ContainerNode extends BaseNode<'ContainerNode'> {
      * @param node the node to insert
      * @param referenceNode the node which the new node will be inserted before / if null: prepend to children
      */
-    public insertBefore(node: NodeInstance, referenceNode: NodeInstance | null): void {
+    public insertBefore(node: NodeInstance, referenceNode: NodeInstance | null): NodeInstance {
         if (referenceNode === null) {
-            this.appendChild(node);
+            return this.appendChild(node);
         } else {
             const index = this.children.indexOf(node);
             if (index !== -1) {
-                this.insertAt(node, index);
+                return this.insertAt(node, index);
             } else {
                 throw new Error('Given reference node is not a child.');
             }
@@ -264,7 +267,7 @@ class ContainerNode extends BaseNode<'ContainerNode'> {
 
 }
 
-class TextNode extends BaseNode<'TextNode'> {
+export class TextNode extends BaseNode<'TextNode'> {
     public kind: 'TextNode' = 'TextNode';
     private text: SplitText;
 
@@ -283,7 +286,10 @@ class TextNode extends BaseNode<'TextNode'> {
     }
 }
 
-type NodeInstance = (
+export type NodeInstance = (
     | ContainerNode
     | TextNode
 );
+
+export class RootNode extends ContainerNode {
+}
