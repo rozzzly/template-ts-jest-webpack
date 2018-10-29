@@ -1,11 +1,22 @@
 /**
  * @ https://github.com/Microsoft/TypeScript/issues/28046
  */
-export const literals = <T extends string>(...args: T[]): T[]  => args;
-export type ExtractLiteral<T extends ReadonlyArray<unknown>> = (
+export const literals = <T extends string>(...args: T[]): T[]  => (
+    args
+);
+
+export const literalsEnum = <T extends string/*  | number */>(...args: T[]): { [K in T]: K }  => (
+    args.reduce((reduction, lit) => ({
+        ...reduction,
+        [lit]: lit
+    }), { }) as { [K in T]: K }
+);
+export type ExtractLiterals<T> = (
     (T extends ReadonlyArray<infer Literal>
          ? Literal
-         : never
+         : T extends { }
+            ? keyof T
+            : never
     )
 );
 

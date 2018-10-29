@@ -69,5 +69,3 @@ export const BG_END: 47 = 47;
 export const BG_BRIGHT_START: 100 = 100;
 /** End of the bright background color (3bit) range */
 export const BG_BRIGHT_END: 107 = 107;
-
-export { Colors } from './AnsiColor';

@@ -1,25 +1,19 @@
-import { AnsiColor, Colors } from './AnsiColor';
-
-export type AnsiTextWeight = (
-    | 'bold'
-    | 'faint'
-    | 'normal'
-);
+import { AnsiColor } from './AnsiColor';
+import { FGColorValueMap, BGColorValueMap, TextWeight } from './composeProps';
 
 export interface AnsiStyleData {
     bgColor: AnsiColor;
     fgColor: AnsiColor;
-    weight: AnsiTextWeight;
+    weight: TextWeight;
     inverted: boolean;
     underline: boolean;
     italic: boolean;
     strike: boolean;
 }
 
-
-const baseStyleData: AnsiStyleData = {
-    fgColor: Colors.fg.DEFAULT,
-    bgColor: Colors.bg.DEFAULT,
+export const baseStyleData: AnsiStyleData = {
+    fgColor: FGColorValueMap.default,
+    bgColor: BGColorValueMap.bgDefault,
     weight: 'normal',
     inverted: false,
     underline: false,
@@ -31,7 +25,7 @@ export class AnsiStyle implements AnsiStyleData {
 
     public bgColor: AnsiColor;
     public fgColor: AnsiColor;
-    public weight: AnsiTextWeight;
+    public weight: TextWeight;
     public inverted: boolean;
     public underline: boolean;
     public italic: boolean;
@@ -56,7 +50,7 @@ export class AnsiStyle implements AnsiStyleData {
     }
 
     public get faint(): boolean {
-        return this.weight === 'bold';
+        return this.weight === 'faint';
     }
 
     public clone(): AnsiStyle {
