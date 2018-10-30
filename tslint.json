@@ -7,7 +7,7 @@
             "statements"
         ],
         "ban": false,
-        "class-name": false,
+        "class-name": true,
         "curly": false,
         "indent": [
             true,
@@ -23,7 +23,7 @@
         "no-any": false,
         "no-angle-bracket-type-assertion": true,
         "no-arg": true,
-        "no-bitwise": true,
+        "no-bitwise": false,
         "no-conditional-assignment": false,
         "no-console": [
             false,
@@ -39,7 +39,7 @@
         "no-duplicate-variable": true,
         "no-empty": false,
         "no-eval": true,
-        "number-literal-format": true,
+        "number-literal-format": false,
         "no-internal-module": true,
         "no-null-keyword": false,
         "no-require-imports": false,

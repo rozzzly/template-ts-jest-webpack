@@ -4,53 +4,13 @@ import * as codes from './AnsiCodes';
 import { literals, ExtractLiterals } from '../misc';
 import { AnsiColor, AnsiColor_3Bit, RGB } from './AnsiColor';
 import { AnsiStyleData, baseStyleData } from './AnsiStyle';
+import { ColorPalette, ColorNames, ForegroundColors } from './Ansi16Palette';
+import { BackgroundColors, BackgroundColorNames } from './ColorPalette';
 
-const paletteFromOffset = (offset: number) => ({
-    black: new AnsiColor_3Bit(0 + offset),
-    red: new AnsiColor_3Bit(1 + offset),
-    green: new AnsiColor_3Bit(2 + offset),
-    yellow: new AnsiColor_3Bit(3 + offset),
-    blue: new AnsiColor_3Bit(4 + offset),
-    magenta: new AnsiColor_3Bit(5 + offset),
-    cyan: new AnsiColor_3Bit(6 + offset),
-    white: new AnsiColor_3Bit(7 + offset)
-});
 
-const colorKeywords = literals(
-    'black',
-    'blackBright',
-    'red',
-    'redBright',
-    'green',
-    'greenBright',
-    'yellow',
-    'yellowBright',
-    'blue',
-    'blueBright',
-    'magenta',
-    'magentaBright',
-    'cyan',
-    'cyanBright',
-    'white',
-    'whiteBright',
-    'gray',
-    'grey',
-    'default'
-);
-export type ColorKeywords = ExtractLiterals<typeof colorKeywords>;
-export type ColorFlagMap = {
-    [color in ColorKeywords]?: boolean;
-};
 
-export const FGColorValueMap: { [color in ColorKeywords]: AnsiColor } = {
-    ...paletteFromOffset(codes.FG_START),
-    ...mapKeys(paletteFromOffset(codes.FG_BRIGHT_START), (_, key) => `${key}Bright`),
-    grey: new AnsiColor_3Bit(codes.FG_BRIGHT_START),
-    gray: new AnsiColor_3Bit(codes.FG_BRIGHT_START),
-    default: new AnsiColor_3Bit(codes.FG_DEFAULT)
-} as any;
-
-const bgColorKeywords = literals(
+export type ColorKeywords = ExtractLiterals<typeof ColorKeywords>;
+const BackgroundColor = literals(
     'bgBlack',
     'bgBlackBright',
     'bgRed',
@@ -71,7 +31,20 @@ const bgColorKeywords = literals(
     'bgGrey',
     'bgDefault'
 );
-export type BGColorKeywords = ExtractLiterals<typeof bgColorKeywords>;
+export type BGColorKeywords = ExtractLiterals<typeof BackgroundColorKeywords>;
+export type ColorFlagMap = {
+    [color in ColorKeywords]?: boolean;
+};
+
+export const FGColorValueMap: { [color in ColorKeywords]: AnsiColor } = {
+    ...paletteFromOffset(codes.FG_START),
+    ...mapKeys(paletteFromOffset(codes.FG_BRIGHT_START), (_, key) => `${key}Bright`),
+    grey: new AnsiColor_3Bit(codes.FG_BRIGHT_START),
+    gray: new AnsiColor_3Bit(codes.FG_BRIGHT_START),
+    default: new AnsiColor_3Bit(codes.FG_DEFAULT)
+} as any;
+
+
 export type BGColorFlagMap = {
     [color in BGColorKeywords]?: boolean;
 };
@@ -124,7 +97,7 @@ export type AnsiStyleProps = (
 );
 
 const quickFlagTest = {
-    color: colorKeywords.reduce((reduction, key) => ({
+    color: ColorKeywords.reduce((reduction, key) => ({
         ...reduction,
         [key]: true
     }), {}) as Record<string, true>,
@@ -160,6 +133,17 @@ export function composeProps(props: AnsiStyleProps) {
     }
 
     for (const [key, value] of Object.entries(props)) {
+        if (ColorPalette[key as ColorNames] && value === true) {
+            if (BackgroundColors[key as BackgroundColorNames]) {
+                if (!explicitBackground) {
+                    props.background = ColorPalette[key as ColorNames];
+                }
+            } else {
+                if (!explicitColor) {
+                    props.color = ColorPalette[key as ColorNames];
+                }
+            }
+        } else {
         if (key === 'color') {
             explicitColor = true;
             style

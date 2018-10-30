@@ -55,8 +55,8 @@ export class AnsiStyle implements AnsiStyleData {
 
     public clone(): AnsiStyle {
         return new AnsiStyle({
-            bgColor: this.bgColor.clone(),
-            fgColor: this.fgColor.clone(),
+            bgColor: this.bgColor,
+            fgColor: this.fgColor,
             weight: this.weight,
             inverted: this.inverted,
             underline: this.underline,
@@ -67,13 +67,13 @@ export class AnsiStyle implements AnsiStyleData {
 
     public equalTo(other: AnsiStyle): boolean {
         return (
-            this.fgColor.equalTo(other.fgColor)
-            && this.bgColor.equalTo(other.bgColor)
-            && this.weight === other.weight
-            && this.italic === other.italic
-            && this.underline === other.underline
-            && this.inverted === other.inverted
-            && this.strike === other.strike
+            this.fgColor.equalTo(other.fgColor) &&
+            this.bgColor.equalTo(other.bgColor) &&
+            this.weight === other.weight &&
+            this.italic === other.italic &&
+            this.underline === other.underline &&
+            this.inverted === other.inverted &&
+            this.strike === other.strike
         );
     }
 }

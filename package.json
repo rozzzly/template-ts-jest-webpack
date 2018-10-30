@@ -23,6 +23,7 @@
   "devDependencies": {
     "@types/ansi-escapes": "^3.0.0",
     "@types/blessed": "^0.1.10",
+    "@types/color-convert": "^1.9.0",
     "@types/express": "^4.16.0",
     "@types/jest": "^23.3.5",
     "@types/lodash": "^4.14.117",
@@ -70,6 +71,8 @@
     "wrap-ansi": "^4.0.0"
   },
   "dependencies": {
+    "color-convert": "^1.9.3",
+    "color-names": "^2.0.0",
     "express": "^4.16.4",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
