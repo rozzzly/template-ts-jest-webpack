@@ -271,18 +271,18 @@ export class TextNode extends BaseNode<'TextNode'> {
     public kind: 'TextNode' = 'TextNode';
     private text: SplitText;
 
-
-
     public get textRaw(): string {
         return this.text.raw;
     }
 
     public setText(text: string): void {
-        this.text = new SplitText(text);
-        this.setYogaOptions({
-            height: this.text.height,
-            width: this.text.width
-        });
+        if (this.text && this.text.raw !== text) {
+            this.text = new SplitText(text);
+            this.setYogaOptions({
+                height: this.text.height,
+                width: this.text.width
+            });
+        }
     }
 }
 

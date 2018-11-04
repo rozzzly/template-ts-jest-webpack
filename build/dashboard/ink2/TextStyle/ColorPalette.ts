@@ -1,5 +1,5 @@
 import { literals, ExtractLiterals, literalsEnum } from '../misc';
-import { AnsiColorMode, AnsiColor } from './AnsiColor';
+import { TextColorMode, TextColor } from './TextColor';
 
 export const ForegroundColors = literalsEnum(
     'black',
@@ -49,27 +49,27 @@ export type BackgroundColorNames = ExtractLiterals<typeof BackgroundColors>;
 export type ColorNames = BackgroundColorNames | ForegroundColorNames;
 
 export type ColorPalette = {
-    [name in ColorNames]: AnsiColor
+    [name in ColorNames]: TextColor
 };
 
 export const ColorPalette = {
-    black: new AnsiColor(0, AnsiColorMode.Ansi16),
-    red: new AnsiColor(1, AnsiColorMode.Ansi16),
-    green: new AnsiColor(2, AnsiColorMode.Ansi16),
-    yellow:  new AnsiColor(3, AnsiColorMode.Ansi16),
-    blue: new AnsiColor(4, AnsiColorMode.Ansi16),
-    magenta: new AnsiColor(5, AnsiColorMode.Ansi16),
-    cyan: new AnsiColor(6, AnsiColorMode.Ansi16),
-    white: new AnsiColor(7, AnsiColorMode.Ansi16),
-    blackBright: new AnsiColor(8, AnsiColorMode.Ansi16),
-    redBright: new AnsiColor(9, AnsiColorMode.Ansi16),
-    greenBright: new AnsiColor(10, AnsiColorMode.Ansi16),
-    yellowBright:  new AnsiColor(11, AnsiColorMode.Ansi16),
-    blueBright: new AnsiColor(12, AnsiColorMode.Ansi16),
-    magentaBright: new AnsiColor(13, AnsiColorMode.Ansi16),
-    cyanBright: new AnsiColor(14, AnsiColorMode.Ansi16),
-    whiteBright: new AnsiColor(15, AnsiColorMode.Ansi16),
-    default: new AnsiColor('default')
+    black: new TextColor(0, TextColorMode.Ansi16),
+    red: new TextColor(1, TextColorMode.Ansi16),
+    green: new TextColor(2, TextColorMode.Ansi16),
+    yellow:  new TextColor(3, TextColorMode.Ansi16),
+    blue: new TextColor(4, TextColorMode.Ansi16),
+    magenta: new TextColor(5, TextColorMode.Ansi16),
+    cyan: new TextColor(6, TextColorMode.Ansi16),
+    white: new TextColor(7, TextColorMode.Ansi16),
+    blackBright: new TextColor(8, TextColorMode.Ansi16),
+    redBright: new TextColor(9, TextColorMode.Ansi16),
+    greenBright: new TextColor(10, TextColorMode.Ansi16),
+    yellowBright:  new TextColor(11, TextColorMode.Ansi16),
+    blueBright: new TextColor(12, TextColorMode.Ansi16),
+    magentaBright: new TextColor(13, TextColorMode.Ansi16),
+    cyanBright: new TextColor(14, TextColorMode.Ansi16),
+    whiteBright: new TextColor(15, TextColorMode.Ansi16),
+    default: new TextColor('default')
 } as ColorPalette;
 
 /// NOTE :: palette is intentionally built in multiple steps so the `bg{ColorName}` aliases
@@ -80,3 +80,13 @@ Object.keys(ColorPalette).forEach((name: ColorNames) => {
         `bg${name[0].toUpperCase() + name.slice(1)}` as ColorNames
     ] = ColorPalette[name];
 });
+
+
+export type ForegroundColorFlagMap = {
+    [color in ForegroundColorNames]?: boolean;
+};
+
+export type BackgroundColorFlagMap = {
+    [color in BackgroundColorNames]?: boolean;
+};
+

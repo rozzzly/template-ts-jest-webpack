@@ -1,5 +1,4 @@
 import * as strWidth from 'string-width';
-import stringWidth = require('string-width');
 
 const newlineRegex: RegExp = /\r?\n/g;
 const ansiStyleRegex: RegExp = /(\u001b\[(?:\d+;)*\d+m)/u;
@@ -25,7 +24,7 @@ export class SplitText {
             this.lines = this.normalized.split(newlineRegex);
             let maxWidth: number = 0;
             this.lineWidths = this.lines.map(line => {
-                const width = stringWidth(line);
+                const width = strWidth(line);
                 if (width > this.width) {
                     maxWidth = width;
                 }

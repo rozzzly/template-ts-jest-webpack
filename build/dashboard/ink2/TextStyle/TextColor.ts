@@ -1,11 +1,9 @@
 // @see https://github.com/rozzzly/string-ast/blob/master/src/Ansi/AnsiColor.ts
 import * as convert from 'color-convert';
 import * as htmlColorNames from 'color-name';
-import { isEqual } from 'lodash';
 import * as codes  from './AnsiCodes';
 import { inRange, literalsEnum, ExtractLiterals } from '../misc';
 import { ColorPalette } from './ColorPalette';
-import { ColorKeywords } from './composeProps';
 
 export type RGB = (
     | RGBTuple
@@ -33,25 +31,25 @@ export const compareRGBTuple = (left: RGBTuple, right: RGBTuple): boolean => (
 );
 
 
-export const AnsiColorMode = literalsEnum('Ansi16', 'Ansi256', 'rgb');
-export type AnsiColorMode = ExtractLiterals<typeof AnsiColorMode>;
+export const TextColorMode = literalsEnum('Ansi16', 'Ansi256', 'rgb');
+export type TextColorMode = ExtractLiterals<typeof TextColorMode>;
 
 /// TODO ::: graceful fallback
 
 
 const HexRegex = /[a-f0-9]{6}|[a-f0-9]{3}/;
 
-export class AnsiColor {
-    public mode: AnsiColorMode | null;
+export class TextColor {
+    public mode: TextColorMode | null;
     public value: RGBTuple | number | 'default';
 
-    public static fromString(str: string): AnsiColor | null {
+    public static fromString(str: string): TextColor | null {
         const lower = str.toLowerCase();
         let match: RegExpExecArray | null;
         // @ts-ignore
         if (htmlColorNames[lower]) {
             // @ts-ignore
-            return new AnsiColor(htmlColorNames[lower]);
+            return new TextColor(htmlColorNames[lower]);
         } else if (match = HexRegex.exec(str)) {
             const fullHex = ((match[0].length === 6)
                 ? match[0]
@@ -62,7 +60,7 @@ export class AnsiColor {
                 )
             );
             const dec = parseInt(fullHex, 16);
-            return new AnsiColor([
+            return new TextColor([
                 (dec >> 16) & 0xff,
                 (dec >> 8) & 0xff,
                 dec & 0xff
@@ -76,14 +74,14 @@ export class AnsiColor {
 
     public constructor(value: RGB);
     public constructor(value: 'default');
-    public constructor(value: number, mode: Exclude<AnsiColorMode, 'rgb'>);
-    public constructor(value: RGB | number | 'default', mode: AnsiColorMode | null = null) {
+    public constructor(value: number, mode: Exclude<TextColorMode, 'rgb'>);
+    public constructor(value: RGB | number | 'default', mode: TextColorMode | null = null) {
         if (value === 'default') {
             this.value = value;
             this.mode = null;
         } else if (typeof value === 'number') {
-            if (mode === AnsiColorMode.Ansi16) {
-                this.mode = AnsiColorMode.Ansi16;
+            if (mode === TextColorMode.Ansi16) {
+                this.mode = TextColorMode.Ansi16;
                 if (inRange(0, 15, value)) {
                     // accept 0-based Ansi16 palette
                     this.value = value;
@@ -104,14 +102,14 @@ export class AnsiColor {
                         throw new Error('Invalid Ansi16 value.');
                     }
                 }
-            } else if (mode === AnsiColorMode.Ansi256 && inRange(0, 255, value)) {
+            } else if (mode === TextColorMode.Ansi256 && inRange(0, 255, value)) {
                 this.value = value;
-                this.mode = AnsiColorMode.Ansi256;
+                this.mode = TextColorMode.Ansi256;
             } else {
                 throw new Error('Numeric values must specify Ansi16 / Ansi256 and be in range of their palette (or an corresponding SRG code if Ansi16).');
             }
         } else if (typeof value === 'object') {
-            this.mode = AnsiColorMode.rgb;
+            this.mode = TextColorMode.rgb;
             if (isRGBTuple(value)) {
                 this.value = value;
             } else {
@@ -128,7 +126,7 @@ export class AnsiColor {
 
     }
 
-    public equalTo(other: AnsiColor): boolean {
+    public equalTo(other: TextColor): boolean {
         if (this === other) return true; // quick test for referential equality (eg used predefined consts)
         const selfIsDefault = this.value === 'default';
         const otherIsDefault = other.value === 'default';
@@ -138,10 +136,10 @@ export class AnsiColor {
         } else if (selfIsDefault || otherIsDefault) {
             return false;
         } else {
-            const selfIs256 = this.mode === AnsiColorMode.Ansi256;
-            const selfIsRGB = this.mode === AnsiColorMode.rgb;
-            const otherIs256 = other.mode === AnsiColorMode.Ansi256;
-            const otherIsRGB = other.mode === AnsiColorMode.rgb;
+            const selfIs256 = this.mode === TextColorMode.Ansi256;
+            const selfIsRGB = this.mode === TextColorMode.rgb;
+            const otherIs256 = other.mode === TextColorMode.Ansi256;
+            const otherIsRGB = other.mode === TextColorMode.rgb;
             if (selfIsRGB || otherIsRGB) {
                 if (selfIsRGB && otherIsRGB) {
                     return compareRGBTuple(this.value as RGBTuple, other.value as RGBTuple);
@@ -172,7 +170,7 @@ export class AnsiColor {
 }
 
 export type ColorValue = (
-    | AnsiColor
+    | TextColor
     | RGB
     | number
     | string

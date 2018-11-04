@@ -1,9 +1,10 @@
-import { AnsiColor } from './AnsiColor';
-import { FGColorValueMap, BGColorValueMap, TextWeight } from './composeProps';
+import { TextColor } from './TextColor';
+import { ColorPalette } from './ColorPalette';
+import { TextWeight } from './composeProps';
 
-export interface AnsiStyleData {
-    bgColor: AnsiColor;
-    fgColor: AnsiColor;
+export interface TextStyleData {
+    bgColor: TextColor;
+    fgColor: TextColor;
     weight: TextWeight;
     inverted: boolean;
     underline: boolean;
@@ -11,20 +12,20 @@ export interface AnsiStyleData {
     strike: boolean;
 }
 
-export const baseStyleData: AnsiStyleData = {
-    fgColor: FGColorValueMap.default,
-    bgColor: BGColorValueMap.bgDefault,
-    weight: 'normal',
+export const baseStyleData: TextStyleData = {
+    fgColor: ColorPalette.default,
+    bgColor: ColorPalette.bgDefault,
+    weight: TextWeight.normal,
     inverted: false,
     underline: false,
     italic: false,
     strike: false
 };
 
-export class AnsiStyle implements AnsiStyleData {
+export class TextStyle implements TextStyleData {
 
-    public bgColor: AnsiColor;
-    public fgColor: AnsiColor;
+    public bgColor: TextColor;
+    public fgColor: TextColor;
     public weight: TextWeight;
     public inverted: boolean;
     public underline: boolean;
@@ -32,9 +33,9 @@ export class AnsiStyle implements AnsiStyleData {
     public strike: boolean;
 
     public constructor();
-    public constructor(style: AnsiStyleData);
-    public constructor(style: Partial<AnsiStyleData>);
-    public constructor(style: Partial<AnsiStyleData> = {}) {
+    public constructor(style: TextStyleData);
+    public constructor(style: Partial<TextStyleData>);
+    public constructor(style: Partial<TextStyleData> = {}) {
         const data = { ...baseStyleData, ...style };
         this.bgColor = data.bgColor;
         this.fgColor = data.fgColor;
@@ -53,8 +54,8 @@ export class AnsiStyle implements AnsiStyleData {
         return this.weight === 'faint';
     }
 
-    public clone(): AnsiStyle {
-        return new AnsiStyle({
+    public clone(): TextStyle {
+        return new TextStyle({
             bgColor: this.bgColor,
             fgColor: this.fgColor,
             weight: this.weight,
@@ -65,8 +66,8 @@ export class AnsiStyle implements AnsiStyleData {
         });
     }
 
-    public equalTo(other: AnsiStyle): boolean {
-        return (
+    public equalTo(other: TextStyle): boolean {
+        return (this === other || (
             this.fgColor.equalTo(other.fgColor) &&
             this.bgColor.equalTo(other.bgColor) &&
             this.weight === other.weight &&
@@ -74,6 +75,6 @@ export class AnsiStyle implements AnsiStyleData {
             this.underline === other.underline &&
             this.inverted === other.inverted &&
             this.strike === other.strike
-        );
+        ));
     }
 }
