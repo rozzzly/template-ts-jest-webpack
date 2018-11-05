@@ -12,6 +12,8 @@ export interface TextStyleData {
     strike: boolean;
 }
 
+export type OwnStyle = Partial<TextStyleData>;
+
 export const baseStyleData: TextStyleData = {
     fgColor: ColorPalette.default,
     bgColor: ColorPalette.bgDefault,
@@ -33,7 +35,6 @@ export class TextStyle implements TextStyleData {
     public strike: boolean;
 
     public constructor();
-    public constructor(style: TextStyleData);
     public constructor(style: Partial<TextStyleData>);
     public constructor(style: Partial<TextStyleData> = {}) {
         const data = { ...baseStyleData, ...style };
@@ -66,8 +67,38 @@ export class TextStyle implements TextStyleData {
         });
     }
 
+    public mutate(style: OwnStyle): TextStyle {
+        const clone = this.clone();
+
+        if (style.fgColor !== undefined) {
+            clone.fgColor = style.fgColor;
+        }
+        if (style.bgColor !== undefined) {
+            clone.bgColor = style.bgColor;
+        }
+        if (style.inverted !== undefined) {
+            clone.inverted = style.inverted;
+        }
+        if (style.italic !== undefined) {
+            clone.italic = style.italic;
+        }
+        if (style.strike !== undefined) {
+            clone.strike = style.strike;
+        }
+        if (style.underline !== undefined) {
+            clone.underline = style.underline;
+        }
+        if (style.weight !== undefined) {
+            clone.weight = style.weight;
+        }
+
+        return this.equalTo(clone) ? this : clone;
+    }
+
     public equalTo(other: TextStyle): boolean {
-        return (this === other || (
+        return ((
+            this === other
+        ) || (
             this.fgColor.equalTo(other.fgColor) &&
             this.bgColor.equalTo(other.bgColor) &&
             this.weight === other.weight &&
@@ -77,4 +108,28 @@ export class TextStyle implements TextStyleData {
             this.strike === other.strike
         ));
     }
+
+    public static equalTo(alpha: Partial<TextStyleData>, bravo: Partial<TextStyleData>): boolean {
+        return ((
+            alpha === bravo
+        ) || (
+            ((alpha.fgColor === undefined && bravo.fgColor === undefined) || (
+                alpha.fgColor !== undefined &&
+                bravo.fgColor !== undefined &&
+                alpha.fgColor.equalTo(bravo.fgColor)
+            )) &&
+            ((alpha.bgColor === undefined && bravo.bgColor === undefined) || (
+                alpha.bgColor !== undefined &&
+                bravo.bgColor !== undefined &&
+                alpha.bgColor.equalTo(bravo.bgColor)
+            )) &&
+            alpha.inverted === bravo.inverted &&
+            alpha.italic === bravo.italic &&
+            alpha.strike === bravo.strike &&
+            alpha.underline === bravo.underline &&
+            alpha.weight === bravo.weight
+        ));
+    }
 }
+
+export const baseStyle = new TextStyle(baseStyleData);

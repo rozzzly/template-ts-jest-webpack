@@ -1,20 +1,11 @@
 import { isEqual } from 'lodash';
 import { SplitText } from './textUtils';
+import { TextStyle, TextStyleData, OwnStyle, baseStyle } from './TextStyle/TextStyle';
 
 export type NodeKind = (
     | 'ContainerNode'
     | 'TextNode'
 );
-
-export interface TextStyle {
-    fgColor: any;
-    bold: boolean;
-    /// TODO pull these from string-ast
-}
-
-const defaultTextStyle: TextStyle = {
-    bold: false
-} as TextStyle;
 
 export type YogaNode = any; /// TODO find/write type defs
 export const YogaNode: YogaNode = {};
@@ -36,7 +27,7 @@ export interface YogaOptions {
     );
 }
 
-const defaultYogaOptions: YogaOptions = {} as YogaOptions;
+const baseYogaOptions: YogaOptions = {} as YogaOptions;
 
 export abstract class BaseNode<K extends NodeKind> {
     public kind: K;
@@ -50,36 +41,36 @@ export abstract class BaseNode<K extends NodeKind> {
     };
 
     protected linked: boolean = false;
-    protected composedTextStyle: TextStyle;
-    protected ownTextStyle: Partial<TextStyle>;
+    protected composedStyle: TextStyle;
+    protected ownStyle: Partial<TextStyleData>;
 
     public constructor(yogaOptions: Partial<YogaOptions> = {}) {
-        this.ownTextStyle = {};
+        this.parent = null;
+        this.ownStyle = {};
         this.yogaOpts = {
             current: {} as YogaOptions,
-            diff: { ...defaultYogaOptions },
-            staged: { ...defaultYogaOptions },
+            diff: { ...baseYogaOptions },
+            staged: { ...baseYogaOptions },
             stale: true
         };
     }
 
-    public setTextStyle(nStyle: Partial<TextStyle>) {
-        if (!isEqual(this.ownTextStyle, nStyle)) {
-            this.ownTextStyle = { ...nStyle };
-            this.cascadeTextStyle(this.parent ? this.parent.composedTextStyle : defaultTextStyle);
+    public setTextStyle(styleData: OwnStyle) {
+        if (!TextStyle.equalTo(this.ownStyle, styleData)) {
+            this.ownStyle = { ...styleData };
+            this.cascadeTextStyle(this.parent ? this.parent.composedStyle : baseStyle);
         }
     }
 
     public cascadeTextStyle(inherited: TextStyle): boolean {
-        const nStyle = { ...inherited, ...this.ownTextStyle };
-        const changed = isEqual(this.composedTextStyle, nStyle);
-        this.composedTextStyle = nStyle;
-        return changed;
+        const old = this.composedStyle;
+        this.composedStyle = inherited.mutate(this.ownStyle);
+        return this.composedStyle === old;
     }
 
     public setYogaOptions(opts: Partial<YogaOptions>): void {
         const condensed = opts;
-        const incoming = { ...defaultYogaOptions, ...condensed };
+        const incoming = { ...baseYogaOptions, ...condensed };
         if (!isEqual(this.yogaOpts.staged, incoming)) {
             Object.keys(incoming).forEach((key: keyof YogaOptions) => {
                 if (this.yogaOpts.staged[key] !== incoming[key]) {
@@ -140,7 +131,7 @@ export abstract class BaseNode<K extends NodeKind> {
         this.linked = true;
         this.createYoga();
         if (this.parent) {
-            this.cascadeTextStyle(this.parent.composedTextStyle);
+            this.cascadeTextStyle(this.parent.composedStyle);
 
             if (this.parent.yoga) {
                 this.parent.yoga.insertChild(this.yoga, index);
@@ -168,7 +159,7 @@ export class ContainerNode extends BaseNode<'ContainerNode'> {
 
     public cascadeTextStyle(inherited: TextStyle): boolean {
         if (super.cascadeTextStyle(inherited)) {
-            this.children.forEach(child => child.cascadeTextStyle(this.composedTextStyle));
+            this.children.forEach(child => child.cascadeTextStyle(this.composedStyle));
             return true;
         } else {
             return false;
@@ -292,4 +283,7 @@ export type NodeInstance = (
 );
 
 export class RootNode extends ContainerNode {
+    public parent = null;
+    public ownStyle = {};
+    public composedStyle = baseStyle;
 }
