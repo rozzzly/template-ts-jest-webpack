@@ -1,4 +1,4 @@
-import { literals, ExtractLiterals, literalsEnum } from '../misc';
+import { literals, ExtractLiterals, literalsEnum } from '../../misc';
 import { TextColorMode, TextColor } from './TextColor';
 
 export const ForegroundColors = literalsEnum(

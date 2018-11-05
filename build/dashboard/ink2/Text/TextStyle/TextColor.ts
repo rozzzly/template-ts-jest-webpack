@@ -2,7 +2,7 @@
 import * as convert from 'color-convert';
 import * as htmlColorNames from 'color-name';
 import * as codes  from './AnsiCodes';
-import { inRange, literalsEnum, ExtractLiterals } from '../misc';
+import { inRange, literalsEnum, ExtractLiterals } from '../../misc';
 import { ColorPalette } from './ColorPalette';
 
 export type RGB = (
@@ -124,6 +124,41 @@ export class TextColor {
             throw new Error('Unexpected call signature');
         }
 
+    }
+
+    public fgCode(): string {
+        let params: number[];
+        if (this.mode === TextColorMode.rgb) {
+            params = [codes.FG_CUSTOM, codes.COLOR_MODE_RGB, ...(this.value as RGBTuple)];
+        } else if (this.mode === TextColorMode.Ansi256) {
+            params = [codes.FG_CUSTOM, codes.COLOR_MODE_ANSI_256, this.value as number];
+        } else if (this.mode === TextColorMode.Ansi16) {
+            if ((this.value as number) < 8) {
+                params = [codes.FG_START + (this.value as number)];
+            } else {
+                params = [codes.FG_BRIGHT_START + (this.value as number)];
+            }
+        } else {
+            params = [codes.FG_DEFAULT];
+        }
+        return `\u001b[${params.join(';')}m`;
+    }
+    public bgCode(): string {
+        let params: number[];
+        if (this.mode === TextColorMode.rgb) {
+            params = [codes.BG_CUSTOM, codes.COLOR_MODE_RGB, ...(this.value as RGBTuple)];
+        } else if (this.mode === TextColorMode.Ansi256) {
+            params = [codes.BG_CUSTOM, codes.COLOR_MODE_ANSI_256, this.value as number];
+        } else if (this.mode === TextColorMode.Ansi16) {
+            if ((this.value as number) < 8) {
+                params = [codes.BG_START + (this.value as number)];
+            } else {
+                params = [codes.BG_BRIGHT_START + (this.value as number)];
+            }
+        } else {
+            params = [codes.BG_DEFAULT];
+        }
+        return `\u001b[${params.join(';')}m`;
     }
 
     public equalTo(other: TextColor): boolean {

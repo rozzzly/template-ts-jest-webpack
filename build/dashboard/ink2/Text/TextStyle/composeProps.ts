@@ -1,7 +1,4 @@
-import { mapKeys } from 'lodash';
-
-import * as codes from './AnsiCodes';
-import { literals, ExtractLiterals, literalsEnum } from '../misc';
+import { ExtractLiterals, literalsEnum } from '../../misc';
 import { TextColor, ColorValue } from './TextColor';
 import { TextStyleData, baseStyleData } from './TextStyle';
 import { BackgroundColors, BackgroundColorNames, ForegroundColorFlagMap, ColorPalette, ColorNames, BackgroundColorFlagMap } from './ColorPalette';
