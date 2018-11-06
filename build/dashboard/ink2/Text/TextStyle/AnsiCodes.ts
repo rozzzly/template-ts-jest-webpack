@@ -16,19 +16,19 @@ export const ITALIC_ON = 3;
 export const ITALIC_OFF = 23;
 
 /** Sets the text to be underlined */
-export const UNDERLINED_ON = 4;
+export const UNDERLINE_ON = 4;
 /** Sets the text to NOT be underlined */
-export const UNDERLINED_OFF = 24;
+export const UNDERLINE_OFF = 24;
 
 /**  Sets the text to be inverted/inverse/"reverse video" (swap foreground and background color) */
-export const INVERTED_ON = 7;
+export const INVERT_ON = 7;
 /**  Sets the text to NOT be inverted/inverse/"reverse video" (swap foreground and background color) */
-export const INVERTED_OFF = 27;
+export const INVERT_OFF = 27;
 
 /** Sets the text to be striked-out */
-export const STRIKED_ON = 9;
+export const STRIKE_ON = 9;
 /** Sets the text to NOT be striked-out */
-export const STRIKED_OFF = 29;
+export const STRIKE_OFF = 29;
 
 /** Sets the foreground of the text to be the default color */
 export const FG_DEFAULT = 39;
@@ -59,3 +59,5 @@ export const BG_END = 47;
 export const BG_BRIGHT_START = 100;
 /** End of the bright background color (3bit) range */
 export const BG_BRIGHT_END = 107;
+
+export const composeCode = (params: number[]): string => `\u001b[${params.join(';')}m`;

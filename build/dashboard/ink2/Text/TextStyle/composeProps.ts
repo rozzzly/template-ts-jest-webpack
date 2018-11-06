@@ -1,7 +1,7 @@
 import { ExtractLiterals, literalsEnum } from '../../misc';
 import { TextColor, ColorValue } from './TextColor';
 import { TextStyleData, baseStyleData } from './TextStyle';
-import { BackgroundColors, BackgroundColorNames, ForegroundColorFlagMap, ColorPalette, ColorNames, BackgroundColorFlagMap } from './ColorPalette';
+import { BackgroundColor, BackgroundColorName, ForegroundColorFlagMap, ColorPalette, ColorName, BackgroundColorFlagMap } from './ColorPalette';
 
 
 
@@ -54,21 +54,21 @@ export function composeProps(props: AnsiStyleProps) {
     }
 
     for (const [key, value] of Object.entries(props)) {
-        if (ColorPalette[key as ColorNames] && value === true) {
-            if (BackgroundColors[key as BackgroundColorNames]) {
+        if (ColorPalette[key as ColorName] && value === true) {
+            if (BackgroundColor[key as BackgroundColorName]) {
                 if (!explicitBackground) {
-                    style.bgColor = ColorPalette[key as ColorNames];
+                    style.bgColor = ColorPalette[key as ColorName];
                 }
             } else {
                 if (!explicitColor) {
-                    style.fgColor = ColorPalette[key as ColorNames];
+                    style.fgColor = ColorPalette[key as ColorName];
                 }
             }
         } else if (key === 'color') {
             if (typeof value === 'string') {
-                if (ColorPalette[value as ColorNames]) {
+                if (ColorPalette[value as ColorName]) {
                     explicitColor = true;
-                    style.fgColor = ColorPalette[value as ColorNames];
+                    style.fgColor = ColorPalette[value as ColorName];
                 } else {
                     const parsed = TextColor.fromString(value);
                     if (parsed) {
@@ -82,9 +82,9 @@ export function composeProps(props: AnsiStyleProps) {
             } /// else throw? warn?
         } else if (key === 'background') {
             if (typeof value === 'string') {
-                if (ColorPalette[value as ColorNames]) {
+                if (ColorPalette[value as ColorName]) {
                     explicitBackground = true;
-                    style.bgColor = ColorPalette[value as ColorNames];
+                    style.bgColor = ColorPalette[value as ColorName];
                 } else {
                     const parsed = TextColor.fromString(value);
                     if (parsed) {
@@ -98,7 +98,7 @@ export function composeProps(props: AnsiStyleProps) {
             } /// else throw? warn?
         } else if (TextTransform[key as TextTransform]) {
             if (key === 'reset' && value === true) {
-                reset = true;
+                style = { ...baseStyleData };
             } else {
                 style[key as Exclude<TextTransform, 'reset'>] = value;
             }
@@ -110,12 +110,7 @@ export function composeProps(props: AnsiStyleProps) {
         } // log prop??
     }
 
-
-    if (reset) {
-        return { ...baseStyleData, ...style };
-    } else {
-        return style;
-    }
+    return style;
 }
 
 export default composeProps;

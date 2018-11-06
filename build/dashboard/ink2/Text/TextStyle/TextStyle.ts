@@ -1,6 +1,7 @@
 import { TextColor } from './TextColor';
 import { ColorPalette } from './ColorPalette';
 import { TextWeight } from './composeProps';
+import * as codes from './AnsiCodes';
 
 export interface TextStyleData {
     bgColor: TextColor;
@@ -35,8 +36,8 @@ export class TextStyle implements TextStyleData {
     public strike: boolean;
 
     public constructor();
-    public constructor(style: Partial<TextStyleData>);
-    public constructor(style: Partial<TextStyleData> = {}) {
+    public constructor(style: OwnStyle);
+    public constructor(style: OwnStyle = {}) {
         const data = { ...baseStyleData, ...style };
         this.bgColor = data.bgColor;
         this.fgColor = data.fgColor;
@@ -67,32 +68,69 @@ export class TextStyle implements TextStyleData {
         });
     }
 
+    public code(inherited: TextStyle): string {
+        let params: number[] = [];
+
+        if (!this.fgColor.equalTo(inherited.fgColor)) {
+            params = params.concat(this.fgColor.fgCode(false));
+        }
+        if (!this.bgColor.equalTo(inherited.bgColor)) {
+            params = params.concat(this.bgColor.bgCode(false));
+        }
+        if (this.weight !== inherited.weight) {
+            if (this.weight === TextWeight.normal) params.push(codes.WEIGHT_NORMAL);
+            else if (this.weight === TextWeight.bold) params.push(codes.WEIGHT_BOLD);
+            else params.push(codes.WEIGHT_FAINT);
+        }
+        if (this.italic !== inherited.italic) {
+            if (this.italic) params.push(codes.ITALIC_ON);
+            else params.push(codes.ITALIC_OFF);
+        }
+        if (this.underline !== inherited.underline) {
+            if (this.underline) params.push(codes.UNDERLINE_ON);
+            else params.push(codes.UNDERLINE_OFF);
+        }
+        if (this.strike !== inherited.strike) {
+            if (this.strike) params.push(codes.STRIKE_ON);
+            else params.push(codes.STRIKE_OFF);
+        }
+        if (this.inverted !== inherited.inverted) {
+            if (this.inverted) params.push(codes.INVERT_ON);
+            else params.push(codes.INVERT_OFF);
+        }
+
+        return codes.composeCode(params);
+    }
+
     public mutate(style: OwnStyle): TextStyle {
-        const clone = this.clone();
+        if (Object.keys(style).length === 0) return this;
+        else {
+            const clone = this.clone();
 
-        if (style.fgColor !== undefined) {
-            clone.fgColor = style.fgColor;
-        }
-        if (style.bgColor !== undefined) {
-            clone.bgColor = style.bgColor;
-        }
-        if (style.inverted !== undefined) {
-            clone.inverted = style.inverted;
-        }
-        if (style.italic !== undefined) {
-            clone.italic = style.italic;
-        }
-        if (style.strike !== undefined) {
-            clone.strike = style.strike;
-        }
-        if (style.underline !== undefined) {
-            clone.underline = style.underline;
-        }
-        if (style.weight !== undefined) {
-            clone.weight = style.weight;
-        }
+            if (style.fgColor !== undefined) {
+                clone.fgColor = style.fgColor;
+            }
+            if (style.bgColor !== undefined) {
+                clone.bgColor = style.bgColor;
+            }
+            if (style.inverted !== undefined) {
+                clone.inverted = style.inverted;
+            }
+            if (style.italic !== undefined) {
+                clone.italic = style.italic;
+            }
+            if (style.strike !== undefined) {
+                clone.strike = style.strike;
+            }
+            if (style.underline !== undefined) {
+                clone.underline = style.underline;
+            }
+            if (style.weight !== undefined) {
+                clone.weight = style.weight;
+            }
 
-        return this.equalTo(clone) ? this : clone;
+            return this.equalTo(clone) ? this : clone;
+        }
     }
 
     public equalTo(other: TextStyle): boolean {
@@ -109,7 +147,7 @@ export class TextStyle implements TextStyleData {
         ));
     }
 
-    public static equalTo(alpha: Partial<TextStyleData>, bravo: Partial<TextStyleData>): boolean {
+    public static equalTo(alpha: OwnStyle, bravo: OwnStyle): boolean {
         return ((
             alpha === bravo
         ) || (
@@ -132,4 +170,4 @@ export class TextStyle implements TextStyleData {
     }
 }
 
-export const baseStyle = new TextStyle(baseStyleData);
+export const baseStyle = new TextStyle();
