@@ -1,6 +1,6 @@
 import { isEqual } from 'lodash';
 import { SplitText } from './textUtils';
-import { TextStyle, TextStyleData, OwnStyle, baseStyle } from './TextStyle/TextStyle';
+import { TextStyle, TextStyleData, baseStyle, TextStyleOverride, ComputedTextStyle } from './Text/TextStyle/TextStyle';
 
 export type NodeKind = (
     | 'ContainerNode'
@@ -41,12 +41,12 @@ export abstract class BaseNode<K extends NodeKind> {
     };
 
     protected linked: boolean = false;
-    protected composedStyle: TextStyle;
-    protected ownStyle: Partial<TextStyleData>;
+    protected computed: ComputedTextStyle;
+    protected override: TextStyleOverride;
 
     public constructor(yogaOptions: Partial<YogaOptions> = {}) {
         this.parent = null;
-        this.ownStyle = {};
+        this.override = {};
         this.yogaOpts = {
             current: {} as YogaOptions,
             diff: { ...baseYogaOptions },
@@ -55,17 +55,15 @@ export abstract class BaseNode<K extends NodeKind> {
         };
     }
 
-    public setTextStyle(styleData: OwnStyle) {
-        if (!TextStyle.equalTo(this.ownStyle, styleData)) {
-            this.ownStyle = { ...styleData };
-            this.cascadeTextStyle(this.parent ? this.parent.composedStyle : baseStyle);
-        }
+    public setTextStyle(styleData: TextStyleOverride) {
+        this.override = { ...styleData };
+        this.cascadeTextStyle(this.parent ? this.parent.computed : baseStyle);
     }
 
-    public cascadeTextStyle(inherited: TextStyle): boolean {
-        const old = this.composedStyle;
-        this.composedStyle = inherited.mutate(this.ownStyle);
-        return this.composedStyle === old;
+    public cascadeTextStyle(inherited: ComputedTextStyle): boolean {
+        const old = this.computed;
+        this.computed = inherited.override(this.override);
+        return this.computed === old;
     }
 
     public setYogaOptions(opts: Partial<YogaOptions>): void {
@@ -131,7 +129,7 @@ export abstract class BaseNode<K extends NodeKind> {
         this.linked = true;
         this.createYoga();
         if (this.parent) {
-            this.cascadeTextStyle(this.parent.composedStyle);
+            this.cascadeTextStyle(this.parent.computed);
 
             if (this.parent.yoga) {
                 this.parent.yoga.insertChild(this.yoga, index);
@@ -157,9 +155,9 @@ export class ContainerNode extends BaseNode<'ContainerNode'> {
         }
     }
 
-    public cascadeTextStyle(inherited: TextStyle): boolean {
+    public cascadeTextStyle(inherited: ComputedTextStyle): boolean {
         if (super.cascadeTextStyle(inherited)) {
-            this.children.forEach(child => child.cascadeTextStyle(this.composedStyle));
+            this.children.forEach(child => child.cascadeTextStyle(this.computed));
             return true;
         } else {
             return false;
@@ -284,6 +282,6 @@ export type NodeInstance = (
 
 export class RootNode extends ContainerNode {
     public parent = null;
-    public ownStyle = {};
-    public composedStyle = baseStyle;
+    public override = {};
+    public computed = baseStyle;
 }

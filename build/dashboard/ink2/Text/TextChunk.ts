@@ -1,18 +1,22 @@
 import * as stringWidth from 'string-width';
-import { TextStyle, OwnStyle } from './TextStyle/TextStyle';
-import { normalize, parseChunks } from './parse';
+import { TextStyleOverride, ComputedTextStyle } from './TextStyle/TextStyle';
 
-export const newlineRegex: RegExp = /\r?\n/g;
 export class TextChunk {
     private _cells: string[];
+    public style: ComputedTextStyle;
     public readonly text: string;
-    public readonly style: OwnStyle;
     public readonly width: number;
+    public readonly override: TextStyleOverride;
 
-    public constructor(text: string, style: OwnStyle) {
+    public constructor(text: string, style: TextStyleOverride) {
         this.text = text;
         this.width = stringWidth(text);
-        this.style = style;
+        this.override = style;
+    }
+
+    public computeStyle(precedingStyle: ComputedTextStyle): ComputedTextStyle {
+        this.style = precedingStyle.override(this.style);
+        return this.style;
     }
 
     public get cells(): string[] {
@@ -22,16 +26,4 @@ export class TextChunk {
         return this._cells;
     }
 
-    public get isMultiLine(): boolean {
-        return newlineRegex.test(this.text);
-    }
-    public splitLines(): TextChunk[] {
-        const split = this.text.split(newlineRegex);
-        return split.map(piece => new TextChunk(piece, this.style));
-    }
-
-    public computeStyle
-    public render(parentStyle: TextStyle, precedingSiblingStyle:  TextStyle = {}): string {
-
-    }
 }

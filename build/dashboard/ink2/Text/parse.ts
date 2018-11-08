@@ -1,5 +1,5 @@
 import * as codes from './TextStyle/AnsiCodes';
-import { OwnStyle, baseStyleData } from './TextStyle/TextStyle';
+import { TextStyleOverride, baseStyleData } from './TextStyle/TextStyle';
 import { TextChunk } from './TextChunk';
 import { TextColorMode, TextColor } from './TextStyle/TextColor';
 import { sgrLookup } from './TextStyle/ColorPalette';
@@ -20,7 +20,7 @@ export function normalize(raw: string): string {
 
 export function parseChunks(normalized: string): TextChunk[] {
     const chunks: TextChunk[] = [];
-    let style: OwnStyle = {};
+    let style: TextStyleOverride = {};
 
     let escape: RegExpExecArray | null;
     const parts: string[] = normalized.split(ansiStyleRegex); // separate plaintext and escape sequences

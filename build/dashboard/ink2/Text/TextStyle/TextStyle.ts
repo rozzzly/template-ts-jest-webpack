@@ -13,8 +13,6 @@ export interface TextStyleData {
     strike: boolean;
 }
 
-export type OwnStyle = Partial<TextStyleData>;
-
 export const baseStyleData: TextStyleData = {
     fgColor: ColorPalette.default,
     bgColor: ColorPalette.bgDefault,
@@ -25,7 +23,18 @@ export const baseStyleData: TextStyleData = {
     strike: false
 };
 
-export class TextStyle implements TextStyleData {
+export type TextStyleOverride = Partial<TextStyleData>;
+
+export type TextStyle = (
+    | ComputedTextStyle
+    | TextStyleOverride
+);
+
+export class ComputedTextStyle implements TextStyleData {
+
+    public static isComputed(value: unknown): value is ComputedTextStyle {
+        return (value instanceof ComputedTextStyle);
+    }
 
     public bgColor: TextColor;
     public fgColor: TextColor;
@@ -36,8 +45,8 @@ export class TextStyle implements TextStyleData {
     public strike: boolean;
 
     public constructor();
-    public constructor(style: OwnStyle);
-    public constructor(style: OwnStyle = {}) {
+    public constructor(style: TextStyleOverride);
+    public constructor(style: TextStyleOverride = {}) {
         const data = { ...baseStyleData, ...style };
         this.bgColor = data.bgColor;
         this.fgColor = data.fgColor;
@@ -56,8 +65,8 @@ export class TextStyle implements TextStyleData {
         return this.weight === 'faint';
     }
 
-    public clone(): TextStyle {
-        return new TextStyle({
+    public clone(): ComputedTextStyle {
+        return new ComputedTextStyle({
             bgColor: this.bgColor,
             fgColor: this.fgColor,
             weight: this.weight,
@@ -68,9 +77,8 @@ export class TextStyle implements TextStyleData {
         });
     }
 
-    public code(inherited: TextStyle): string {
+    public code(inherited: ComputedTextStyle = baseStyle): string {
         let params: number[] = [];
-
         if (!this.fgColor.equalTo(inherited.fgColor)) {
             params = params.concat(this.fgColor.fgCode(false));
         }
@@ -99,41 +107,51 @@ export class TextStyle implements TextStyleData {
             else params.push(codes.INVERT_OFF);
         }
 
-        return codes.composeCode(params);
+        return params.length ? codes.composeCode(params) : '';
     }
 
-    public mutate(style: OwnStyle): TextStyle {
-        if (Object.keys(style).length === 0) return this;
-        else {
+    public override(style: TextStyle): ComputedTextStyle {
+        if (ComputedTextStyle.isComputed(style)) {
             const clone = this.clone();
-
-            if (style.fgColor !== undefined) {
-                clone.fgColor = style.fgColor;
+            clone.fgColor = this.fgColor;
+            clone.bgColor = this.bgColor;
+            clone.inverted = this.inverted;
+            clone.italic = this.italic;
+            clone.strike = this.strike;
+            clone.underline = this.underline;
+            clone.weight = this.weight;
+            return this.equalTo(clone) ? this : clone;
+        } else {
+            const clone = this.clone();
+            if (Object.keys(style).length === 0) return this;
+            else {
+                if (style.fgColor !== undefined) {
+                    clone.fgColor = style.fgColor;
+                }
+                if (style.bgColor !== undefined) {
+                    clone.bgColor = style.bgColor;
+                }
+                if (style.inverted !== undefined) {
+                    clone.inverted = style.inverted;
+                }
+                if (style.italic !== undefined) {
+                    clone.italic = style.italic;
+                }
+                if (style.strike !== undefined) {
+                    clone.strike = style.strike;
+                }
+                if (style.underline !== undefined) {
+                    clone.underline = style.underline;
+                }
+                if (style.weight !== undefined) {
+                    clone.weight = style.weight;
+                }
             }
-            if (style.bgColor !== undefined) {
-                clone.bgColor = style.bgColor;
-            }
-            if (style.inverted !== undefined) {
-                clone.inverted = style.inverted;
-            }
-            if (style.italic !== undefined) {
-                clone.italic = style.italic;
-            }
-            if (style.strike !== undefined) {
-                clone.strike = style.strike;
-            }
-            if (style.underline !== undefined) {
-                clone.underline = style.underline;
-            }
-            if (style.weight !== undefined) {
-                clone.weight = style.weight;
-            }
-
             return this.equalTo(clone) ? this : clone;
         }
     }
 
-    public equalTo(other: TextStyle): boolean {
+    public equalTo(other: ComputedTextStyle): boolean {
         return ((
             this === other
         ) || (
@@ -146,28 +164,6 @@ export class TextStyle implements TextStyleData {
             this.strike === other.strike
         ));
     }
-
-    public static equalTo(alpha: OwnStyle, bravo: OwnStyle): boolean {
-        return ((
-            alpha === bravo
-        ) || (
-            ((alpha.fgColor === undefined && bravo.fgColor === undefined) || (
-                alpha.fgColor !== undefined &&
-                bravo.fgColor !== undefined &&
-                alpha.fgColor.equalTo(bravo.fgColor)
-            )) &&
-            ((alpha.bgColor === undefined && bravo.bgColor === undefined) || (
-                alpha.bgColor !== undefined &&
-                bravo.bgColor !== undefined &&
-                alpha.bgColor.equalTo(bravo.bgColor)
-            )) &&
-            alpha.inverted === bravo.inverted &&
-            alpha.italic === bravo.italic &&
-            alpha.strike === bravo.strike &&
-            alpha.underline === bravo.underline &&
-            alpha.weight === bravo.weight
-        ));
-    }
 }
 
-export const baseStyle = new TextStyle();
+export const baseStyle = new ComputedTextStyle();

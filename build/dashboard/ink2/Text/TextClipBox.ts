@@ -7,4 +7,5 @@ export class TextClipBox {
 
     public xOffset: number;
     public yOffset: number;
+
 }
