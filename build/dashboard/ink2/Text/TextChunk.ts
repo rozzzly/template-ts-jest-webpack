@@ -15,7 +15,7 @@ export class TextChunk {
     }
 
     public computeStyle(precedingStyle: ComputedTextStyle): ComputedTextStyle {
-        this.style = precedingStyle.override(this.style);
+        this.style = precedingStyle.override(this.override);
         return this.style;
     }
 

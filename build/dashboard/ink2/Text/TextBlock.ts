@@ -62,7 +62,7 @@ export class TextBlockLine {
                         } else { // L-|-R+++++|
                             const start = 0 - cursor;
                             buff.push(chunk.style.code(lastStyle));
-                            buff.push(chunk.cells.slice(start, -1).join(''));
+                            buff.push(chunk.cells.slice(start).join(''));
                             lastStyle = chunk.style;
                             cursor += chunk.width - start;
                         }

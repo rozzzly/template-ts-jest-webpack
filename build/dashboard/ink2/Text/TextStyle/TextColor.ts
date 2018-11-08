@@ -35,7 +35,7 @@ export const compareRGBTuple = (left: RGBTuple, right: RGBTuple): boolean => (
 export const TextColorMode = literalsEnum('Ansi16', 'Ansi256', 'rgb');
 export type TextColorMode = ExtractLiterals<typeof TextColorMode>;
 
-/// TODO ::: graceful fallback
+/// TODO ::: graceful fallback (eg: rgb is unsupported -> ansi256)
 
 
 const HexRegex = /[a-f0-9]{6}|[a-f0-9]{3}/;
