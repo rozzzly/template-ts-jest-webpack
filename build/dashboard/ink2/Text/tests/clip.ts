@@ -3,7 +3,7 @@ import { TextBlockLine } from '../TextBlock';
 import { baseStyle } from '../TextStyle/TextStyle';
 
 describe('clipping text', () => {
-    describe('unstyled text', () => {
+    describe('unstyled text (single chunk)', () => {
         let line: TextBlockLine;
         beforeEach(() => {
             const chunks = parseChunks('0123456789');
@@ -14,25 +14,43 @@ describe('clipping text', () => {
             line.computeStyle(baseStyle);
 
         });
+
+        const macro = (skip: number, width: number): string => (
+            line.render(skip, width, baseStyle).text
+        );
+
         describe('within bounds', () => {
+            test('excess room (on both sides)', () => {
+                expect(macro(-2, 14)).toBe('0123456789');
+            });
+            test('excess room (on left)', () => {
+                expect(macro(-2, 12)).toBe('0123456789');
+            });
             test('excess room (on right)', () => {
-                const rendered = line.render(0, 15, baseStyle);
-                expect(rendered.text).toBe('0123456789');
+                expect(macro(0, 12)).toBe('0123456789');
             });
             test('exact fit', () => {
-                const rendered = line.render(0, 10, baseStyle);
-                expect(rendered.text).toBe('0123456789');
+                expect(macro(0, 10)).toBe('0123456789');
             });
         });
         describe('clip left', () => {
-            test('excess room (on right)', () => {
-                const rendered = line.render(-2, 15, baseStyle);
-                expect(rendered.text).toBe('23456789');
+            test('excess right', () => {
+                expect(macro(2, 10)).toBe('23456789');
             });
-            test('exact fit', () => {
-                const rendered = line.render(-2, 8, baseStyle);
-                expect(rendered.text).toBe('23456789');
+            test('flush right', () => {
+                expect(macro(2, 8)).toBe('23456789');
             });
+        });
+        describe('clip right', () => {
+            test('excess right', () => {
+                expect(macro(-2, 10)).toBe('01234567');
+            });
+            test('flush right', () => {
+                expect(macro(0, 8)).toBe('01234567');
+            });
+        });
+        test('clip both', () => {
+            expect(macro(2, 6)).toBe('234567');
         });
     });
 });

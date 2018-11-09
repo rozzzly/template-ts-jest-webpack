@@ -35,56 +35,51 @@ export class TextBlockLine {
         return rollingStyle;
     }
 
-    public render(xOffset: number, blockWidth: number, precedingStyle: ComputedTextStyle): { lastStyle: ComputedTextStyle, text: string } {
+    public render(skip: number, width: number, precedingStyle: ComputedTextStyle): { lastStyle: ComputedTextStyle, text: string } {
+        const endX = width + skip;
+        let cursor = skip;
         let lastStyle = precedingStyle;
-        let cursor = xOffset;
         const buff: string[] = [];
 
-
-        if (xOffset >= blockWidth) {
-            return { lastStyle, text: '' };
-        } else if (this.width - xOffset <= 0) {
-            return { lastStyle, text: '' };
-        } else {
-            for (const chunk of this.chunks) {
-                if (cursor >= blockWidth) break; // |++++++|L--R
-                else if (cursor + chunk.width <= 0) { // L--R|++++++|
-                    cursor += chunk.width;
-                } else {
-                    if (cursor < 0) { // L-|-R+++++| or L-|-------|-R
-                        if (cursor + chunk.width > blockWidth) { // L-|-------|-R
-                            const start = 0 - cursor;
-                            const end = blockWidth - (cursor + chunk.width);
-                            buff.push(chunk.style.code(lastStyle));
-                            buff.push(chunk.cells.slice(start, end).join(''));
-                            lastStyle = chunk.style;
-                            cursor += end - start;
-                        } else { // L-|-R+++++|
-                            const start = 0 - cursor;
-                            buff.push(chunk.style.code(lastStyle));
-                            buff.push(chunk.cells.slice(start).join(''));
-                            lastStyle = chunk.style;
-                            cursor += chunk.width - start;
-                        }
-
-                    } else { // |L----R| or |L-----|-R
-                        if (cursor + chunk.width > blockWidth) { // |L-----|-R
-                            const size = blockWidth - cursor;
-                            buff.push(chunk.style.code(lastStyle));
-                            buff.push(chunk.cells.slice(0, size).join(''));
-                            lastStyle = chunk.style;
-                            cursor += size;
-                        } else { // |L----R|
-                            buff.push(chunk.style.code(lastStyle));
-                            buff.push(chunk.text);
-                            lastStyle = chunk.style;
-                            cursor += chunk.width;
-                        }
+        let lastChunkEnd = 0;
+        for (const chunk of this.chunks) {
+            const chunkStart = lastChunkEnd;
+            const chunkEnd = chunkStart + chunk.width;
+            lastChunkEnd = chunkEnd;
+            if (cursor >= endX) break; // |++++++|L--R
+            else if (cursor > chunkEnd) { // L--R|++++++|
+                cursor = chunkEnd;
+            } else {
+                if (cursor > chunkStart) { // L-|-R+++++| or L-|-------|-R
+                    if (chunkEnd > endX) { // L-|-------|-R
+                        const sliceEnd = chunk.width - (chunkEnd - endX);
+                        buff.push(chunk.style.code(lastStyle));
+                        buff.push(chunk.cells.slice(cursor, sliceEnd).join(''));
+                        lastStyle = chunk.style;
+                        break; // nothing else will be rendered
+                    } else { // L-|-R+++++|
+                        buff.push(chunk.style.code(lastStyle));
+                        buff.push(chunk.cells.slice(cursor).join(''));
+                        lastStyle = chunk.style;
+                        cursor = chunkEnd;
+                    }
+                } else { // |L----R| or |L-----|-R
+                    if (chunkEnd > endX) { // |L-----|-R
+                        const sliceEnd = chunk.width - (chunkEnd - endX);
+                        buff.push(chunk.style.code(lastStyle));
+                        buff.push(chunk.cells.slice(0, sliceEnd).join(''));
+                        lastStyle = chunk.style;
+                        break;
+                    } else { // |L----R|
+                        buff.push(chunk.style.code(lastStyle));
+                        buff.push(chunk.text);
+                        lastStyle = chunk.style;
+                        cursor = chunkEnd;
                     }
                 }
             }
-            return { lastStyle, text: buff.join('') };
         }
+        return { lastStyle, text: buff.join('') };
     }
 }
 
