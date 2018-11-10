@@ -47,19 +47,20 @@ export class TextBlockLine {
             const chunkEnd = chunkStart + chunk.width;
             lastChunkEnd = chunkEnd;
             if (cursor >= endX) break; // |++++++|L--R
-            else if (cursor > chunkEnd) { // L--R|++++++|
-                cursor = chunkEnd;
-            } else {
+            else if (cursor > chunkEnd) continue; // L--R|++++++|
+            else {
                 if (cursor > chunkStart) { // L-|-R+++++| or L-|-------|-R
                     if (chunkEnd > endX) { // L-|-------|-R
+                        const sliceStart = cursor - chunkStart;
                         const sliceEnd = chunk.width - (chunkEnd - endX);
                         buff.push(chunk.style.code(lastStyle));
-                        buff.push(chunk.cells.slice(cursor, sliceEnd).join(''));
+                        buff.push(chunk.cells.slice(sliceStart, sliceEnd).join(''));
                         lastStyle = chunk.style;
                         break; // nothing else will be rendered
                     } else { // L-|-R+++++|
+                        const sliceStart = cursor - chunkStart;
                         buff.push(chunk.style.code(lastStyle));
-                        buff.push(chunk.cells.slice(cursor).join(''));
+                        buff.push(chunk.cells.slice(sliceStart).join(''));
                         lastStyle = chunk.style;
                         cursor = chunkEnd;
                     }
