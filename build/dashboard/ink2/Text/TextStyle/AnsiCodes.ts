@@ -60,4 +60,9 @@ export const BG_BRIGHT_START = 100;
 /** End of the bright background color (3bit) range */
 export const BG_BRIGHT_END = 107;
 
-export const composeCode = (params: number[]): string => `\u001b[${params.join(';')}m`;
+export const composeCode = (params: number[]): string => (
+    ((params.length)
+        ? `\u001b[${params.join(';')}m`
+        : ''
+    )
+);

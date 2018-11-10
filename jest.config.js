@@ -10,6 +10,7 @@ module.exports = {
         '<rootDir>/test',
         '<rootDir>/build'
     ],
+    setupTestFrameworkScriptFile: '<rootDir>/build/dashboard/ink2/tests/__setup.js',
     verbose: true,
     testMatch: [
         fromRoot('src/**/*.(test|spec).ts'),

@@ -2,6 +2,7 @@ import { TextColor } from './TextColor';
 import { ColorPalette } from './ColorPalette';
 import { TextWeight } from './composeProps';
 import * as codes from './AnsiCodes';
+import { func } from 'prop-types';
 
 export interface TextStyleData {
     bgColor: TextColor;
@@ -107,7 +108,7 @@ export class ComputedTextStyle implements TextStyleData {
             else params.push(codes.INVERT_OFF);
         }
 
-        return params.length ? codes.composeCode(params) : '';
+        return codes.composeCode(params);
     }
 
     public override(style: TextStyle): ComputedTextStyle {
@@ -163,6 +164,38 @@ export class ComputedTextStyle implements TextStyleData {
             this.inverted === other.inverted &&
             this.strike === other.strike
         ));
+    }
+
+    public static code(style: TextStyle): string {
+        let params: number[] = [];
+        if (style.fgColor !== undefined) {
+            params = params.concat(style.fgColor.fgCode(false));
+        }
+        if (style.bgColor !== undefined) {
+            params = params.concat(style.bgColor.bgCode(false));
+        }
+        if (style.weight !== undefined) {
+            if (style.weight === TextWeight.normal) params.push(codes.WEIGHT_NORMAL);
+            else if (style.weight === TextWeight.bold) params.push(codes.WEIGHT_BOLD);
+            else params.push(codes.WEIGHT_FAINT);
+        }
+        if (style.italic !== undefined) {
+            if (style.italic) params.push(codes.ITALIC_ON);
+            else params.push(codes.ITALIC_OFF);
+        }
+        if (style.underline !== undefined) {
+            if (style.underline) params.push(codes.UNDERLINE_ON);
+            else params.push(codes.UNDERLINE_OFF);
+        }
+        if (style.strike !== undefined) {
+            if (style.strike) params.push(codes.STRIKE_ON);
+            else params.push(codes.STRIKE_OFF);
+        }
+        if (style.inverted !== undefined) {
+            if (style.inverted) params.push(codes.INVERT_ON);
+            else params.push(codes.INVERT_OFF);
+        }
+        return codes.composeCode(params);
     }
 }
 

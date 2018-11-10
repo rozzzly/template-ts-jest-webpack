@@ -47,7 +47,7 @@ export class TextBlockLine {
             const chunkEnd = chunkStart + chunk.width;
             lastChunkEnd = chunkEnd;
             if (cursor >= endX) break; // |++++++|L--R
-            else if (cursor > chunkEnd) continue; // L--R|++++++|
+            else if (cursor >= chunkEnd) continue; // L--R|++++++|
             else {
                 if (cursor > chunkStart) { // L-|-R+++++| or L-|-------|-R
                     if (chunkEnd > endX) { // L-|-------|-R
