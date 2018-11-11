@@ -3,8 +3,8 @@ import * as convert from 'color-convert';
 import * as htmlColorNames from 'color-name';
 import * as codes  from './AnsiCodes';
 import { inRange, literalsEnum, ExtractLiterals } from '../../misc';
-import { ColorPalette } from './ColorPalette';
 import { composeCode } from './AnsiCodes';
+import { ColorPalette } from './palette';
 
 export type RGB = (
     | RGBTuple
@@ -32,25 +32,26 @@ export const compareRGBTuple = (left: RGBTuple, right: RGBTuple): boolean => (
 );
 
 
-export const TextColorMode = literalsEnum('Ansi16', 'Ansi256', 'rgb');
-export type TextColorMode = ExtractLiterals<typeof TextColorMode>;
+export const ColorMode = literalsEnum('Ansi16', 'Ansi256', 'rgb');
+export type ColorMode = ExtractLiterals<typeof ColorMode>;
 
 /// TODO ::: graceful fallback (eg: rgb is unsupported -> ansi256)
 
 
 const HexRegex = /[a-f0-9]{6}|[a-f0-9]{3}/;
 
-export class TextColor {
-    public mode: TextColorMode | null;
+export class Color {
+
+    public mode: ColorMode | null;
     public value: RGBTuple | number | 'default';
 
-    public static fromString(str: string): TextColor | null {
+    public static fromString(str: string): Color | null {
         const lower = str.toLowerCase();
         let match: RegExpExecArray | null;
         // @ts-ignore
         if (htmlColorNames[lower]) {
             // @ts-ignore
-            return new TextColor(htmlColorNames[lower]);
+            return Color.RGB(htmlColorNames[lower]);
         } else if (match = HexRegex.exec(str)) {
             const fullHex = ((match[0].length === 6)
                 ? match[0]
@@ -61,7 +62,7 @@ export class TextColor {
                 )
             );
             const dec = parseInt(fullHex, 16);
-            return new TextColor([
+            return Color.RGB([
                 (dec >> 16) & 0xff,
                 (dec >> 8) & 0xff,
                 dec & 0xff
@@ -73,58 +74,51 @@ export class TextColor {
         }
     }
 
-    public constructor(value: RGB);
-    public constructor(value: 'default');
-    public constructor(value: number, mode: Exclude<TextColorMode, 'rgb'>);
-    public constructor(value: RGB | number | 'default', mode: TextColorMode | null = null) {
-        if (value === 'default') {
-            this.value = value;
-            this.mode = null;
-        } else if (typeof value === 'number') {
-            if (mode === TextColorMode.Ansi16) {
-                this.mode = TextColorMode.Ansi16;
-                if (inRange(0, 15, value)) {
-                    // accept 0-based Ansi16 palette
-                    this.value = value;
-                } else {
-                    // color from an SRG param shifted to 0-based Ansi16
-                    if (inRange(codes.FG_START, codes.FG_END, value)) {
-                        this.value = value - codes.FG_START;
-                    } else if (inRange(codes.FG_BRIGHT_START, codes.FG_BRIGHT_END, value)) {
-                        this.value = (value - codes.FG_BRIGHT_START) + 8;
-                    } else  if (inRange(codes.BG_START, codes.BG_END, value)) {
-                        this.value = value - codes.BG_START;
-                    } else if (inRange(codes.BG_BRIGHT_START, codes.BG_BRIGHT_END, value)) {
-                        this.value = (value - codes.BG_BRIGHT_START) + 8;
-                    } else if (value === codes.FG_CUSTOM || value === codes.BG_CUSTOM) {
-                        this.value = 'default';
-                        this.mode = null;
-                    } else {
-                        throw new Error('Invalid Ansi16 value.');
-                    }
-                }
-            } else if (mode === TextColorMode.Ansi256 && inRange(0, 255, value)) {
-                this.value = value;
-                this.mode = TextColorMode.Ansi256;
-            } else {
-                throw new Error('Numeric values must specify Ansi16 / Ansi256 and be in range of their palette (or an corresponding SRG code if Ansi16).');
-            }
-        } else if (typeof value === 'object') {
-            this.mode = TextColorMode.rgb;
-            if (isRGBTuple(value)) {
-                this.value = value;
-            } else {
-                const coerced = [value.r, value.g, value.b];
-                if (isRGBTuple(coerced)) {
-                    this.value = coerced;
-                } else {
-                    throw new Error('Malformed RGB');
-                }
-            }
+    public static RGB(value: RGBTuple): Color {
+        if (isRGBTuple(value)) {
+            return new Color(value, ColorMode.rgb);
         } else {
-            throw new Error('Unexpected call signature');
+            throw new Error('Invalid RGB value');
         }
+    }
 
+    public static Ansi256(value: number): Color {
+        if (inRange(0, 255, value)) {
+            return new Color(value, ColorMode.Ansi256);
+        } else {
+            throw new Error('Invalid Ansi256 value.');
+        }
+    }
+
+    public static Ansi16(value: number): Color {
+        if (inRange(0, 15, value)) {
+            // accept 0-based Ansi16 palette
+            return new Color(value, ColorMode.Ansi16);
+        } else {
+            // color from an SRG param shifted to 0-based Ansi16
+            if (inRange(codes.FG_START, codes.FG_END, value)) {
+                return new Color(value - codes.FG_START, ColorMode.Ansi16);
+            } else if (inRange(codes.FG_BRIGHT_START, codes.FG_BRIGHT_END, value)) {
+                return new Color(value - codes.FG_BRIGHT_START + 8, ColorMode.Ansi16);
+            } else  if (inRange(codes.BG_START, codes.BG_END, value)) {
+                return new Color(value - codes.BG_START, ColorMode.Ansi16);
+            } else if (inRange(codes.BG_BRIGHT_START, codes.BG_BRIGHT_END, value)) {
+                return new Color(value - codes.BG_BRIGHT_START + 8, ColorMode.Ansi16);
+            } else if (value === codes.FG_CUSTOM || value === codes.BG_CUSTOM) {
+                return ColorPalette.default;
+            } else {
+                throw new Error('Invalid Ansi16 value.');
+            }
+        }
+    }
+
+    public static default(): Color {
+        return new Color('default', null);
+    }
+
+    private constructor(value: 'default' | number | RGBTuple, mode: ColorMode | null) {
+        this.value = value;
+        this.mode = mode;
     }
 
     public fgCode(): string;
@@ -135,11 +129,11 @@ export class TextColor {
         if (full) {
             return composeCode(this.fgCode(false));
         } else {
-            if (this.mode === TextColorMode.rgb) {
+            if (this.mode === ColorMode.rgb) {
                 return [codes.FG_CUSTOM, codes.COLOR_MODE_RGB, ...(this.value as RGBTuple)];
-            } else if (this.mode === TextColorMode.Ansi256) {
+            } else if (this.mode === ColorMode.Ansi256) {
                 return [codes.FG_CUSTOM, codes.COLOR_MODE_ANSI_256, this.value as number];
-            } else if (this.mode === TextColorMode.Ansi16) {
+            } else if (this.mode === ColorMode.Ansi16) {
                 if ((this.value as number) < 8) {
                     return [codes.FG_START + (this.value as number)];
                 } else {
@@ -158,11 +152,11 @@ export class TextColor {
         if (full) {
             return composeCode(this.bgCode(false));
         } else {
-            if (this.mode === TextColorMode.rgb) {
+            if (this.mode === ColorMode.rgb) {
                 return [codes.BG_CUSTOM, codes.COLOR_MODE_RGB, ...(this.value as RGBTuple)];
-            } else if (this.mode === TextColorMode.Ansi256) {
+            } else if (this.mode === ColorMode.Ansi256) {
                 return [codes.BG_CUSTOM, codes.COLOR_MODE_ANSI_256, this.value as number];
-            } else if (this.mode === TextColorMode.Ansi16) {
+            } else if (this.mode === ColorMode.Ansi16) {
                 if ((this.value as number) < 8) {
                     return [codes.BG_START + (this.value as number)];
                 } else {
@@ -174,7 +168,7 @@ export class TextColor {
         }
     }
 
-    public equalTo(other: TextColor): boolean {
+    public equalTo(other: Color): boolean {
         if (this === other) return true; // quick test for referential equality (eg used predefined consts)
         const selfIsDefault = this.value === 'default';
         const otherIsDefault = other.value === 'default';
@@ -184,10 +178,10 @@ export class TextColor {
         } else if (selfIsDefault || otherIsDefault) {
             return false;
         } else {
-            const selfIs256 = this.mode === TextColorMode.Ansi256;
-            const selfIsRGB = this.mode === TextColorMode.rgb;
-            const otherIs256 = other.mode === TextColorMode.Ansi256;
-            const otherIsRGB = other.mode === TextColorMode.rgb;
+            const selfIs256 = this.mode === ColorMode.Ansi256;
+            const selfIsRGB = this.mode === ColorMode.rgb;
+            const otherIs256 = other.mode === ColorMode.Ansi256;
+            const otherIsRGB = other.mode === ColorMode.rgb;
             if (selfIsRGB || otherIsRGB) {
                 if (selfIsRGB && otherIsRGB) {
                     return compareRGBTuple(this.value as RGBTuple, other.value as RGBTuple);
@@ -216,10 +210,3 @@ export class TextColor {
         }
     }
 }
-
-export type ColorValue = (
-    | TextColor
-    | RGB
-    | number
-    | string
-);

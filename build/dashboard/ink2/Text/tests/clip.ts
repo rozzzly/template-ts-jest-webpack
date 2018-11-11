@@ -1,27 +1,27 @@
 import Chalk from 'chalk';
 import { parseChunks } from '../parse';
 import { TextBlockLine } from '../TextBlock';
-import { baseStyle, ComputedTextStyle } from '../TextStyle/TextStyle';
-import { ColorPalette } from '../TextStyle/ColorPalette';
+import { baseStyle, Style } from '../Style';
+import { ColorPalette } from '../Style/palette';
 
 describe('clipping text', () => {
     describe('styled text (three chunks)', () => {
 
         const codes = {
-            red: ComputedTextStyle.code({
+            red: Style.code({
                 fgColor: ColorPalette.red
             }),
-            redItalic: ComputedTextStyle.code({
+            redItalic: Style.code({
                 fgColor: ColorPalette.red,
                 italic: true
             }),
-            italic: ComputedTextStyle.code({
+            italic: Style.code({
                 italic: true
             }),
-            defaultFg: ComputedTextStyle.code({
+            defaultFg: Style.code({
                 fgColor: ColorPalette.default
             }),
-            nonItalic: ComputedTextStyle.code({
+            nonItalic: Style.code({
                 italic: false
             }),
         };

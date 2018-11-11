@@ -1,6 +1,6 @@
 import * as codes from './AnsiCodes';
-import { literals, ExtractLiterals, literalsEnum } from '../../misc';
-import { TextColorMode, TextColor } from './TextColor';
+import { ExtractLiterals, literalsEnum } from '../../misc';
+import { Color } from './Color';
 
 export const ForegroundColor = literalsEnum(
     'black',
@@ -50,27 +50,27 @@ export type BackgroundColorName = ExtractLiterals<typeof BackgroundColor>;
 export type ColorName = BackgroundColorName | ForegroundColorName;
 
 export type ColorPalette = {
-    [name in ColorName]: TextColor
+    [name in ColorName]: Color
 };
 
 export const ColorPalette = {
-    black: new TextColor(0, TextColorMode.Ansi16),
-    red: new TextColor(1, TextColorMode.Ansi16),
-    green: new TextColor(2, TextColorMode.Ansi16),
-    yellow:  new TextColor(3, TextColorMode.Ansi16),
-    blue: new TextColor(4, TextColorMode.Ansi16),
-    magenta: new TextColor(5, TextColorMode.Ansi16),
-    cyan: new TextColor(6, TextColorMode.Ansi16),
-    white: new TextColor(7, TextColorMode.Ansi16),
-    blackBright: new TextColor(8, TextColorMode.Ansi16),
-    redBright: new TextColor(9, TextColorMode.Ansi16),
-    greenBright: new TextColor(10, TextColorMode.Ansi16),
-    yellowBright:  new TextColor(11, TextColorMode.Ansi16),
-    blueBright: new TextColor(12, TextColorMode.Ansi16),
-    magentaBright: new TextColor(13, TextColorMode.Ansi16),
-    cyanBright: new TextColor(14, TextColorMode.Ansi16),
-    whiteBright: new TextColor(15, TextColorMode.Ansi16),
-    default: new TextColor('default')
+    black: Color.Ansi16(0),
+    red: Color.Ansi16(1),
+    green: Color.Ansi16(2),
+    yellow:  Color.Ansi16(3),
+    blue: Color.Ansi16(4),
+    magenta: Color.Ansi16(5),
+    cyan: Color.Ansi16(6),
+    white: Color.Ansi16(7),
+    blackBright: Color.Ansi16(8),
+    redBright: Color.Ansi16(9),
+    greenBright: Color.Ansi16(10),
+    yellowBright:  Color.Ansi16(11),
+    blueBright: Color.Ansi16(12),
+    magentaBright: Color.Ansi16(13),
+    cyanBright: Color.Ansi16(14),
+    whiteBright: Color.Ansi16(15),
+    default: Color.default()
 } as ColorPalette;
 /// NOTE :: palette is intentionally built in multiple steps so the `bg{ColorName}` aliases
 /// have referentially equality which can be tested for much more quickly
@@ -80,6 +80,7 @@ Object.keys(ColorPalette).forEach((name: ColorName) => (
         `bg${name[0].toUpperCase() + name.slice(1)}` as ColorName
     ] = ColorPalette[name]
 ));
+
 
 
 export const sgrLookup = {

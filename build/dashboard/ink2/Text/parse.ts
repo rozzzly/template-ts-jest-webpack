@@ -1,9 +1,9 @@
-import * as codes from './TextStyle/AnsiCodes';
-import { TextStyleOverride, baseStyleData } from './TextStyle/TextStyle';
+import * as codes from './Style/AnsiCodes';
+import { StyleOverride, baseStyleData, TextWeight } from './Style';
 import { TextChunk } from './TextChunk';
-import { TextColorMode, TextColor } from './TextStyle/TextColor';
-import { sgrLookup } from './TextStyle/ColorPalette';
-import { TextWeight } from './TextStyle/composeProps';
+import { Color } from './Style/Color';
+import { sgrLookup } from './Style/palette';
+
 
 
 const ansiStyleRegex: RegExp = /(\u001b\[(?:\d+;)*\d+m)/u;
@@ -20,7 +20,7 @@ export function normalize(raw: string): string {
 
 export function parseChunks(normalized: string): TextChunk[] {
     const chunks: TextChunk[] = [];
-    let style: TextStyleOverride = {};
+    let style: StyleOverride = {};
 
     let escape: RegExpExecArray | null;
     const parts: string[] = normalized.split(ansiStyleRegex); // separate plaintext and escape sequences
@@ -38,9 +38,9 @@ export function parseChunks(normalized: string): TextChunk[] {
                     } else if (current === codes.FG_CUSTOM) {
                         const mode = params.pop();
                         if (mode === codes.COLOR_MODE_ANSI_256 && params.length >= 1) {
-                            style.fgColor = new TextColor(params.pop()!, TextColorMode.Ansi256);
+                            style.fgColor = Color.Ansi256(params.pop()!);
                         } else if (mode === codes.COLOR_MODE_RGB && params.length >= 3) {
-                            style.fgColor = new TextColor([
+                            style.fgColor = Color.RGB([
                                 params.pop()!,
                                 params.pop()!,
                                 params.pop()!
@@ -51,9 +51,9 @@ export function parseChunks(normalized: string): TextChunk[] {
                     } else if (current === codes.BG_CUSTOM) {
                         const mode = params.pop();
                         if (mode === codes.COLOR_MODE_ANSI_256 && params.length >= 1) {
-                            style.bgColor = new TextColor(params.pop()!, TextColorMode.Ansi256);
+                            style.bgColor = Color.Ansi256(params.pop()!);
                         } else if (mode === codes.COLOR_MODE_RGB && params.length >= 3) {
-                            style.bgColor = new TextColor([
+                            style.bgColor = Color.RGB([
                                 params.pop()!,
                                 params.pop()!,
                                 params.pop()!

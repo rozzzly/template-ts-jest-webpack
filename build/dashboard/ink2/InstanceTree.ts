@@ -1,6 +1,6 @@
 import { isEqual } from 'lodash';
 import { SplitText } from './textUtils';
-import { TextStyle, TextStyleData, baseStyle, TextStyleOverride, ComputedTextStyle } from './Text/TextStyle/TextStyle';
+import { baseStyle, StyleOverride, Style } from './Text/Style';
 
 export type NodeKind = (
     | 'ContainerNode'
@@ -41,8 +41,8 @@ export abstract class BaseNode<K extends NodeKind> {
     };
 
     protected linked: boolean = false;
-    protected computed: ComputedTextStyle;
-    protected override: TextStyleOverride;
+    protected computed: Style;
+    protected override: StyleOverride;
 
     public constructor(yogaOptions: Partial<YogaOptions> = {}) {
         this.parent = null;
@@ -55,12 +55,12 @@ export abstract class BaseNode<K extends NodeKind> {
         };
     }
 
-    public setTextStyle(styleData: TextStyleOverride) {
+    public setTextStyle(styleData: StyleOverride) {
         this.override = { ...styleData };
         this.cascadeTextStyle(this.parent ? this.parent.computed : baseStyle);
     }
 
-    public cascadeTextStyle(inherited: ComputedTextStyle): boolean {
+    public cascadeTextStyle(inherited: Style): boolean {
         const old = this.computed;
         this.computed = inherited.override(this.override);
         return this.computed === old;
@@ -155,7 +155,7 @@ export class ContainerNode extends BaseNode<'ContainerNode'> {
         }
     }
 
-    public cascadeTextStyle(inherited: ComputedTextStyle): boolean {
+    public cascadeTextStyle(inherited: Style): boolean {
         if (super.cascadeTextStyle(inherited)) {
             this.children.forEach(child => child.cascadeTextStyle(this.computed));
             return true;

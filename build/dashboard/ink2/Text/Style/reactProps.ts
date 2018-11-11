@@ -1,34 +1,19 @@
 import { ExtractLiterals, literalsEnum } from '../../misc';
-import { TextColor, ColorValue } from './TextColor';
-import { TextStyleData, baseStyleData } from './TextStyle';
-import { BackgroundColor, BackgroundColorName, ForegroundColorFlagMap, ColorPalette, ColorName, BackgroundColorFlagMap } from './ColorPalette';
+import { Color, RGB } from './Color';
+import { StyleProps, baseStyleData, TextWeight, TextTransform, StyleOverride } from '../Style';
+import { BackgroundColor, BackgroundColorName, ForegroundColorFlagMap, ColorPalette, ColorName, BackgroundColorFlagMap } from './palette';
 
 
-
-
-export const TextWeight = literalsEnum(
-    'normal',
-    'faint',
-    'bold'
-);
-export type TextWeight = ExtractLiterals<typeof TextWeight>;
 export type TextWeightFlagMap = {
     [weight in TextWeight]?: boolean;
 };
 
-export const TextTransform = literalsEnum(
-    'inverted',
-    'underline',
-    'italic',
-    'strike',
-    'reset'
-);
-export type TextTransform = ExtractLiterals<typeof TextTransform>;
+
 export type TextTransformsFlagMap = {
     [transform in TextTransform]?: boolean;
 };
 
-export type AnsiStyleProps = (
+export type StyleComponentProps = (
     & ForegroundColorFlagMap
     & BackgroundColorFlagMap
     & TextWeightFlagMap
@@ -39,9 +24,15 @@ export type AnsiStyleProps = (
         weight?: TextWeight;
     }
 );
+export type ColorValue = (
+    | Color
+    | RGB
+    | string
+);
 
-export function composeProps(props: AnsiStyleProps) {
-    let style: Partial<TextStyleData> = { };
+
+export function composeProps(props: StyleComponentProps) {
+    let style: StyleOverride = { };
 
     let reset: boolean = false;
     let explicitColor: boolean = false;
@@ -70,13 +61,13 @@ export function composeProps(props: AnsiStyleProps) {
                     explicitColor = true;
                     style.fgColor = ColorPalette[value as ColorName];
                 } else {
-                    const parsed = TextColor.fromString(value);
+                    const parsed = Color.fromString(value);
                     if (parsed) {
                         explicitColor = true;
                         style.fgColor = parsed;
                     } /// else throw? warn?
                 }
-            } else if (value instanceof TextColor) {
+            } else if (value instanceof Color) {
                 explicitColor = true;
                 style.fgColor = value;
             } /// else throw? warn?
@@ -86,31 +77,29 @@ export function composeProps(props: AnsiStyleProps) {
                     explicitBackground = true;
                     style.bgColor = ColorPalette[value as ColorName];
                 } else {
-                    const parsed = TextColor.fromString(value);
+                    const parsed = Color.fromString(value);
                     if (parsed) {
                         explicitBackground = true;
                         style.bgColor = parsed;
                     } /// else throw? warn?
                 }
-            } else if (value instanceof TextColor) {
+            } else if (value instanceof Color) {
                 explicitColor = true;
                 style.bgColor = value;
             } /// else throw? warn?
         } else if (TextTransform[key as TextTransform]) {
-            if (key === 'reset' && value === true) {
-                style = { ...baseStyleData };
-            } else {
-                style[key as Exclude<TextTransform, 'reset'>] = value;
-            }
+             style[key as Exclude<TextTransform, 'reset'>] = value;
         } else if (key === 'weight' && TextWeight[value as TextWeight]) {
             style.weight = TextWeight[value as TextWeight];
             explicitWeight = true;
         } else if (TextWeight[key as TextWeight] && explicitWeight && value === true) {
             style.weight = TextWeight[value as TextWeight];
-        } // log prop??
+        } else if (key === 'reset' && value === true) {
+            reset = true;
+         }
     }
 
-    return style;
+    return reset ? { ...baseStyleData } : style;
 }
 
 export default composeProps;

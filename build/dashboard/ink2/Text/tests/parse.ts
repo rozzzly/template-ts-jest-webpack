@@ -1,6 +1,8 @@
 import Chalk from 'chalk';
 import { parseChunks } from '../parse';
-import { ColorPalette } from '../TextStyle/ColorPalette';
+import { TextWeight } from '../Style';
+import { ColorPalette } from '../Style/palette';
+
 
 describe('parsing text with ansi codes', () => {
     test('split\'s chunks with ansi codes into separate blocks', () => {
@@ -15,6 +17,6 @@ describe('parsing text with ansi codes', () => {
         expect(parsed[2].text).toBe(' some more normal text ');
         expect(parsed[2].override).toEqual({ fgColor: ColorPalette.default });
         expect(parsed[3].text).toBe('some bold text');
-        expect(parsed[3].override).toEqual({ fgColor: ColorPalette.default, weight: 'bold' });
+        expect(parsed[3].override).toEqual({ fgColor: ColorPalette.default, weight: TextWeight.bold });
     });
 });

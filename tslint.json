@@ -7,7 +7,7 @@
             "statements"
         ],
         "ban": false,
-        "class-name": true,
+        "class-name": false,
         "curly": false,
         "indent": [
             true,

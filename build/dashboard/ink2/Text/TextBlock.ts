@@ -1,7 +1,7 @@
 import { normalize, parseChunks } from './parse';
 import { TextChunk } from './TextChunk';
 import { literalsEnum, ExtractLiterals } from '../misc';
-import { ComputedTextStyle, baseStyle } from './TextStyle/TextStyle';
+import { Style, baseStyle } from './Style';
 
 export const newlineRegex: RegExp = /\r?\n/g;
 
@@ -27,15 +27,15 @@ export class TextBlockLine {
         this.width += chunk.width;
     }
 
-    public computeStyle(base: ComputedTextStyle) {
+    public computeStyle(base: Style) {
         let rollingStyle = base;
         for (const chunk of this.chunks) {
-            rollingStyle = chunk.computeStyle(rollingStyle);
+            rollingStyle = chunk.cascade(rollingStyle);
         }
         return rollingStyle;
     }
 
-    public render(skip: number, width: number, precedingStyle: ComputedTextStyle): { lastStyle: ComputedTextStyle, text: string } {
+    public render(skip: number, width: number, precedingStyle: Style): { lastStyle: Style, text: string } {
         const endX = width + skip;
         let cursor = skip;
         let lastStyle = precedingStyle;
@@ -98,7 +98,7 @@ export class TextBlock {
     public readonly raw: string;
     public readonly normalized: string;
     public readonly lines: TextBlockLine[];
-    public parentStyle: ComputedTextStyle | null;
+    public parentStyle: Style | null;
 
     private eolReached: boolean;
 
@@ -124,7 +124,7 @@ export class TextBlock {
         TextBlock.cache.set(raw, this);
     }
 
-    public computeStyles(base: ComputedTextStyle): void {
+    public computeStyles(base: Style): void {
         if (this.parentStyle && !this.parentStyle.equalTo(baseStyle)) {
             this.parentStyle = base;
             let rollingStyle = base;

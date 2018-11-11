@@ -1,12 +1,25 @@
-import { TextColor } from './TextColor';
-import { ColorPalette } from './ColorPalette';
-import { TextWeight } from './composeProps';
 import * as codes from './AnsiCodes';
-import { func } from 'prop-types';
+import { Color } from './Color';
+import { ExtractLiterals, literalsEnum } from '../../misc';
+import { ColorPalette } from './palette';
 
-export interface TextStyleData {
-    bgColor: TextColor;
-    fgColor: TextColor;
+export const TextWeight = literalsEnum(
+    'normal',
+    'faint',
+    'bold'
+);
+export type TextWeight = ExtractLiterals<typeof TextWeight>;
+export const TextTransform = literalsEnum(
+    'inverted',
+    'underline',
+    'italic',
+    'strike'
+);
+export type TextTransform = ExtractLiterals<typeof TextTransform>;
+
+export interface StyleProps {
+    bgColor: Color;
+    fgColor: Color;
     weight: TextWeight;
     inverted: boolean;
     underline: boolean;
@@ -14,7 +27,7 @@ export interface TextStyleData {
     strike: boolean;
 }
 
-export const baseStyleData: TextStyleData = {
+export const baseStyleData: StyleProps = {
     fgColor: ColorPalette.default,
     bgColor: ColorPalette.bgDefault,
     weight: TextWeight.normal,
@@ -24,21 +37,16 @@ export const baseStyleData: TextStyleData = {
     strike: false
 };
 
-export type TextStyleOverride = Partial<TextStyleData>;
+export type StyleOverride = Partial<StyleProps>;
 
-export type TextStyle = (
-    | ComputedTextStyle
-    | TextStyleOverride
-);
+export class Style implements StyleProps {
 
-export class ComputedTextStyle implements TextStyleData {
-
-    public static isComputed(value: unknown): value is ComputedTextStyle {
-        return (value instanceof ComputedTextStyle);
+    public static isComputed(value: unknown): value is Style {
+        return (value instanceof Style);
     }
 
-    public bgColor: TextColor;
-    public fgColor: TextColor;
+    public bgColor: Color;
+    public fgColor: Color;
     public weight: TextWeight;
     public inverted: boolean;
     public underline: boolean;
@@ -46,8 +54,8 @@ export class ComputedTextStyle implements TextStyleData {
     public strike: boolean;
 
     public constructor();
-    public constructor(style: TextStyleOverride);
-    public constructor(style: TextStyleOverride = {}) {
+    public constructor(style: StyleOverride);
+    public constructor(style: StyleOverride = {}) {
         const data = { ...baseStyleData, ...style };
         this.bgColor = data.bgColor;
         this.fgColor = data.fgColor;
@@ -66,8 +74,8 @@ export class ComputedTextStyle implements TextStyleData {
         return this.weight === 'faint';
     }
 
-    public clone(): ComputedTextStyle {
-        return new ComputedTextStyle({
+    public clone(): Style {
+        return new Style({
             bgColor: this.bgColor,
             fgColor: this.fgColor,
             weight: this.weight,
@@ -78,7 +86,7 @@ export class ComputedTextStyle implements TextStyleData {
         });
     }
 
-    public code(inherited: ComputedTextStyle = baseStyle): string {
+    public code(inherited: Style = baseStyle): string {
         let params: number[] = [];
         if (!this.fgColor.equalTo(inherited.fgColor)) {
             params = params.concat(this.fgColor.fgCode(false));
@@ -111,48 +119,36 @@ export class ComputedTextStyle implements TextStyleData {
         return codes.composeCode(params);
     }
 
-    public override(style: TextStyle): ComputedTextStyle {
-        if (ComputedTextStyle.isComputed(style)) {
+    public override(style: StyleOverride): Style {
+        if (Object.keys(style).length === 0) return this;
+        else {
             const clone = this.clone();
-            clone.fgColor = this.fgColor;
-            clone.bgColor = this.bgColor;
-            clone.inverted = this.inverted;
-            clone.italic = this.italic;
-            clone.strike = this.strike;
-            clone.underline = this.underline;
-            clone.weight = this.weight;
-            return this.equalTo(clone) ? this : clone;
-        } else {
-            const clone = this.clone();
-            if (Object.keys(style).length === 0) return this;
-            else {
-                if (style.fgColor !== undefined) {
-                    clone.fgColor = style.fgColor;
-                }
-                if (style.bgColor !== undefined) {
-                    clone.bgColor = style.bgColor;
-                }
-                if (style.inverted !== undefined) {
-                    clone.inverted = style.inverted;
-                }
-                if (style.italic !== undefined) {
-                    clone.italic = style.italic;
-                }
-                if (style.strike !== undefined) {
-                    clone.strike = style.strike;
-                }
-                if (style.underline !== undefined) {
-                    clone.underline = style.underline;
-                }
-                if (style.weight !== undefined) {
-                    clone.weight = style.weight;
-                }
+            if (style.fgColor !== undefined) {
+                clone.fgColor = style.fgColor;
+            }
+            if (style.bgColor !== undefined) {
+                clone.bgColor = style.bgColor;
+            }
+            if (style.inverted !== undefined) {
+                clone.inverted = style.inverted;
+            }
+            if (style.italic !== undefined) {
+                clone.italic = style.italic;
+            }
+            if (style.strike !== undefined) {
+                clone.strike = style.strike;
+            }
+            if (style.underline !== undefined) {
+                clone.underline = style.underline;
+            }
+            if (style.weight !== undefined) {
+                clone.weight = style.weight;
             }
             return this.equalTo(clone) ? this : clone;
         }
     }
 
-    public equalTo(other: ComputedTextStyle): boolean {
+    public equalTo(other: Style): boolean {
         return ((
             this === other
         ) || (
@@ -166,7 +162,7 @@ export class ComputedTextStyle implements TextStyleData {
         ));
     }
 
-    public static code(style: TextStyle): string {
+    public static code(style: Style | StyleOverride): string {
         let params: number[] = [];
         if (style.fgColor !== undefined) {
             params = params.concat(style.fgColor.fgCode(false));
@@ -199,4 +195,4 @@ export class ComputedTextStyle implements TextStyleData {
     }
 }
 
-export const baseStyle = new ComputedTextStyle();
+export const baseStyle = new Style();

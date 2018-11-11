@@ -1,20 +1,20 @@
 import * as stringWidth from 'string-width';
-import { TextStyleOverride, ComputedTextStyle } from './TextStyle/TextStyle';
+import { StyleOverride, Style } from './Style';
 
 export class TextChunk {
     private _cells: string[];
-    public style: ComputedTextStyle;
+    public style: Style;
     public readonly text: string;
     public readonly width: number;
-    public readonly override: TextStyleOverride;
+    public readonly override: StyleOverride;
 
-    public constructor(text: string, style: TextStyleOverride) {
+    public constructor(text: string, override: StyleOverride) {
         this.text = text;
         this.width = stringWidth(text);
-        this.override = style;
+        this.override = override;
     }
 
-    public computeStyle(precedingStyle: ComputedTextStyle): ComputedTextStyle {
+    public cascade(precedingStyle: Style): Style {
         this.style = precedingStyle.override(this.override);
         return this.style;
     }
