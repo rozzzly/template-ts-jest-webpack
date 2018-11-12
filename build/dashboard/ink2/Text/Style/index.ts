@@ -41,8 +41,11 @@ export type StyleOverride = Partial<StyleProps>;
 
 export class Style implements StyleProps {
 
-    public static isComputed(value: unknown): value is Style {
+    public static isStyle(value: unknown): value is Style {
         return (value instanceof Style);
+    }
+    public static isOverride(value: unknown): value is StyleOverride {
+        return !(value instanceof Style);
     }
 
     public bgColor: Color;
@@ -86,32 +89,32 @@ export class Style implements StyleProps {
         });
     }
 
-    public code(inherited: Style = baseStyle): string {
+    public code(preceding: Style = baseStyle): string {
         let params: number[] = [];
-        if (!this.fgColor.equalTo(inherited.fgColor)) {
+        if (!this.fgColor.equalTo(preceding.fgColor)) {
             params = params.concat(this.fgColor.fgCode(false));
         }
-        if (!this.bgColor.equalTo(inherited.bgColor)) {
+        if (!this.bgColor.equalTo(preceding.bgColor)) {
             params = params.concat(this.bgColor.bgCode(false));
         }
-        if (this.weight !== inherited.weight) {
+        if (this.weight !== preceding.weight) {
             if (this.weight === TextWeight.normal) params.push(codes.WEIGHT_NORMAL);
             else if (this.weight === TextWeight.bold) params.push(codes.WEIGHT_BOLD);
             else params.push(codes.WEIGHT_FAINT);
         }
-        if (this.italic !== inherited.italic) {
+        if (this.italic !== preceding.italic) {
             if (this.italic) params.push(codes.ITALIC_ON);
             else params.push(codes.ITALIC_OFF);
         }
-        if (this.underline !== inherited.underline) {
+        if (this.underline !== preceding.underline) {
             if (this.underline) params.push(codes.UNDERLINE_ON);
             else params.push(codes.UNDERLINE_OFF);
         }
-        if (this.strike !== inherited.strike) {
+        if (this.strike !== preceding.strike) {
             if (this.strike) params.push(codes.STRIKE_ON);
             else params.push(codes.STRIKE_OFF);
         }
-        if (this.inverted !== inherited.inverted) {
+        if (this.inverted !== preceding.inverted) {
             if (this.inverted) params.push(codes.INVERT_ON);
             else params.push(codes.INVERT_OFF);
         }
@@ -160,6 +163,12 @@ export class Style implements StyleProps {
             this.inverted === other.inverted &&
             this.strike === other.strike
         ));
+    }
+
+    public static rollingCode(override: StyleOverride, parent: Style, preceding: Style): [Style, string] {
+        const local = parent.override(override);
+        const code = local.code(preceding);
+        return [local, code];
     }
 
     public static code(style: Style | StyleOverride): string {

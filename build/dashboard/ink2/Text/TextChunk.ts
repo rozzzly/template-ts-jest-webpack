@@ -3,7 +3,6 @@ import { StyleOverride, Style } from './Style';
 
 export class TextChunk {
     private _cells: string[];
-    public style: Style;
     public readonly text: string;
     public readonly width: number;
     public readonly override: StyleOverride;
@@ -12,11 +11,6 @@ export class TextChunk {
         this.text = text;
         this.width = stringWidth(text);
         this.override = override;
-    }
-
-    public cascade(precedingStyle: Style): Style {
-        this.style = precedingStyle.override(this.override);
-        return this.style;
     }
 
     public get cells(): string[] {

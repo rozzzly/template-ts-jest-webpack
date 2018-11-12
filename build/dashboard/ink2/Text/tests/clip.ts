@@ -1,6 +1,6 @@
 import Chalk from 'chalk';
 import { parseChunks } from '../parse';
-import { TextBlockLine } from '../TextBlock';
+import BlockLine from '../Block/BlockLine';
 import { baseStyle, Style } from '../Style';
 import { ColorPalette } from '../Style/palette';
 
@@ -26,19 +26,18 @@ describe('clipping text', () => {
             }),
         };
 
-        let line: TextBlockLine;
+        let line: BlockLine;
         beforeEach(() => {
             const chunks = parseChunks(`${Chalk.italic(`${Chalk.red('xyz')}0123456789`)}abcdef`); /// 3 + 10 + 6 = 19
-            line = new TextBlockLine();
+            line = new BlockLine();
             line.append(chunks[0]);
             line.append(chunks[1]);
             line.append(chunks[2]);
-            line.computeStyle(baseStyle);
 
         });
 
         const macro = (skip: number, width: number): string => (
-            line.render(skip, width, baseStyle).text
+            line.render(skip, width, baseStyle, baseStyle)[1]
         );
 
         test('styled line', () => {
@@ -59,19 +58,18 @@ describe('clipping text', () => {
     });
 
     describe('unstyled text (single chunk)', () => {
-        let line: TextBlockLine;
+        let line: BlockLine;
         beforeEach(() => {
             const chunks = parseChunks('0123456789');
             // expect(chunks.length).toBe(1);
 
-            line = new TextBlockLine();
+            line = new BlockLine();
             line.append(chunks[0]);
-            line.computeStyle(baseStyle);
 
         });
 
         const macro = (skip: number, width: number): string => (
-            line.render(skip, width, baseStyle).text
+            line.render(skip, width, baseStyle, baseStyle)[1]
         );
 
         describe('within bounds', () => {
