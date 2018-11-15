@@ -1,27 +1,44 @@
-import { NodeInstance } from '../Tree';
-import { BaseNode } from './BaseNode';
-import { Style } from '../Text/Style';
+import { NodeInstance } from '.';
+import { TreeNode } from './TreeNode';
+import { Style, StyleOverride } from '../Text/Style';
+import RenderContainer from '../Renderer/RenderContainer';
+import { YogaOptions } from './YogaNode';
 
-export class ContainerNode extends BaseNode<'ContainerNode'> {
-    public kind: 'ContainerNode' = 'ContainerNode';
-    protected children: NodeInstance[] = [];
+export class GroupNode extends TreeNode<'GroupNode'> {
+    public kind: 'GroupNode' = 'GroupNode';
+    public children: NodeInstance[] = [];
 
-    public dispose(): void {
-        this.children.forEach(node => node.dispose());
-        super.dispose();
 
+    public constructor(yogaOpts: Partial<YogaOptions>, override: StyleOverride) {
+        super(yogaOpts, override);
     }
 
-    public link(parent: ContainerNode, index: number) {
+    public layout(): void {
+        super.layout();
+        for (let len = this.children.length, i = 0; i < len; i++) {
+            this.children[i].layout();
+        }
+    }
+
+    public dispose(): void {
+        for (let len = this.children.length, i = 0; i < len; i++) {
+            this.children[i].dispose();
+        }
+        super.dispose();
+    }
+
+    public link(parent: GroupNode, index: number) {
         super.link(parent, index);
-        for (let i = 0; i < this.children.length; i++) {
+        for (let len = this.children.length, i = 0; i < len; i++) {
             this.children[i].link(this, i);
         }
     }
 
-    public cascadeTextStyle(inherited: Style): boolean {
-        if (super.cascadeTextStyle(inherited)) {
-            this.children.forEach(child => child.cascadeTextStyle(this.computed));
+    public cascadeStyle(): boolean {
+        if (super.cascadeStyle()) {
+            for (let len = this.children.length, i = 0; i < len; i++) {
+                this.children[i].cascadeStyle();
+            }
             return true;
         } else {
             return false;
@@ -52,7 +69,7 @@ export class ContainerNode extends BaseNode<'ContainerNode'> {
         if (index < 0 || index > this.children.length) {
             throw new Error('out of bounds');
         } else {
-            this.children = [...this.children.slice(0, index), node, ...this.children.slice(index)];
+            this.children = this.children.slice(0, index).concat(node, ...this.children.slice(index));
             node.link(this, index);
             return node;
         }
@@ -98,7 +115,7 @@ export class ContainerNode extends BaseNode<'ContainerNode'> {
             throw new Error('out of bounds');
         } else {
             const discardedChild = this.children[index];
-            this.children = [...this.children.slice(0, index), ...this.children.slice(index + 1)];
+            this.children = this.children.slice(0, index).concat(this.children.slice(index + 1));
             discardedChild.dispose();
             return discardedChild;
         }
@@ -116,6 +133,5 @@ export class ContainerNode extends BaseNode<'ContainerNode'> {
     public countChildren(): number {
         return this.children.length;
     }
-
-
 }
+export default GroupNode;

@@ -1,21 +1,21 @@
-import { ContainerNode } from './ContainerNode';
+import { GroupNode } from './GroupNode';
 import { TextNode } from './TextNode';
 import { baseStyle } from '../Text/Style';
 import { literalsEnum, ExtractLiterals } from '../misc';
 
 export const NodeKind = literalsEnum(
-    'ContainerNode',
+    'GroupNode',
     'TextNode'
 );
 export type NodeKind = ExtractLiterals<typeof NodeKind>;
 
 
 export type NodeInstance = (
-    | ContainerNode
+    | GroupNode
     | TextNode
 );
 
-export class RootNode extends ContainerNode {
+export class RootNode extends GroupNode {
     public parent = null;
     public override = {};
     public style = baseStyle;

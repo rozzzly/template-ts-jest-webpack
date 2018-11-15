@@ -43,7 +43,7 @@ export class ClipBox {
                         alignmentOffset = Math.floor((this.block.width - line.width) / 2.0);
                     }
 
-                    if(this.xOffset + alignmentOffset + line.width <= 0) { // visible text ends before clipBox's left edge
+                    if (this.xOffset + alignmentOffset + line.width <= 0) { // visible text ends before clipBox's left edge
                         return this.gapFiller(this.width, this.parentStyle, precedingStyle, {});
                     } else {
                         let lastStyle = precedingStyle;
@@ -81,8 +81,6 @@ export class ClipBox {
             //                             xxxxxxxx
             //
             //
-
-            if (this.block.height )
         } else {
             throw new RangeError();
         }
@@ -90,7 +88,7 @@ export class ClipBox {
     }
 
 }
-export type RenderLocation {
+export interface RenderLocation {
     // globalX: number;
     // globalY: number;
     // blockX: number;

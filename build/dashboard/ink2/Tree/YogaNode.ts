@@ -21,4 +21,11 @@ export interface YogaOptions {
 }
 
 
-export const baseYogaOptions: YogaOptions = {} as YogaOptions;
+export interface ComputedLayout {
+    width: number;
+    height: number;
+    top: number;
+    left: number;
+    right: number;
+    bottom: number;
+}
