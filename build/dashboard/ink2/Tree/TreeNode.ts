@@ -3,7 +3,7 @@ import { YogaNode, YogaOptions } from './YogaNode';
 import { Style, StyleOverride, baseStyle } from '../Text/Style';
 import { isEqual } from 'lodash';
 import GroupNode from './GroupNode';
-import { NodeKind, NodeInstance } from '.';
+import { NodeKind, NodeInstance } from '../Tree';
 import YogaHandle from './YogaHandle';
 import RenderContainer from '../Renderer/RenderContainer';
 
@@ -22,7 +22,7 @@ export abstract class TreeNode<K extends NodeKind = NodeKind> {
         this.parent = null;
         this.setTextStyle(override);
         this.yoga = new YogaHandle(yogaOptions, this);
-        this.renderContainer = new RenderContainer(this);
+        this.renderContainer = new RenderContainer(this as any);
     }
 
     public layout(): void {

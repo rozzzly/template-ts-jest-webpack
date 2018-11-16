@@ -1,6 +1,11 @@
+import * as stringWidth from 'string-width';
+
 import { TreeNode } from './TreeNode';
 import { NodeKind } from '../Tree';
-import * as stringWidth from 'string-width';
+
+export class FusedTextNode {
+
+}
 
 export class TextNode extends TreeNode<'TextNode'> {
     public kind: 'TextNode' = 'TextNode';

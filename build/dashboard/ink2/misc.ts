@@ -34,13 +34,20 @@ export function inRange(lowerLimit: number, upperLimit: number, value: number): 
  * @param {boolean = false} isExclusive wether or now the upper/lower bound are exclusive (default: false)
  * @returns {boolean} wether or nor value is in the given range
  */
-export function inRange(lowerLimit: number, upperLimit: number, value: number, isExclusive: boolean): boolean;
-export function inRange(lowerLimit: number, upperLimit: number, value: number, isExclusive: boolean = false): boolean {
-    return (
-        isExclusive && (
-            value > lowerLimit && value < upperLimit
-        ) || (
-            value >= lowerLimit && value <= upperLimit
+export function inRange(lowerLimit: number, upperLimit: number, value: number, exclusivity: [boolean, boolean]): boolean;
+export function inRange(
+    lowerLimit: number,
+    upperLimit: number,
+    value: number,
+    [lowerExclusive, upperExclusive]: [boolean, boolean] = [false, false]
+): boolean {
+    return ((lowerExclusive)
+        ? ((upperExclusive)
+            ? value > lowerLimit && value < upperLimit
+            : value > lowerLimit && value <= upperLimit
+        ) : ((upperExclusive)
+            ? value >= lowerLimit && value < upperLimit
+            : value >= lowerLimit && value <= upperLimit
         )
     );
 }

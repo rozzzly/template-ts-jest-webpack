@@ -1,18 +1,9 @@
-import { GridDimensions } from './RenderContainer';
+import { Dimensions } from './RenderContainer';
 import { RootNode, NodeInstance } from '../Tree';
+import { Style, baseStyle } from '../Text/Style';
 
 
-export interface GridRowSpan {
-    offset: number;
-    width: number;
-    treeRef: NodeInstance;
-}
-
-export class GridRow {
-    public spans: GridRowSpan[];
-}
-
-export class RenderGrid implements GridDimensions {
+export class RenderGrid implements Dimensions {
 
     public root: RootNode;
     public grid: GridRow[];

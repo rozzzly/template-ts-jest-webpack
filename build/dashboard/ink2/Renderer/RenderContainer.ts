@@ -1,33 +1,29 @@
 import { TreeNode } from '../Tree/TreeNode';
-import { NodeInstance } from '../Tree';
+import { NodeInstance, NodeKind } from '../Tree';
 import { ComputedLayout } from '../Tree/YogaNode';
+import { inRange } from '../misc';
+import Coords from './Coords';
+import { GridRow } from './GridRow';
 
-export interface GridDimensions {
+export interface Dimensions {
     height: number;
     width: number;
 }
-export interface GridPosition {
-    x: number;
-    y: number;
-}
 
-export interface GridGeometry extends GridDimensions, GridPosition { }
 
-export class RenderContainer implements GridGeometry {
+export class RenderContainer implements Dimensions {
 
     public treeRef: NodeInstance;
     public dirty: boolean;
     public width: number;
     public height: number;
     public x: number;
-    public globalX: number;
     public y: number;
-    public globalY: number;
-    private fresh: boolean;
+    public coords: Coords;
+    public globalCoords: Coords;
 
     public constructor(treeRef: NodeInstance) {
         this.treeRef = treeRef;
-        this.fresh = true;
     }
 
     public updateGeometry(layout: ComputedLayout): void {
@@ -43,32 +39,25 @@ export class RenderContainer implements GridGeometry {
             globalOffsetY += ancestor.renderContainer.y;
             ancestor = ancestor.parent;
         }
-        this.globalX = globalOffsetX + this.x;
-        this.globalY = globalOffsetY + this.y;
+        this.coords = {
+            x0: this.x,
+            x1: this.x + this.width,
+            y0: this.y,
+            y1: this.y + this.height
+        };
+        this.globalCoords = Coords.translate(this.coords, globalOffsetX, globalOffsetY);
     }
 
-    public render(number) {
-        if (this.treeRef.kind === 'GroupNode') {
-            for (let len = this.treeRef.children.length, i = 0; i < len; i++) {
-                const child = this.treeRef.children[i];
-                const renderChild = child.renderContainer;
-                if (renderChild.x >= this.width) {
-                    continue;
-                } else {
-                    if (renderChild.x + renderChild.width < 0) {
-                        continue;
-                    }
+    public plotRow(row: GridRow): void {
+        const { x0, x1, y0, y1 } = this.globalCoords;
+        if (inRange(y0, y1, row.rowIndex, [false, true])) { // check if this container/it's children
+            row.plot(this.treeRef, x0, this.width);
+            if (this.treeRef.kind === NodeKind.GroupNode) {
+                for (let child, i = 0; child = this.treeRef.children[i]; i++) {
+                    child.renderContainer.plotRow(row);
                 }
             }
-        } else {
-        }
-    }
-
-    public markDirty(): void {
-        this.dirty = true;
-    }
-
-    public markClean(): void {
+        } // this child is not in this
     }
 }
 export default RenderContainer;

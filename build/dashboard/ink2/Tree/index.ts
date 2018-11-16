@@ -1,7 +1,7 @@
 import { GroupNode } from './GroupNode';
 import { TextNode } from './TextNode';
-import { baseStyle } from '../Text/Style';
 import { literalsEnum, ExtractLiterals } from '../misc';
+import RootNode from './RootNode';
 
 export const NodeKind = literalsEnum(
     'GroupNode',
@@ -9,14 +9,8 @@ export const NodeKind = literalsEnum(
 );
 export type NodeKind = ExtractLiterals<typeof NodeKind>;
 
-
 export type NodeInstance = (
+    | RootNode
     | GroupNode
     | TextNode
 );
-
-export class RootNode extends GroupNode {
-    public parent = null;
-    public override = {};
-    public style = baseStyle;
-}

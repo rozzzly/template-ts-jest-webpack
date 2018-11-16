@@ -3,6 +3,7 @@ import { Color } from './Color';
 import { ExtractLiterals, literalsEnum } from '../../misc';
 import { ColorPalette } from './palette';
 
+
 export const TextWeight = literalsEnum(
     'normal',
     'faint',
@@ -41,6 +42,8 @@ export type StyleOverride = Partial<StyleProps>;
 
 export class Style implements StyleProps {
 
+    public static base: Style;
+    public static resetCode: string = codes.composeCode([codes.RESET]);
     public static isStyle(value: unknown): value is Style {
         return (value instanceof Style);
     }
@@ -203,5 +206,4 @@ export class Style implements StyleProps {
         return codes.composeCode(params);
     }
 }
-
-export const baseStyle = new Style();
+export const baseStyle = Style.base = new Style();

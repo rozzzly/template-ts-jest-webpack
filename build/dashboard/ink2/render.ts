@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { FiberRoot } from 'react-reconciler';
 import createReconciler, { Reconciler } from './reconciler';
-import { RootNode } from './InstanceTree';
+import { RootNode } from './Tree/RootNode';
 
 export type UnmountFn = (cb?: () => void) => void;
 export type RenderFn = () => React.ReactElement<any>;
