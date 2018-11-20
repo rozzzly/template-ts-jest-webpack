@@ -1,43 +1,44 @@
 import { NodeInstance } from '.';
 import { TreeNode } from './TreeNode';
-import { Style, StyleOverride } from '../Text/Style';
-import RenderContainer from '../Renderer/RenderContainer';
-import { YogaOptions } from './YogaNode';
+import Style, { StyleOverride } from '../Text/Style';
+import { YogaOptions } from './yoga/opts';
+import { GapFiller, defaultGapFiller } from '../Text/GapFiller';
+import { LineCoords } from '../Renderer/Coords';
 
 export class GroupNode extends TreeNode<'GroupNode'> {
     public kind: 'GroupNode' = 'GroupNode';
     public children: NodeInstance[] = [];
+    public gapFiller: GapFiller = defaultGapFiller;
 
-
-    public constructor(yogaOpts: Partial<YogaOptions>, override: StyleOverride) {
+    public constructor(yogaOpts: Partial<YogaOptions>, override: StyleOverride = {}) {
         super(yogaOpts, override);
     }
 
     public layout(): void {
         super.layout();
-        for (let len = this.children.length, i = 0; i < len; i++) {
-            this.children[i].layout();
+        for (let child, i = 0; child = this.children[i]; i++) {
+            child.layout();
         }
     }
 
     public dispose(): void {
-        for (let len = this.children.length, i = 0; i < len; i++) {
-            this.children[i].dispose();
+        for (let child, i = 0; child = this.children[i]; i++) {
+            child.dispose();
         }
         super.dispose();
     }
 
     public link(parent: GroupNode, index: number) {
         super.link(parent, index);
-        for (let len = this.children.length, i = 0; i < len; i++) {
-            this.children[i].link(this, i);
+        for (let child, i = 0; child = this.children[i]; i++) {
+            child.link(this, i);
         }
     }
 
     public cascadeStyle(): boolean {
         if (super.cascadeStyle()) {
-            for (let len = this.children.length, i = 0; i < len; i++) {
-                this.children[i].cascadeStyle();
+            for (let child, i = 0; child = this.children[i]; i++) {
+                child.cascadeStyle();
             }
             return true;
         } else {

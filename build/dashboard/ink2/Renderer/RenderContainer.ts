@@ -1,8 +1,8 @@
 import { TreeNode } from '../Tree/TreeNode';
 import { NodeInstance, NodeKind } from '../Tree';
-import { ComputedLayout } from '../Tree/YogaNode';
+import { ComputedLayout } from '../Tree/yoga/opts';
 import { inRange } from '../misc';
-import Coords from './Coords';
+import RectCoords, { LineCoords } from './Coords';
 import { GridRow } from './GridRow';
 
 export interface Dimensions {
@@ -17,10 +17,9 @@ export class RenderContainer implements Dimensions {
     public dirty: boolean;
     public width: number;
     public height: number;
-    public x: number;
-    public y: number;
-    public coords: Coords;
-    public globalCoords: Coords;
+    public localCoords: RectCoords;
+    public globalCoords: RectCoords;
+    public viewBox: RectCoords | null;
 
     public constructor(treeRef: NodeInstance) {
         this.treeRef = treeRef;
@@ -29,35 +28,56 @@ export class RenderContainer implements Dimensions {
     public updateGeometry(layout: ComputedLayout): void {
         this.width = layout.width;
         this.height = layout.height;
-        this.x = layout.left;
-        this.y = layout.top;
+
+        this.localCoords = {
+            x0: layout.left,
+            x1: layout.left + this.width,
+            y0: layout.top,
+            y1: layout.top + this.height
+        };
+
+        const parent = this.treeRef.parent;
         let globalOffsetX = 0;
         let globalOffsetY = 0;
-        let ancestor = this.treeRef.parent;
+        let ancestor = parent;
         while (ancestor) {
-            globalOffsetX += ancestor.renderContainer.x;
-            globalOffsetY += ancestor.renderContainer.y;
+            globalOffsetX += ancestor.renderContainer.localCoords.x0;
+            globalOffsetY += ancestor.renderContainer.localCoords.y0;
             ancestor = ancestor.parent;
         }
-        this.coords = {
-            x0: this.x,
-            x1: this.x + this.width,
-            y0: this.y,
-            y1: this.y + this.height
-        };
-        this.globalCoords = Coords.translate(this.coords, globalOffsetX, globalOffsetY);
+        this.globalCoords = RectCoords.translate(this.localCoords, globalOffsetX, globalOffsetY);
+
+        if (parent) {
+            if (parent.renderContainer.viewBox) {
+                this.viewBox = RectCoords.intersection(parent.renderContainer.viewBox, this.globalCoords);
+            } else this.viewBox = null;
+        } else { // this RenderContainer is the RootNode
+            this.viewBox = this.globalCoords;
+        }
+
     }
 
     public plotRow(row: GridRow): void {
-        const { x0, x1, y0, y1 } = this.globalCoords;
-        if (inRange(y0, y1, row.rowIndex, [false, true])) { // check if this container/it's children
-            row.plot(this.treeRef, x0, this.width);
-            if (this.treeRef.kind === NodeKind.GroupNode) {
-                for (let child, i = 0; child = this.treeRef.children[i]; i++) {
+        const { x0, x1, y0, y1 } = this.viewBox!;
+        row.plot(this.treeRef, x0, x1);
+        if (this.treeRef.kind === NodeKind.GroupNode) {
+            for (let child, i = 0; child = this.treeRef.children[i]; i++) {
+                const vBox = child.renderContainer.viewBox;
+                if (vBox && inRange(vBox.y0, vBox.y1, row.rowIndex, [false, true])) { // check if this row is in container`s viewbox
                     child.renderContainer.plotRow(row);
                 }
             }
-        } // this child is not in this
+        }
+    }
+
+    public render(row: GridRow, coords: LineCoords): void {
+        if (this.treeRef.kind === NodeKind.GroupNode) {
+            this.treeRef.gapFiller(coords, row, this.treeRef.style);
+        } else {
+            const vBox = this.viewBox!; // render() will never be called for this container if it's not plotted (ie: viewBox === null)
+            const offset = vBox.x0 - this.globalCoords.x0;
+            row.write(this.treeRef.style, this.treeRef.textRaw);
+        }
     }
 }
 export default RenderContainer;

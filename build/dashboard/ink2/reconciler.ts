@@ -1,10 +1,13 @@
 import create, { Reconciler as ReactReconciler } from 'react-reconciler';
-import { TextNode, NodeInstance, RootNode, ContainerNode } from './InstanceTree';
+import { NodeInstance } from './Tree';
+import RootNode from './Tree/RootNode';
+import TextNode from './Tree/TextNode';
+import GroupNode from './Tree/GroupNode';
 
 const noopRet = <T>(value: T) => () => value;
 const noop = () => {};
 
-export type Reconciler = ReactReconciler<ContainerNode, TextNode, RootNode, NodeInstance>;
+export type Reconciler = ReactReconciler<GroupNode, TextNode, RootNode, NodeInstance>;
 
 export default function createReconciler(): Reconciler {
     const rootHostContext = {};
@@ -21,7 +24,7 @@ export default function createReconciler(): Reconciler {
         prepareForCommit: noop,
         resetAfterCommit: noop,
         createInstance: (type, props) => {
-            return new ContainerNode();
+            return new GroupNode();
         },
         appendInitialChild: (parent, child) => {
         },

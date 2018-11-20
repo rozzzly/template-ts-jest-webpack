@@ -1,6 +1,5 @@
 import { normalize, parseChunks } from '../parse';
-import { TextChunk } from '../TextChunk';
-import { literalsEnum, ExtractLiterals } from '../../misc';
+import TextChunk from '../TextChunk';
 import BlockLine from './BlockLine';
 
 export const newlineRegex: RegExp = /\r?\n/g;

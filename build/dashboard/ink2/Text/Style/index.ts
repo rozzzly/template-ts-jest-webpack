@@ -18,7 +18,7 @@ export const TextTransform = literalsEnum(
 );
 export type TextTransform = ExtractLiterals<typeof TextTransform>;
 
-export interface StyleProps {
+export interface StyleData {
     bgColor: Color;
     fgColor: Color;
     weight: TextWeight;
@@ -28,7 +28,7 @@ export interface StyleProps {
     strike: boolean;
 }
 
-export const baseStyleData: StyleProps = {
+export const baseStyleData: StyleData = {
     fgColor: ColorPalette.default,
     bgColor: ColorPalette.bgDefault,
     weight: TextWeight.normal,
@@ -38,12 +38,17 @@ export const baseStyleData: StyleProps = {
     strike: false
 };
 
-export type StyleOverride = Partial<StyleProps>;
+export const isOverrideIdempotent = (override: StyleOverride): boolean => (
+    Object.keys(override).length === 0
+);
 
-export class Style implements StyleProps {
+export type StyleOverride = Partial<StyleData>;
+
+export class Style implements StyleData {
 
     public static base: Style;
     public static resetCode: string = codes.composeCode([codes.RESET]);
+
     public static isStyle(value: unknown): value is Style {
         return (value instanceof Style);
     }
@@ -61,8 +66,9 @@ export class Style implements StyleProps {
 
     public constructor();
     public constructor(style: StyleOverride);
-    public constructor(style: StyleOverride = {}) {
-        const data = { ...baseStyleData, ...style };
+    public constructor(style: StyleOverride, base: Style);
+    public constructor(style: StyleOverride = {}, base: Style = baseStyle) {
+        const data = { ...base, ...style };
         this.bgColor = data.bgColor;
         this.fgColor = data.fgColor;
         this.weight = data.weight;
@@ -81,15 +87,7 @@ export class Style implements StyleProps {
     }
 
     public clone(): Style {
-        return new Style({
-            bgColor: this.bgColor,
-            fgColor: this.fgColor,
-            weight: this.weight,
-            inverted: this.inverted,
-            underline: this.underline,
-            italic: this.italic,
-            strike: this.strike
-        });
+        return new Style({}, this);
     }
 
     public code(preceding: Style = baseStyle): string {
@@ -125,32 +123,33 @@ export class Style implements StyleProps {
         return codes.composeCode(params);
     }
 
-    public override(style: StyleOverride): Style {
-        if (Object.keys(style).length === 0) return this;
+    public override(override: StyleOverride): Style {
+        if (isOverrideIdempotent(override)) return this;
         else {
-            const clone = this.clone();
-            if (style.fgColor !== undefined) {
-                clone.fgColor = style.fgColor;
+            const changes: StyleOverride =  {};
+            if (override.fgColor !== undefined && !this.fgColor.equalTo(override.fgColor)) {
+                changes.fgColor = override.fgColor;
             }
-            if (style.bgColor !== undefined) {
-                clone.bgColor = style.bgColor;
+            if (override.bgColor !== undefined && !this.bgColor.equalTo(override.bgColor)) {
+                changes.bgColor = override.bgColor;
             }
-            if (style.inverted !== undefined) {
-                clone.inverted = style.inverted;
+            if (override.inverted !== undefined && this.inverted !== override.inverted) {
+                changes.inverted = override.inverted;
             }
-            if (style.italic !== undefined) {
-                clone.italic = style.italic;
+            if (override.italic !== undefined && this.italic !== override.italic) {
+                changes.italic = override.italic;
             }
-            if (style.strike !== undefined) {
-                clone.strike = style.strike;
+            if (override.strike !== undefined && this.strike !== override.strike) {
+                changes.strike = override.strike;
             }
-            if (style.underline !== undefined) {
-                clone.underline = style.underline;
+            if (override.underline !== undefined && this.underline !== override.underline) {
+                changes.underline = override.underline;
             }
-            if (style.weight !== undefined) {
-                clone.weight = style.weight;
+            if (override.weight !== undefined && this.weight !== override.weight) {
+                changes.weight = override.weight;
             }
-            return this.equalTo(clone) ? this : clone;
+
+            return isOverrideIdempotent(changes) ? this : new Style(changes, this);
         }
     }
 
@@ -206,4 +205,5 @@ export class Style implements StyleProps {
         return codes.composeCode(params);
     }
 }
-export const baseStyle = Style.base = new Style();
+export const baseStyle = Style.base = new Style(baseStyleData);
+export default Style;

@@ -1,5 +1,6 @@
-import RootNode from '../Tree/RootNode';
-import { NodeInstance } from '../Tree';
+import { NodeInstance, NodeKind } from '../Tree';
+import Style from '../Text/Style';
+import RenderGrid from './RenderGrid';
 
 export interface GridRowSpan {
     x0: number;
@@ -9,27 +10,35 @@ export interface GridRowSpan {
 }
 
 export class GridRow {
+    public dirty: boolean;
+    public grid: RenderGrid;
     public rowIndex: number;
     public width: number;
+    public text: string;
+    private builderText: string[];
+    private builderStyle: Style;
     public spans: GridRowSpan[];
 
-    public constructor(width: number, root: RootNode, rowIndex: number) {
-        this.width = width;
+    public constructor(grid: RenderGrid, rowIndex: number) {
+        this.grid = grid;
+        this.dirty = false;
+        this.width = this.grid.width;
+        this.rowIndex = rowIndex;
         this.spans = [
             {
                 x0: 0,
-                x1: width,
-                node: root,
-                derivedFrom: null,
+                x1: this.width,
+                node: this.grid.root,
+                derivedFrom: null
             }
         ];
     }
 
-    public plot(node: NodeInstance, offset: number, width: number) {
+    public plot(node: NodeInstance, x0: number, x1: number) {
         const nSpan = {
             node,
-            x0: offset,
-            x1: offset + width,
+            x0,
+            x1,
             derivedFrom: null
         };
         if (nSpan.x0 < 0 || nSpan.x1 > this.width) {
@@ -78,20 +87,18 @@ export class GridRow {
                  *          NOTE ::: using >= because x0 is inclusive while x1 is exclusive
                  *          Test: nSpan.x0 >= cSpan.x1
                  *          Effect:
-                 *              cSpan is appended to nSpans without modification
-                 *
+                 *              cSpan is appended to nSpans without modification                 *
                  *          Examples:
                  *              write(offset: 4, width: 2) --> [Skip] when i === 0
                  *               ----@$$@==@----
                  *              write(offset: 9, width: 3) --> [Skip] when i === 0 || i === 1
                  *              ----@----@=@$$$
-                //  *      [End] nSpan ends after cSpan begins
-                //  *          Test: nSpan.x1 <= cSpan.x0
-                //  *          Effect:
-                //  *              cSpan is append without modification
-                //  *              any spans following cSpan are appended without modification
-                //                 iteration is aborted (via break;)
-                //  *
+                 *      [End] nSpan ends after cSpan begins
+                 *          Test: nSpan.x1 <= cSpan.x0
+                 *          Effect:
+                 *              cSpan is append without modification
+                 *              any spans following cSpan are appended without modification
+                 *              iteration is aborted (via break;)
                  *          Examples:
                  *              write(offset: 3, width: 4) --> [End] when i === 2
                  *              ===@$$$@==@----
@@ -142,7 +149,7 @@ export class GridRow {
                  *              ----@=@$$@=@---- write(5, 2) when i === 1
                  *              =@$@==@----@---- write(1, 1) when i === 0
                  *      [Fill] nSpan ends where cSpan does but is not left-clipped
-                *          Test: nSpan.x0 <= cSpan.x0 && [Flush]
+                 *          Test: nSpan.x0 <= cSpan.x0 && [Flush]
                  *          Effects:
                  *              nSpan is appended
                  *              any remaining spans are appended and iteration aborted (similar to [End])
@@ -216,14 +223,20 @@ export class GridRow {
         }
     }
 
-    public renderToString(): string {
-        const buff: string[] = [];
+    public render(): string {
+        this.builderStyle = Style.base;
+        this.builderText = [];
+        for (let span, i = 0; span = this.spans[i]; i++) {
+            span.node.renderContainer.render(this, { x0: span.x0, x1: span.x1, y: this.rowIndex });
+        }
+        this.builderText.push(Style.resetCode, '\r\n');
+        this.text = this.builderText.join('');
+        return this.text;
+    }
 
-        let preceding = baseStyle;
-        buff.push(Style.resetCode);
-        buff.push(Style.resetCode);
-        buff.push('\r\n');
-
-        return buff.join('');
+    public write(style: Style, text: string): void {
+        this.builderText.push(style.code(this.builderStyle), text);
+        this.builderStyle = style;
     }
 }
+export default GridRow;

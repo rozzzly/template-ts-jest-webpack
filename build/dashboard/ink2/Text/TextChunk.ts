@@ -21,3 +21,4 @@ export class TextChunk {
     }
 
 }
+export default TextChunk;

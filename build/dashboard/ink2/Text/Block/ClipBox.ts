@@ -88,16 +88,3 @@ export class ClipBox {
     }
 
 }
-export interface RenderLocation {
-    // globalX: number;
-    // globalY: number;
-    // blockX: number;
-    // blockY: number;
-    // blockOffsetX: number;
-    // blockOffsetY: number;
-}
-export type GapFiller = (width: number, parentStyle: Style, precedingStyle: Style, location: RenderLocation) => [Style, string];
-export const defaultGapFiller: GapFiller = (width, parent, preceding) => {
-    return [parent, parent.code(preceding) + whitespaceBuilder.substring(0, width)];
-};
-const whitespaceBuilder = ' '.repeat(32).repeat(32); // quick way of creating 1024 spaces

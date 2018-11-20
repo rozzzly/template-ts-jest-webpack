@@ -51,3 +51,26 @@ export function inRange(
         )
     );
 }
+
+export const clampLower = (lowerBound: number, value: number) => (
+    ((value < lowerBound)
+        ? lowerBound
+        : value
+    )
+);
+
+export const clampUpper = (upperBound: number, value: number) => (
+    ((value > upperBound)
+        ? upperBound
+        : value
+    )
+);
+export const clamp = (lowerBound: number, upperBound: number, value: number) => (
+    ((value < lowerBound)
+        ? lowerBound
+        : ((value > upperBound)
+            ? upperBound
+            : value
+        )
+    )
+);

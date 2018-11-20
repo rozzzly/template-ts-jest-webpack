@@ -1,6 +1,6 @@
 import { ExtractLiterals, literalsEnum } from '../../misc';
 import { Color, RGB } from './Color';
-import { StyleProps, baseStyleData, TextWeight, TextTransform, StyleOverride } from '../Style';
+import { StyleData, baseStyleData, TextWeight, TextTransform, StyleOverride } from '../Style';
 import { BackgroundColor, BackgroundColorName, ForegroundColorFlagMap, ColorPalette, ColorName, BackgroundColorFlagMap } from './palette';
 
 

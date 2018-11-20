@@ -1,12 +1,36 @@
-export interface Coords {
+import { clampUpper, clamp } from '../misc';
+
+export interface RectCoords {
     x0: number;
     x1: number;
     y0: number;
     y1: number;
 }
 
-export class Coords implements Coords {
-    public static translate(base: Coords, xOffset: number, yOffset: number): Coords {
+export interface LineCoords {
+    x0: number;
+    x1: number;
+    y: number;
+}
+
+export class RectCoords implements RectCoords {
+
+
+    public static intersection(alpha: RectCoords, bravo: RectCoords): RectCoords | null {
+        if (this.overlap(alpha, bravo)) {
+            const result = {
+                x0: clamp(alpha.x0, alpha.x1, bravo.x0),
+                x1: clamp(alpha.x0, alpha.x1, bravo.x1),
+                y0: clamp(alpha.y0, alpha.y1, bravo.y0),
+                y1: clamp(alpha.y0, alpha.y1, bravo.y1)
+            };
+            if ((result.x1 - result.x0) > 0 && (result.y1 - result.y0) > 0) {
+                return result;
+            } else return null;
+        } else return null;
+    }
+
+    public static translate(base: RectCoords, xOffset: number, yOffset: number): RectCoords {
         return {
             x0: base.x0 + xOffset,
             x1: base.x1 + xOffset,
@@ -15,7 +39,7 @@ export class Coords implements Coords {
         };
     }
 
-    public static equalTo(alpha: Coords, bravo: Coords): boolean {
+    public static equalTo(alpha: RectCoords, bravo: RectCoords): boolean {
         return (
             alpha === bravo
         ) || (
@@ -26,27 +50,14 @@ export class Coords implements Coords {
         );
     }
 
-    public static overlap(alpha: Coords, bravo: Coords): boolean {
+    public static overlap(alpha: RectCoords, bravo: RectCoords): boolean {
         return !(
             alpha.y1 <= bravo.y0 ||
             alpha.y0 >= bravo.y1 ||
             alpha.x1 <= bravo.x0 ||
             alpha.x0 >= bravo.x1
-
-        );
-    }
-    public static overlapX(alpha: Coords, bravo: Coords): boolean {
-        return !(
-            alpha.x1 <= bravo.x0 ||
-            alpha.x0 >= bravo.x1
-        );
-    }
-    public static overlapY(alpha: Coords, bravo: Coords): boolean {
-        return !(
-            alpha.y1 <= bravo.y0 ||
-            alpha.y0 >= bravo.y1
         );
     }
 }
 
-export default Coords;
+export default RectCoords;
