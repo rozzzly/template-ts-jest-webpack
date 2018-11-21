@@ -3,6 +3,7 @@ import  { NodeInstance } from '../Tree';
 import { Style, baseStyle } from '../Text/Style';
 import RootNode from '../Tree/RootNode';
 import GridRow from './GridRow';
+import { RowRange } from './Coords';
 
 
 export class RenderGrid implements Dimensions {
@@ -11,10 +12,11 @@ export class RenderGrid implements Dimensions {
     public rows: GridRow[];
     public width: number;
     public height: number;
+    public isLayoutDirty: boolean;
     private dirtyRows: Set<number>;
 
     public get isDirty(): boolean {
-        return !!this.dirtyRows.size;
+        return this.isLayoutDirty || !!this.dirtyRows.size;
     }
 
     public constructor(width: number, height: number) {
@@ -27,18 +29,38 @@ export class RenderGrid implements Dimensions {
 
     private createRows() {
         this.rows = []; // discard existing rows, if any-when grid is resized, entire tree will be rebuilt
+        this.dirtyRows.clear(); // if we shrink num of rows, render could try to render a row which does not exist
         for (let i = 0; i < this.height; i++) {
             this.rows.push(new GridRow(this, i));
             this.dirtyRows.add(i);
         }
     }
 
-    public plotRows(): void {
+    public layout(): void {
+        this.isLayoutDirty = false;
+        this.root.layout();
+    }
+
+    public render(): void {
+        if (this.isLayoutDirty) this.layout();
+        let row;
         for (let index of this.dirtyRows.values()) {
-            this.root.renderContainer.plotRow(this.rows[index]);
+            row = this.rows[index];
+            this.root.renderContainer.plotRow(row);
+            row.render();
         }
         this.dirtyRows.clear();
     }
+
+    public renderToString(): string {
+        this.render();
+        const buff = [];
+        for (let row, i = 0; row = this.rows[i]; i++) {
+            buff.push(row.text);
+        }
+        return buff.join('')
+    }
+
 
     public resize(height: number, width: number): boolean {
         if (this.height !== height || this.width !== width) {
@@ -50,39 +72,23 @@ export class RenderGrid implements Dimensions {
         } else return false;
     }
 
-    public markRowDirty(index: number): void {
-        this.dirtyRows.add(index);
-        this.rows[index].dirty = true;
+    public markDirty(y: number): void {
+        this.dirtyRows.add(y);
     }
-    public markRowSpanDirty(start: number, count: number): void {
-        for (let end = start + count,  index = start; index < end; index++) {
-            this.dirtyRows.add(index);
-            this.rows[index].dirty = true;
+    public markRangeDirty({ y0, y1 }: RowRange): void {
+        for (let i = y0; i <= y1; i++) {
+            this.dirtyRows.add(i);
         }
     }
-    public markRowsDirty(indexes: number[]): void {
-        for (let len = indexes.length, i = 0; i < len; i++) {
-            this.dirtyRows.add(indexes[i]);
-            this.rows[indexes[i]].dirty = true;
-        }
+    public markClean(y: number): void {
+        this.dirtyRows.delete(y);
     }
-    public markRowClean(index: number): void {
-        this.dirtyRows.delete(index);
-        this.rows[index].dirty = false;
-    }
-    public markRowSpanClean(start: number, count: number): void {
-        if (start === 0 && count === this.height) this.dirtyRows.clear();
+    public markRangeClean({ y0, y1 }: RowRange): void {
+        if (y0 === 0 && y1 === this.height) this.dirtyRows.clear();
         else {
-            for (let end = start + count, i = start; i < end; i++) {
+            for (let i = y0; i <= y1; i++) {
                 this.dirtyRows.delete(i);
-                this.rows[i].dirty = false;
             }
-        }
-    }
-    public markRowsClean(indexes: number[]): void {
-        for (let len = indexes.length, i = 0; i < len; i++) {
-            this.dirtyRows.delete(indexes[i]);
-            this.rows[i].dirty = false;
         }
     }
 }

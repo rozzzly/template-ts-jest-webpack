@@ -17,7 +17,7 @@ export class RootNode extends GroupNode {
     }
 
     public resize(width: number, height: number) {
-        this.yoga.mergeOptions({ width, height });
+        this.yoga.mergeProps({ width, height });
         this.width = width;
         this.height = height;
     }

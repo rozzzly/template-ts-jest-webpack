@@ -46,7 +46,7 @@ export interface SharedYogaOptions {
         | YogaValue
     );
 }
-export interface YogaOptions extends SharedYogaOptions {
+export interface YogaProps extends SharedYogaOptions {
     padding: YogaValue | [YogaValue, YogaValue] | [YogaValue, YogaValue, YogaValue, YogaValue];
     paddingLeft: YogaValue;
     paddingTop: YogaValue;
@@ -68,7 +68,7 @@ export interface YogaOptions extends SharedYogaOptions {
     flexDirection: YogaFlexDirection;
 }
 
-export interface InternalYogaOptions extends SharedYogaOptions {
+export interface InternalYogaProps extends SharedYogaOptions {
     padding: {
         left: YogaValue;
         top: YogaValue;
@@ -110,7 +110,7 @@ const scalarValues = literals(
     'flexBasis'
 );
 
-export const defaultOpts: InternalYogaOptions = {
+export const defaultOpts: InternalYogaProps = {
     maxHeight: 'auto',
     minHeight: 'auto',
     maxWidth: 'auto',
@@ -140,8 +140,8 @@ export const defaultOpts: InternalYogaOptions = {
 };
 
 
-export function reduceOpts(staged: Partial<YogaOptions>, active: InternalYogaOptions = defaultOpts): InternalYogaOptions {
-    const res: InternalYogaOptions = {
+export function internalizeProps(staged: Partial<YogaProps>, active: InternalYogaProps = defaultOpts): InternalYogaProps {
+    const res: InternalYogaProps = {
         ...active
     };
 

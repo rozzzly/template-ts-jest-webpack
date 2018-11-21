@@ -1,5 +1,5 @@
 import { Style, StyleOverride, baseStyle } from '../Text/Style';
-import { YogaOptions } from './yoga/opts';
+import { YogaProps } from './yoga/props';
 import GroupNode from './GroupNode';
 import { NodeKind } from '../Tree';
 import YogaHandle from './yoga/YogaHandle';
@@ -16,9 +16,9 @@ export abstract class TreeNode<K extends NodeKind> {
     protected linked: boolean = false;
     protected override: StyleOverride;
 
-    public constructor(yogaOptions?: Partial<YogaOptions>, override: StyleOverride = {}) {
+    public constructor(yogaOptions?: Partial<YogaProps>, override: StyleOverride = {}) {
         this.parent = null;
-        this.setTextStyle(override);
+        this.setStyle(override);
         this.yoga = new YogaHandle(this as any, yogaOptions);
         this.renderContainer = new RenderContainer(this as any);
     }
@@ -31,8 +31,8 @@ export abstract class TreeNode<K extends NodeKind> {
         }
     }
 
-    public setTextStyle(styleData: StyleOverride): void {
-        this.override = { ...styleData };
+    public setStyle(override: StyleOverride): void {
+        this.override = { ...override };
         this.cascadeStyle();
     }
 

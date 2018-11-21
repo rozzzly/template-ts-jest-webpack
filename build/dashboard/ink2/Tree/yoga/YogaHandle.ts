@@ -1,7 +1,6 @@
 import { isEqual } from 'lodash';
 import yoga, { Node, YogaNode } from 'yoga-layout';
-import { YogaOptions, InternalYogaOptions, reduceOpts, defaultOpts } from './opts';
-import TreeNode from '../TreeNode';
+import { YogaProps, InternalYogaProps, internalizeProps, defaultOpts } from './props';
 import { NodeInstance } from '..';
 
 
@@ -10,31 +9,31 @@ export class YogaHandle {
 
     public node: YogaNode | null;
     private owner: NodeInstance;
-    private active: InternalYogaOptions;
-    private staged: InternalYogaOptions;
+    private active: InternalYogaProps;
+    private staged: InternalYogaProps;
 
 
-    public constructor(owner: NodeInstance, opts?: Partial<YogaOptions>) {
+    public constructor(owner: NodeInstance, opts?: Partial<YogaProps>) {
         this.active = {... defaultOpts };
         this.owner = owner;
-        if (opts) this.setOptions(opts);
+        if (opts) this.setProps(opts);
     }
 
-    public mergeOptions(incoming: Partial<YogaOptions>): void {
-        this.staged = reduceOpts(incoming, this.active);
+    public mergeProps(incoming: Partial<YogaProps>): void {
+        this.staged = internalizeProps(incoming, this.active);
         if (this.node && !isEqual(this.staged, this.active)) {
-            this.applyYogaOptions();
+            this.applyYogaProps();
         }
     }
 
-    public setOptions(incoming: Partial<YogaOptions>): void {
-        this.staged = reduceOpts(incoming);
+    public setProps(incoming: Partial<YogaProps>): void {
+        this.staged = internalizeProps(incoming);
         if (this.node && !isEqual(this.staged, this.active)) {
-            this.applyYogaOptions();
+            this.applyYogaProps();
         }
     }
 
-    protected applyYogaOptions(): void {
+    protected applyYogaProps(): void {
         if (!this.node) throw new Error();
         else {
             const s = this.staged, a = this.active, n = this.node; // save some repetitive typing
@@ -71,7 +70,7 @@ export class YogaHandle {
         if (index !== undefined && this.owner.parent && this.owner.parent.yoga.node) {
             this.owner.parent.yoga.node.insertChild(this.node, index);
         }
-        this.applyYogaOptions();
+        this.applyYogaProps();
     }
 
     public dispose(): void {

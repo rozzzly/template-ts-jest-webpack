@@ -1,50 +1,69 @@
 import { NodeInstance, NodeKind } from '../Tree';
 import Style from '../Text/Style';
 import RenderGrid from './RenderGrid';
+import { SpanCoords, ColumnRange } from './Coords';
 
-export interface GridRowSpan {
-    x0: number;
-    x1: number;
-    derivedFrom: GridRowSpan | null;
+export class RowBuilder {
+    private precedingStyle: Style;
+    private buff: string[];
+
+    public constructor() {
+        this.precedingStyle = Style.base;
+        this.buff = [];
+    }
+
+    public append(style: Style, text: string): void {
+        this.buff.push(style.code(this.precedingStyle), text);
+        this.precedingStyle = style;
+
+    }
+
+    public toString(): string {
+        this.buff.push(Style.resetCode, '\r\n');
+        return this.buff.join('');
+    }
+}
+
+export interface GridSpan extends SpanCoords {
+    derivedFrom: GridSpan | null;
     node: NodeInstance;
 }
 
 export class GridRow {
-    public dirty: boolean;
     public grid: RenderGrid;
-    public rowIndex: number;
+    public y: number;
     public width: number;
-    public text: string;
-    private builderText: string[];
-    private builderStyle: Style;
-    public spans: GridRowSpan[];
+    public text: string | null;
+    public spans: GridSpan[];
 
-    public constructor(grid: RenderGrid, rowIndex: number) {
+    public constructor(grid: RenderGrid, y: number) {
         this.grid = grid;
-        this.dirty = false;
         this.width = this.grid.width;
-        this.rowIndex = rowIndex;
+        this.y = y;
         this.spans = [
             {
                 x0: 0,
                 x1: this.width,
+                y: this.y,
                 node: this.grid.root,
                 derivedFrom: null
             }
         ];
+        this.text = null;
     }
 
-    public plot(node: NodeInstance, x0: number, x1: number) {
+    public plot(node: NodeInstance, { x0, x1 }: ColumnRange) {
         const nSpan = {
             node,
             x0,
             x1,
+            y: this.y,
             derivedFrom: null
         };
         if (nSpan.x0 < 0 || nSpan.x1 > this.width) {
             throw new RangeError();
         } else {
-            let nSpans: GridRowSpan[] = [];
+            let nSpans: GridSpan[] = [];
             for (let cSpan, i = 0; cSpan = this.spans[i]; i++) {
                 /**
                  * Do you know what time it is?? ..
@@ -224,19 +243,13 @@ export class GridRow {
     }
 
     public render(): string {
-        this.builderStyle = Style.base;
-        this.builderText = [];
+        this.text = null;
+        const builder = new RowBuilder();
         for (let span, i = 0; span = this.spans[i]; i++) {
-            span.node.renderContainer.render(this, { x0: span.x0, x1: span.x1, y: this.rowIndex });
+            span.node.renderContainer.render(builder, span);
         }
-        this.builderText.push(Style.resetCode, '\r\n');
-        this.text = this.builderText.join('');
+        this.text = builder.toString();
         return this.text;
-    }
-
-    public write(style: Style, text: string): void {
-        this.builderText.push(style.code(this.builderStyle), text);
-        this.builderStyle = style;
     }
 }
 export default GridRow;

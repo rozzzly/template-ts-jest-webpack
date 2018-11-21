@@ -1,16 +1,16 @@
 import { NodeInstance } from '.';
 import { TreeNode } from './TreeNode';
-import Style, { StyleOverride } from '../Text/Style';
-import { YogaOptions } from './yoga/opts';
+import { StyleOverride } from '../Text/Style';
+import { YogaProps } from './yoga/props';
 import { GapFiller, defaultGapFiller } from '../Text/GapFiller';
-import { LineCoords } from '../Renderer/Coords';
+import { SpanCoords } from '../Renderer/Coords';
 
 export class GroupNode extends TreeNode<'GroupNode'> {
     public kind: 'GroupNode' = 'GroupNode';
     public children: NodeInstance[] = [];
     public gapFiller: GapFiller = defaultGapFiller;
 
-    public constructor(yogaOpts: Partial<YogaOptions>, override: StyleOverride = {}) {
+    public constructor(yogaOpts: Partial<YogaProps>, override: StyleOverride = {}) {
         super(yogaOpts, override);
     }
 

@@ -1,9 +1,9 @@
 import { TreeNode } from '../Tree/TreeNode';
 import { NodeInstance, NodeKind } from '../Tree';
-import { ComputedLayout } from '../Tree/yoga/opts';
+import { ComputedLayout } from '../Tree/yoga/props';
 import { inRange } from '../misc';
-import RectCoords, { LineCoords } from './Coords';
-import { GridRow } from './GridRow';
+import RectCoords, { SpanCoords } from './Coords';
+import { GridRow, RowBuilder } from './GridRow';
 
 export interface Dimensions {
     height: number;
@@ -58,25 +58,25 @@ export class RenderContainer implements Dimensions {
     }
 
     public plotRow(row: GridRow): void {
-        const { x0, x1, y0, y1 } = this.viewBox!;
-        row.plot(this.treeRef, x0, x1);
+        const { x0, x1, y0, y1 } = this.viewBox!; // assertion is safe because RootNode will always have viewBox, and child nodes without one will
+        row.plot(this.treeRef, { x0, x1 }); // never be recursed into
         if (this.treeRef.kind === NodeKind.GroupNode) {
             for (let child, i = 0; child = this.treeRef.children[i]; i++) {
                 const vBox = child.renderContainer.viewBox;
-                if (vBox && inRange(vBox.y0, vBox.y1, row.rowIndex, [false, true])) { // check if this row is in container`s viewbox
+                if (vBox && RectCoords.containsRow(vBox, row.y)) { // check if this row is in container`s viewbox
                     child.renderContainer.plotRow(row);
                 }
             }
         }
     }
 
-    public render(row: GridRow, coords: LineCoords): void {
+    public render(builder: RowBuilder, coords: SpanCoords): void {
         if (this.treeRef.kind === NodeKind.GroupNode) {
-            this.treeRef.gapFiller(coords, row, this.treeRef.style);
+            this.treeRef.gapFiller(builder, coords, this.treeRef.style);
         } else {
             const vBox = this.viewBox!; // render() will never be called for this container if it's not plotted (ie: viewBox === null)
             const offset = vBox.x0 - this.globalCoords.x0;
-            row.write(this.treeRef.style, this.treeRef.textRaw);
+            builder.append(this.treeRef.style, this.treeRef.textRaw);
         }
     }
 }

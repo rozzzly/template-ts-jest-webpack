@@ -1,7 +1,6 @@
 import * as stringWidth from 'string-width';
 
 import TreeNode from './TreeNode';
-import { LineCoords } from '../Renderer/Coords';
 import Style from '../Text/Style';
 import TextChunk from '../Text/TextChunk';
 import { parseChunks } from '../Text/parse';
@@ -30,7 +29,7 @@ export class TextNode extends TreeNode<'TextNode'> {
                 this.chunks.push(chunk);
                 width += chunk.width;
             });
-            this.yoga.setOptions({
+            this.yoga.setProps({
                 width: width,
                 height: 1
             });
