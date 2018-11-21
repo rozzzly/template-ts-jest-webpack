@@ -9,7 +9,6 @@ import RenderContainer from '../Renderer/RenderContainer';
 export abstract class TreeNode<K extends NodeKind> {
     public kind: K;
     public style: Style;
-    public dirty: boolean;
     public yoga: YogaHandle;
     public parent: GroupNode | null = null;
     public renderContainer: RenderContainer;

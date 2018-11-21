@@ -5,13 +5,14 @@ const fromRoot = (...subPaths) => path.resolve(rootDir, ...subPaths);
 
 module.exports = {
     rootDir: rootDir,
-    roots: [
-        '<rootDir>/src',
-        '<rootDir>/test',
-        '<rootDir>/build'
-    ],
+    // roots: [
+    //     '<rootDir>/src',
+    //     '<rootDir>/test',
+    //     '<rootDir>/build'
+    // ],
     setupTestFrameworkScriptFile: '<rootDir>/build/dashboard/ink2/tests/__setup.js',
     verbose: true,
+    testEnvironment: 'node',
     testMatch: [
         fromRoot('src/**/*.(test|spec).ts'),
         fromRoot('build/**/*.(test|spec).ts'),

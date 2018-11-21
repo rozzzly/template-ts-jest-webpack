@@ -37,17 +37,18 @@ export class RenderGrid implements Dimensions {
     }
 
     public layout(): void {
-        this.isLayoutDirty = false;
         this.root.layout();
+        for (let row, i = 0; row = this.rows[i]; i++) {
+            this.root.renderContainer.plotRow(row);
+        }
+        this.isLayoutDirty = false;
     }
 
     public render(): void {
         if (this.isLayoutDirty) this.layout();
         let row;
         for (let index of this.dirtyRows.values()) {
-            row = this.rows[index];
-            this.root.renderContainer.plotRow(row);
-            row.render();
+            this.rows[index].render();
         }
         this.dirtyRows.clear();
     }
@@ -58,7 +59,7 @@ export class RenderGrid implements Dimensions {
         for (let row, i = 0; row = this.rows[i]; i++) {
             buff.push(row.text);
         }
-        return buff.join('')
+        return buff.join('');
     }
 
 

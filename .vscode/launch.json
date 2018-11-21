@@ -6,20 +6,19 @@
     "configurations": [
         {
             "type": "node",
-            "name": "attach wslNode",
+            "name": "attach",
             "request": "attach",
             // "useWSL": true,
             "port": 9229,
-            "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/mnt/c/Users/rozzzly/Projects/template-ts-jest-webpack",
+            // "localRoot": "${workspaceFolder}",
+            // "remoteRoot": ".",
+            // "sourceMapPathOverrides": {
+            //     "build/*": "${workspaceRoot}/build/*"
+            // },
             // "program": "${workspaceFolder}\\build\\index.js",
             "stopOnEntry": true,
-            "runtimeArgs": [
-                "--preserver-symlinks"
-            ],
-            "outFiles": [
-                "${workspaceFolder}/**/*.js"
-            ]
+            "smartStep": false,
+            "sourceMaps": false
         }
     ]
 }

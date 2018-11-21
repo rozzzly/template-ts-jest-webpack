@@ -9,11 +9,14 @@
             "label": "build",
             "command": "tsc",
             "options": {
-				"shell": {
-					"executable": "C:\\Windows\\System32\\bash.exe",
-					"args": ["--login", "-c"]
-				}
-			},
+                "shell": {
+                    "executable": "C:\\Windows\\System32\\bash.exe",
+                    "args": [
+                        "--login",
+                        "-c"
+                    ]
+                }
+            },
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -21,6 +24,21 @@
             "problemMatcher": [
                 "$tsc"
             ]
+        },
+        {
+            "type": "shell",
+            "label": "debug jest",
+            "command": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --no-cache",
+            "options": {
+                "shell": {
+                    "executable": "C:\\Windows\\System32\\bash.exe",
+                    "args": [
+                        "--login",
+                        "-c"
+                    ]
+                }
+            },
+            "problemMatcher": []
         }
     ]
 }
