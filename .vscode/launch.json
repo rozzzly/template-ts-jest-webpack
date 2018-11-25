@@ -10,8 +10,8 @@
             "request": "attach",
             // "useWSL": true,
             "port": 9229,
-            // "localRoot": "${workspaceFolder}",
-            // "remoteRoot": ".",
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/mnt/c/Users/rozzzly/Projects/template-ts-jest-webpack",
             // "sourceMapPathOverrides": {
             //     "build/*": "${workspaceRoot}/build/*"
             // },
