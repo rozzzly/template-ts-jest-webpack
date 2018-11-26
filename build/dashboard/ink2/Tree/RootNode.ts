@@ -4,13 +4,12 @@ import GroupNode from './GroupNode';
 
 export class RootNode extends GroupNode {
     public parent: null = null;
-    public override: StyleOverride = {};
     public style: Style = Style.base;
     public width: number;
     public height: number;
 
     public constructor(width: number, height: number) {
-        super({ width, height });
+        super({ width, height }, {});
         this.width = width;
         this.height = height;
         this.yoga.link();

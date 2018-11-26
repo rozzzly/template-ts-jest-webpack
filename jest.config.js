@@ -13,6 +13,9 @@ module.exports = {
     setupTestFrameworkScriptFile: '<rootDir>/build/dashboard/ink2/tests/__setup.js',
     verbose: true,
     testEnvironment: 'node',
+    // moduleNameMapper: {
+    //     'template-ts-jest-webpack/(.*)': '$1'
+    // },
     testMatch: [
         fromRoot('src/**/*.(test|spec).ts'),
         fromRoot('build/**/*.(test|spec).ts'),

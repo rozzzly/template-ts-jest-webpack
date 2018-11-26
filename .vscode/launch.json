@@ -10,15 +10,15 @@
             "request": "attach",
             // "useWSL": true,
             "port": 9229,
-            "localRoot": "${workspaceFolder}",
-            "remoteRoot": "/mnt/c/Users/rozzzly/Projects/template-ts-jest-webpack",
-            // "sourceMapPathOverrides": {
-            //     "build/*": "${workspaceRoot}/build/*"
-            // },
+            // "localRoot": "${workspaceFolder}",
+            // "remoteRoot": "/mnt/c/Users/rozzzly/Projects/template-ts-jest-webpack",
+            "sourceMapPathOverrides": {
+                "/mnt/c/Users/rozzzly/Projects/template-ts-jest-webpack/*": "${workspaceRoot}/*"
+            },
             // "program": "${workspaceFolder}\\build\\index.js",
             "stopOnEntry": true,
             "smartStep": false,
-            "sourceMaps": false
+            "sourceMaps": true
         }
     ]
 }

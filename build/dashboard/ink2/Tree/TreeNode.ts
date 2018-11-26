@@ -15,9 +15,9 @@ export abstract class TreeNode<K extends NodeKind> {
     protected linked: boolean = false;
     protected override: StyleOverride;
 
-    public constructor(yogaOptions?: Partial<YogaProps>, override: StyleOverride = {}) {
+    public constructor(yogaOptions: Partial<YogaProps>, override: StyleOverride) {
         this.parent = null;
-        this.setStyle(override);
+        this.override = override;
         this.yoga = new YogaHandle(this as any, yogaOptions);
         this.renderContainer = new RenderContainer(this as any);
     }
@@ -35,11 +35,9 @@ export abstract class TreeNode<K extends NodeKind> {
         this.cascadeStyle();
     }
 
-    public cascadeStyle(): boolean {
+    public cascadeStyle(): void {
         const inherited = this.parent ? this.parent.style : Style.base;
-        const old = this.style;
         this.style = inherited.override(this.override);
-        return this.style === old;
     }
 
     public dispose(): void {

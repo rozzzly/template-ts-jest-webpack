@@ -10,7 +10,7 @@ export class GroupNode extends TreeNode<'GroupNode'> {
     public children: NodeInstance[] = [];
     public gapFiller: GapFiller = defaultGapFiller;
 
-    public constructor(yogaOpts: Partial<YogaProps>, override: StyleOverride = {}) {
+    public constructor(yogaOpts: Partial<YogaProps>, override: StyleOverride) {
         super(yogaOpts, override);
     }
 
@@ -35,14 +35,10 @@ export class GroupNode extends TreeNode<'GroupNode'> {
         }
     }
 
-    public cascadeStyle(): boolean {
-        if (super.cascadeStyle()) {
-            for (let child, i = 0; child = this.children[i]; i++) {
-                child.cascadeStyle();
-            }
-            return true;
-        } else {
-            return false;
+    public cascadeStyle(): void {
+        super.cascadeStyle();
+        for (let child, i = 0; child = this.children[i]; i++) {
+            child.cascadeStyle();
         }
     }
 

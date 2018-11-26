@@ -11,7 +11,7 @@ export class TextNode extends TreeNode<'TextNode'> {
     protected chunks: TextChunk[];
 
     public constructor(text: string) {
-        super();
+        super({ }, { });
         this.setText(text);
     }
 

@@ -6,7 +6,15 @@ let oldToBeMatcher = null;
 const getMatchersObject = () => global[Symbol.for('$$jest-matchers-object')].matchers;
 
 const csiRegex = /\u001b/ug;
-const escapeCSI = (str) => str.replace(csiRegex, '\\u001b');
+const spaceRegex = /\ /g;
+const carriageReturnRegex = /\r\n/g
+const returnRegex = /\n/g
+const escape = (str) => ((str)
+    .replace(csiRegex, '\\u001b')
+    .replace(carriageReturnRegex, '\\r\\n')
+    .replace(returnRegex, '\\n')
+    .replace(spaceRegex, '*')
+);
 
 
 function patch() {
@@ -16,7 +24,7 @@ function patch() {
         oldToBeMatcher = matchers.toBe;
         matchers.toBe = function (actual, expected) {
             if (typeof actual === 'string' && typeof expected === 'string' && !Object.is(actual, expected)) {
-                return oldToBeMatcher.call(this, escapeCSI(actual), escapeCSI(expected));
+                return oldToBeMatcher.call(this, escape(actual), escape(expected));
             } else {
                 return oldToBeMatcher.call(this, actual, expected);
             }

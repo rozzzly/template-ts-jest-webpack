@@ -14,6 +14,7 @@ describe('just a root node', () => {
         expect(root.parent).toBeNull();
     });
     it('will calculate the layout when .layout() is called', () => {
+        root = new RootNode(100, 2);
         expect(root.renderContainer.viewBox).toBeUndefined();
         expect(root.renderContainer.localCoords).toBeUndefined();
         expect(root.renderContainer.globalCoords).toBeUndefined();

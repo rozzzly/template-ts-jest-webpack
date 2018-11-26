@@ -30,6 +30,7 @@ export class RenderGrid implements Dimensions {
     private createRows() {
         this.rows = []; // discard existing rows, if any-when grid is resized, entire tree will be rebuilt
         this.dirtyRows.clear(); // if we shrink num of rows, render could try to render a row which does not exist
+        this.isLayoutDirty = true;
         for (let i = 0; i < this.height; i++) {
             this.rows.push(new GridRow(this, i));
             this.dirtyRows.add(i);
