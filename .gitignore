@@ -3,3 +3,4 @@ package-lock.json
 bin
 dist
 .vscode/tasks.json
+/.gtm/
