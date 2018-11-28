@@ -91,6 +91,7 @@ export class Style implements StyleData {
     }
 
     public code(preceding: Style = baseStyle): string {
+        if (this === preceding) return ''; // referential short circuit
         let params: number[] = [];
         if (!this.fgColor.equalTo(preceding.fgColor)) {
             params = params.concat(this.fgColor.fgCode(false));

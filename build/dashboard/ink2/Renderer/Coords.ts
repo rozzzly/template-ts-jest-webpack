@@ -72,7 +72,6 @@ export class RectCoords implements RectCoords {
         return (
             inRange(rect.x0, rect.x1, point.x, [false, true]) &&
             inRange(rect.y0, rect.y1, point.y, [false, true])
-
         );
     }
 }
