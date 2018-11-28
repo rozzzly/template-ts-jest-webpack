@@ -1,40 +1,50 @@
 import { isEqual } from 'lodash';
 import yoga, { Node, YogaNode } from 'yoga-layout';
-import { YogaProps, InternalYogaProps, internalizeProps, defaultOpts } from './props';
-import { NodeInstance } from '..';
+import { YogaProps, InternalYogaProps, internalizeProps, defaultProps } from './props';
+import { NodeInstance } from '../../Tree';
+import { YogaFlexDirection, YogaFlexDirectionValues } from './constants';
 
 
+const initialProps: InternalYogaProps = {
+    ...defaultProps,
+    flexDirection: YogaFlexDirectionValues.column,
+    flexShrink: 0
+};
 
 export class YogaHandle {
 
     public node: YogaNode | null;
-    private owner: NodeInstance;
-    private active: InternalYogaProps;
-    private staged: InternalYogaProps;
+    public owner: NodeInstance;
+    public active: InternalYogaProps;
+    public staged: InternalYogaProps;
 
 
-    public constructor(owner: NodeInstance, opts?: Partial<YogaProps>) {
-        this.active = {... defaultOpts };
+    public constructor(owner: NodeInstance, props: Partial<YogaProps> = {}) {
+        this.active = { ...initialProps };
         this.owner = owner;
-        if (opts) this.setProps(opts);
+        this.setProps(props);
     }
 
     public mergeProps(incoming: Partial<YogaProps>): void {
-        this.staged = internalizeProps(incoming, this.active);
-        if (this.node && !isEqual(this.staged, this.active)) {
-            this.applyYogaProps();
+        this.staged = internalizeProps(incoming, this.staged);
+        if (this.node) {
+            this.applyProps();
         }
     }
 
     public setProps(incoming: Partial<YogaProps>): void {
-        this.staged = internalizeProps(incoming);
-        if (this.node && !isEqual(this.staged, this.active)) {
-            this.applyYogaProps();
+        if (Object.keys(incoming).length === 0) { // quick test to avoid calling internalizeProps() when it will have no effect
+            this.staged = { ...defaultProps };
+        } else {
+            this.staged = internalizeProps(incoming);
+        }
+        if (this.node) {
+            this.applyProps();
         }
     }
 
-    protected applyYogaProps(): void {
-        if (!this.node) throw new Error();
+    private applyProps(): void {
+        if (!this.node) throw new ReferenceError();
         else {
             const s = this.staged, a = this.active, n = this.node; // save some repetitive typing
             if (s.justifyContent !== a.justifyContent) n.setJustifyContent(s.justifyContent);
@@ -70,7 +80,7 @@ export class YogaHandle {
         if (index !== undefined && this.owner.parent && this.owner.parent.yoga.node) {
             this.owner.parent.yoga.node.insertChild(this.node, index);
         }
-        this.applyYogaProps();
+        this.applyProps();
     }
 
     public dispose(): void {
@@ -82,6 +92,7 @@ export class YogaHandle {
             this.node.free();
             this.node = null;
         }
+        this.active = { ...initialProps };
     }
 }
 export default YogaHandle;

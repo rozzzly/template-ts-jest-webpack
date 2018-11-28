@@ -110,7 +110,7 @@ const scalarValues = literals(
     'flexBasis'
 );
 
-export const defaultOpts: InternalYogaProps = {
+export const defaultProps: InternalYogaProps = {
     maxHeight: 'auto',
     minHeight: 'auto',
     maxWidth: 'auto',
@@ -140,19 +140,19 @@ export const defaultOpts: InternalYogaProps = {
 };
 
 
-export function internalizeProps(staged: Partial<YogaProps>, active: InternalYogaProps = defaultOpts): InternalYogaProps {
+export function internalizeProps(incoming: Partial<YogaProps>, staged: InternalYogaProps = defaultProps): InternalYogaProps {
     const res: InternalYogaProps = {
-        ...active
+        ...staged
     };
 
     for (let scalar of scalarValues) {
-        if (staged[scalar] !== undefined) {
-        res[scalar] = staged[scalar]!;
+        if (incoming[scalar] !== undefined) {
+            res[scalar] = incoming[scalar]!;
         }
     }
 
-    if (staged.alignContent) {
-        const value = YogaAlignContentValues[staged.alignContent];
+    if (incoming.alignContent) {
+        const value = YogaAlignContentValues[incoming.alignContent];
         if (value !== undefined) {
             res.alignContent = value;
         } else {
@@ -160,32 +160,32 @@ export function internalizeProps(staged: Partial<YogaProps>, active: InternalYog
         }
     }
 
-    if (staged.alignItems) {
-        const value = YogaAlignItemsValues[staged.alignItems];
+    if (incoming.alignItems) {
+        const value = YogaAlignItemsValues[incoming.alignItems];
         if (value !== undefined) {
             res.alignItems = value;
         } else {
             throw new TypeError('Unsupported value for YogaAlignItems');
         }
     }
-    if (staged.alignSelf) {
-        const value = YogaAlignSelfValues[staged.alignSelf];
+    if (incoming.alignSelf) {
+        const value = YogaAlignSelfValues[incoming.alignSelf];
         if (value !== undefined) {
             res.alignSelf = value;
         } else {
             throw new TypeError('Unsupported value for YogaAlignSelf');
         }
     }
-    if (staged.flexDirection) {
-        const value = YogaFlexDirectionValues[staged.flexDirection];
+    if (incoming.flexDirection) {
+        const value = YogaFlexDirectionValues[incoming.flexDirection];
         if (value !== undefined) {
             res.flexDirection = value;
         } else {
             throw new TypeError('Unsupported value for YogaFlexDirection');
         }
     }
-    if (staged.justifyContent) {
-        const value = YogaJustifyContentValues[staged.justifyContent];
+    if (incoming.justifyContent) {
+        const value = YogaJustifyContentValues[incoming.justifyContent];
         if (value !== undefined) {
             res.justifyContent = value;
         } else {
@@ -194,101 +194,101 @@ export function internalizeProps(staged: Partial<YogaProps>, active: InternalYog
     }
 
 
-    if (staged.padding !== undefined) {
-        if (Array.isArray(staged.padding)) {
-            if (staged.padding.length === 2) {
+    if (incoming.padding !== undefined) {
+        if (Array.isArray(incoming.padding)) {
+            if (incoming.padding.length === 2) {
                 res.padding = {
-                    left: staged.padding[0],
-                    top: staged.padding[1],
-                    right: staged.padding[0],
-                    bottom: staged.padding[1]
+                    left: incoming.padding[0],
+                    top: incoming.padding[1],
+                    right: incoming.padding[0],
+                    bottom: incoming.padding[1]
                 };
-            } else if (staged.padding.length === 4) {
+            } else if (incoming.padding.length === 4) {
                 res.padding = {
-                    left: staged.padding[0],
-                    top: staged.padding[1],
-                    right: (staged.padding as [YogaValue, YogaValue, YogaValue, YogaValue])[2],
-                    bottom: (staged.padding as [YogaValue, YogaValue, YogaValue, YogaValue])[3]
+                    left: incoming.padding[0],
+                    top: incoming.padding[1],
+                    right: (incoming.padding as [YogaValue, YogaValue, YogaValue, YogaValue])[2],
+                    bottom: (incoming.padding as [YogaValue, YogaValue, YogaValue, YogaValue])[3]
                 };
             } else {
                 throw new TypeError('unexpected padding array shorthand');
             }
         } else {
             res.padding = {
-                left: staged.padding,
-                top: staged.padding,
-                right: staged.padding,
-                bottom: staged.padding
+                left: incoming.padding,
+                top: incoming.padding,
+                right: incoming.padding,
+                bottom: incoming.padding
             };
         }
     }
-    if (staged.paddingHorizontal !== undefined) {
-        res.padding.left = staged.paddingHorizontal;
-        res.padding.right = staged.paddingHorizontal;
+    if (incoming.paddingHorizontal !== undefined) {
+        res.padding.left = incoming.paddingHorizontal;
+        res.padding.right = incoming.paddingHorizontal;
     }
-    if (staged.paddingVertical !== undefined) {
-        res.padding.top = staged.paddingVertical;
-        res.padding.bottom = staged.paddingVertical;
+    if (incoming.paddingVertical !== undefined) {
+        res.padding.top = incoming.paddingVertical;
+        res.padding.bottom = incoming.paddingVertical;
     }
-    if (staged.paddingLeft !== undefined) {
-        res.padding.left = staged.paddingLeft;
+    if (incoming.paddingLeft !== undefined) {
+        res.padding.left = incoming.paddingLeft;
     }
-    if (staged.paddingTop !== undefined) {
-        res.padding.top = staged.paddingTop;
+    if (incoming.paddingTop !== undefined) {
+        res.padding.top = incoming.paddingTop;
     }
-    if (staged.paddingRight !== undefined) {
-        res.padding.right = staged.paddingRight;
+    if (incoming.paddingRight !== undefined) {
+        res.padding.right = incoming.paddingRight;
     }
-    if (staged.paddingBottom !== undefined) {
-        res.padding.bottom = staged.paddingBottom;
+    if (incoming.paddingBottom !== undefined) {
+        res.padding.bottom = incoming.paddingBottom;
     }
-    if (staged.margin !== undefined) {
-        if (Array.isArray(staged.margin)) {
-            if (staged.margin.length === 2) {
+    if (incoming.margin !== undefined) {
+        if (Array.isArray(incoming.margin)) {
+            if (incoming.margin.length === 2) {
                 res.margin = {
-                    left: staged.margin[0],
-                    top: staged.margin[1],
-                    right: staged.margin[0],
-                    bottom: staged.margin[1]
+                    left: incoming.margin[0],
+                    top: incoming.margin[1],
+                    right: incoming.margin[0],
+                    bottom: incoming.margin[1]
                 };
-            } else if (staged.margin.length === 4) {
+            } else if (incoming.margin.length === 4) {
                 res.margin = {
-                    left: staged.margin[0],
-                    top: staged.margin[1],
-                    right: (staged.margin as [YogaValue, YogaValue, YogaValue, YogaValue])[2],
-                    bottom: (staged.margin as [YogaValue, YogaValue, YogaValue, YogaValue])[3]
+                    left: incoming.margin[0],
+                    top: incoming.margin[1],
+                    right: (incoming.margin as [YogaValue, YogaValue, YogaValue, YogaValue])[2],
+                    bottom: (incoming.margin as [YogaValue, YogaValue, YogaValue, YogaValue])[3]
                 };
             } else {
                 throw new TypeError('unexpected margin array shorthand');
             }
         } else {
             res.margin = {
-                left: staged.margin,
-                top: staged.margin,
-                right: staged.margin,
-                bottom: staged.margin
+                left: incoming.margin,
+                top: incoming.margin,
+                right: incoming.margin,
+                bottom: incoming.margin
             };
         }
     }
-    if (staged.marginHorizontal !== undefined) {
-        res.margin.left = staged.marginHorizontal;
-        res.margin.right = staged.marginHorizontal;
+    if (incoming.marginHorizontal !== undefined) {
+        res.margin.left = incoming.marginHorizontal;
+        res.margin.right = incoming.marginHorizontal;
     }
-    if (staged.marginVertical !== undefined) {
-        res.margin.top = staged.marginVertical;
-        res.margin.bottom = staged.marginVertical;
+    if (incoming.marginVertical !== undefined) {
+        res.margin.top = incoming.marginVertical;
+        res.margin.bottom = incoming.marginVertical;
     }
-    if (staged.marginLeft !== undefined) {
-        res.margin.left = staged.marginLeft;
+    if (incoming.marginLeft !== undefined) {
+        res.margin.left = incoming.marginLeft;
     }
-    if (staged.marginTop !== undefined) {
-        res.margin.top = staged.marginTop;
+    if (incoming.marginTop !== undefined) {
+        res.margin.top = incoming.marginTop;
     }
-    if (staged.marginRight !== undefined) {
-        res.margin.right = staged.marginRight;
+    if (incoming.marginRight !== undefined) {
+        res.margin.right = incoming.marginRight;
     }
-    if (staged.marginBottom !== undefined) {
-        res.margin.bottom = staged.marginBottom;
+    if (incoming.marginBottom !== undefined) {
+        res.margin.bottom = incoming.marginBottom;
     }
     return res;
 }
