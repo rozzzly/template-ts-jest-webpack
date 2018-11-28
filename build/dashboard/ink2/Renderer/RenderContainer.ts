@@ -76,7 +76,7 @@ export class RenderContainer implements Dimensions {
         } else {
             const vBox = this.viewBox!; // render() will never be called for this container if it's not plotted (ie: viewBox === null)
             const offset = vBox.x0 - this.globalCoords.x0;
-            builder.append(this.treeRef.style, this.treeRef.textRaw);
+            builder.styledText(this.treeRef.style, this.treeRef.textRaw);
         }
     }
 }

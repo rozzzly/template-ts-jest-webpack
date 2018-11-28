@@ -1,21 +1,56 @@
+import * as stringWidth from 'string-width';
 import { NodeInstance, NodeKind } from '../Tree';
 import Style from '../Text/Style';
 import RenderGrid from './RenderGrid';
 import { SpanCoords, ColumnRange } from './Coords';
+import { GapFiller, defaultGapFiller } from '../Text/GapFiller';
 
 export class RowBuilder {
     private precedingStyle: Style;
     private buff: string[];
+    private width: number;
+    private y: number;
 
-    public constructor() {
+    public constructor(y: number) {
         this.precedingStyle = Style.base;
+        this.width = 0;
         this.buff = [];
+        this.y = y;
     }
 
-    public append(style: Style, text: string): void {
+    public gap(width: number, gapFiller: GapFiller = defaultGapFiller) {
+        gapFiller(this, { x0: this.width, x1: this.width + width, y: this.y}, null);
+    }
+    public styledGap(width: number, style: Style, gapFiller: GapFiller = defaultGapFiller) {
+        gapFiller(this, { x0: this.width, x1: this.width + width, y: this.y}, style);
+    }
+
+    public style(style: Style): this {
+        this.buff.push(style.code(this.precedingStyle));
+        this.precedingStyle = style;
+        return this;
+    }
+
+    public text(text: string): this;
+    public text(text: string, textWidth: number): this;
+    public text(text: string, textWidth: number | null = null): this {
+        this.buff.push(text);
+        this.width += ((textWidth !== null)
+            ? textWidth
+            : stringWidth(text)
+        );
+        return this;
+    }
+    public styledText(style: Style, text: string): this;
+    public styledText(style: Style, text: string, textWidth: number): this;
+    public styledText(style: Style, text: string, textWidth: number | null = null): this {
         this.buff.push(style.code(this.precedingStyle), text);
         this.precedingStyle = style;
-
+        this.width += ((textWidth !== null)
+            ? textWidth
+            : stringWidth(text)
+        );
+        return this;
     }
 
     public toString(): string {
@@ -24,9 +59,28 @@ export class RowBuilder {
     }
 }
 
-export interface GridSpan extends SpanCoords {
-    derivedFrom: GridSpan | null;
-    node: NodeInstance;
+export class GridSpan implements SpanCoords {
+    public y: number;
+    public x0: number;
+    public x1: number;
+    // derivedFrom: GridSpan | null;
+    public node: NodeInstance;
+    public constructor(node: NodeInstance, x0: number, x1: number, y: number) {
+        this.node = node;
+        this.x0 = x0;
+        this.x1 = x1;
+        this.y = y;
+    }
+    public clone({node, x0, x1, y}: { node?: NodeInstance, x0?: number, x1?: number, y?: number}): GridSpan {
+        return new GridSpan(
+            node !== undefined ? node : this.node,
+            x0 !== undefined ? x0 : this.x0,
+            x1 !== undefined ? x1 : this.x1,
+            y !== undefined ? y : this.y
+        );
+    }
+
+    // TODO::: consider adding instance methods for clipping, etc
 }
 
 export class GridRow {
@@ -41,25 +95,13 @@ export class GridRow {
         this.width = this.grid.width;
         this.y = y;
         this.spans = [
-            {
-                x0: 0,
-                x1: this.width,
-                y: this.y,
-                node: this.grid.root,
-                derivedFrom: null
-            }
+            new GridSpan(this.grid.root, 0, this.width, this.y)
         ];
         this.text = null;
     }
 
     public plot(node: NodeInstance, { x0, x1 }: ColumnRange) {
-        const nSpan = {
-            node,
-            x0,
-            x1,
-            y: this.y,
-            derivedFrom: null
-        };
+        const nSpan = new GridSpan(node, x0, x1, this.y);
         if (nSpan.x0 < 0 || nSpan.x1 > this.width) {
             throw new RangeError();
         } else {
@@ -188,49 +230,29 @@ export class GridRow {
                                 break; // abort prematurely
                             } else { // [ClipLeftFlush]
                                 nSpans = nSpans.concat(
-                                    {
-                                        ...cSpan,
-                                        derivedFrom: cSpan,
-                                        x1: nSpan.x0
-                                    },
-                                    nSpans,
+                                    cSpan.clone({ x1: nSpan.x0 }),
+                                    nSpan,
                                     this.spans.slice(i + 1)
-                                );
-                                break; // abort prematurely
-                            }
+                                    );
+                                    break; // abort prematurely
+                                }
                         } else if (nSpan.x1 > cSpan.x1) { // [Extends] | [ClipLeftExtends]
                             if (nSpan.x0 > cSpan.x0) { // [ClipLeftExtends]
-                                nSpans.push({
-                                    ...cSpan,
-                                    derivedFrom: cSpan,
-                                    x1: nSpan.x0
-                                });
-                            } // else [Extends] (continue)
+                                nSpans.push(cSpan.clone({ x1: nSpan.x0 }));
+                             } // else [Extends] (continue)
                         } else { // [ClipRight] | [ClipBoth]
                             if (nSpan.x0 > cSpan.x0) { // [ClipBoth]
                                 nSpans = nSpans.concat(
-                                    {
-                                        ...cSpan,
-                                        derivedFrom: cSpan,
-                                        x1: nSpan.x0
-                                    },
+                                    cSpan.clone({ x1: nSpan.x0 }),
                                     nSpan,
-                                    {
-                                        ...cSpan,
-                                        derivedFrom: cSpan,
-                                        x0: nSpan.x1
-                                    },
+                                    cSpan.clone({ x0: nSpan.x1 }),
                                     this.spans.slice(i + 1)
                                 );
                                 break; // abort prematurely
                             } else { // [ClipRight]
                                 nSpans = nSpans.concat(
                                     nSpan,
-                                    {
-                                        ...cSpan,
-                                        derivedFrom: cSpan,
-                                        x0: nSpan.x1
-                                    },
+                                    cSpan.clone({ x0: nSpan.x1 }),
                                     this.spans.slice(i + 1)
                                 );
                                 break; // abort prematurely
@@ -245,12 +267,16 @@ export class GridRow {
 
     public render(): string {
         this.text = null;
-        const builder = new RowBuilder();
+        const builder = this.getBuilder();
         for (let span, i = 0; span = this.spans[i]; i++) {
             span.node.renderContainer.render(builder, span);
         }
         this.text = builder.toString();
         return this.text;
+    }
+
+    public getBuilder() {
+        return new RowBuilder(this.y);
     }
 }
 export default GridRow;
