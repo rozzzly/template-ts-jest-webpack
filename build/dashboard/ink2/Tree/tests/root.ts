@@ -1,4 +1,6 @@
 import RootNode from '../RootNode';
+import RectCoords from '../../Renderer/Coords';
+import { qRect } from '../../Renderer/tests/__qCoords';
 
 describe('just a root node', () => {
 
@@ -23,19 +25,8 @@ describe('just a root node', () => {
         const gCoords = root.renderContainer.globalCoords;
         const lCoords = root.renderContainer.globalCoords;
         expect(vBox).not.toBeNull();
-        expect(vBox!.x0).toBe(0);
-        expect(vBox!.x1).toBe(100);
-        expect(vBox!.y0).toBe(0);
-        expect(vBox!.y1).toBe(2);
-        expect(gCoords.x0).toBe(0);
-        expect(gCoords.x1).toBe(100);
-        expect(gCoords.y0).toBe(0);
-        expect(gCoords.y1).toBe(2);
-        expect(lCoords.x0).toBe(0);
-        expect(lCoords.x1).toBe(100);
-        expect(lCoords.y0).toBe(0);
-        expect(lCoords.y1).toBe(2);
+        expect(vBox).toEqual(qRect(0, 100, 0, 2));
+        expect(lCoords).toEqual(qRect(0, 100, 0, 2));
+        expect(gCoords).toEqual(qRect(0, 100, 0, 2));
     });
-
-
 });
