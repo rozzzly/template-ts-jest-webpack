@@ -1,87 +1,9 @@
 import * as stringWidth from 'string-width';
 import { NodeInstance, NodeKind } from '../Tree';
-import Style from '../Text/Style';
 import RenderGrid from './RenderGrid';
-import { SpanCoords, ColumnRange } from './Coords';
-import { GapFiller, defaultGapFiller } from '../Text/GapFiller';
-
-export class RowBuilder {
-    private precedingStyle: Style;
-    private buff: string[];
-    private width: number;
-    private y: number;
-
-    public constructor(y: number) {
-        this.precedingStyle = Style.base;
-        this.width = 0;
-        this.buff = [];
-        this.y = y;
-    }
-
-    public gap(width: number, gapFiller: GapFiller = defaultGapFiller) {
-        gapFiller(this, { x0: this.width, x1: this.width + width, y: this.y}, null);
-    }
-    public styledGap(width: number, style: Style, gapFiller: GapFiller = defaultGapFiller) {
-        gapFiller(this, { x0: this.width, x1: this.width + width, y: this.y}, style);
-    }
-
-    public style(style: Style): this {
-        this.buff.push(style.code(this.precedingStyle));
-        this.precedingStyle = style;
-        return this;
-    }
-
-    public text(text: string): this;
-    public text(text: string, textWidth: number): this;
-    public text(text: string, textWidth: number | null = null): this {
-        this.buff.push(text);
-        this.width += ((textWidth !== null)
-            ? textWidth
-            : stringWidth(text)
-        );
-        return this;
-    }
-    public styledText(style: Style, text: string): this;
-    public styledText(style: Style, text: string, textWidth: number): this;
-    public styledText(style: Style, text: string, textWidth: number | null = null): this {
-        this.buff.push(style.code(this.precedingStyle), text);
-        this.precedingStyle = style;
-        this.width += ((textWidth !== null)
-            ? textWidth
-            : stringWidth(text)
-        );
-        return this;
-    }
-
-    public toString(): string {
-        this.buff.push(Style.resetCode, '\r\n');
-        return this.buff.join('');
-    }
-}
-
-export class GridSpan implements SpanCoords {
-    public y: number;
-    public x0: number;
-    public x1: number;
-    // derivedFrom: GridSpan | null;
-    public node: NodeInstance;
-    public constructor(node: NodeInstance, x0: number, x1: number, y: number) {
-        this.node = node;
-        this.x0 = x0;
-        this.x1 = x1;
-        this.y = y;
-    }
-    public clone({node, x0, x1, y}: { node?: NodeInstance, x0?: number, x1?: number, y?: number}): GridSpan {
-        return new GridSpan(
-            node !== undefined ? node : this.node,
-            x0 !== undefined ? x0 : this.x0,
-            x1 !== undefined ? x1 : this.x1,
-            y !== undefined ? y : this.y
-        );
-    }
-
-    // TODO::: consider adding instance methods for clipping, etc
-}
+import { ColumnRange } from './Coords';
+import { RowBuilder } from './RowBuilder';
+import { GridSpan } from './GridSpan';
 
 export class GridRow {
     public grid: RenderGrid;

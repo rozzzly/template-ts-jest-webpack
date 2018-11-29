@@ -3,7 +3,8 @@ import { NodeInstance, NodeKind } from '../Tree';
 import { ComputedLayout } from '../Tree/yoga/props';
 import { inRange } from '../misc';
 import RectCoords, { SpanCoords } from './Coords';
-import { GridRow, RowBuilder } from './GridRow';
+import { GridRow } from './GridRow';
+import RowBuilder from './RowBuilder';
 
 export interface Dimensions {
     height: number;

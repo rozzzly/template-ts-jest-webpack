@@ -2,8 +2,7 @@ import { NodeInstance } from '.';
 import { TreeNode } from './TreeNode';
 import { StyleOverride } from '../Text/Style';
 import { YogaProps } from './yoga/props';
-import { GapFiller, defaultGapFiller } from '../Text/GapFiller';
-import { SpanCoords } from '../Renderer/Coords';
+import { GapFiller, defaultGapFiller } from '../Renderer/GapFiller';
 
 export class GroupNode extends TreeNode<'GroupNode'> {
     public kind: 'GroupNode' = 'GroupNode';

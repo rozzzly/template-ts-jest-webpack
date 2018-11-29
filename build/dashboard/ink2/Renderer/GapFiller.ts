@@ -1,6 +1,6 @@
-import { SpanCoords } from '../Renderer/Coords';
-import Style from './Style';
-import { RowBuilder } from '../Renderer/GridRow';
+import { SpanCoords } from './Coords';
+import Style from '../Text/Style';
+import RowBuilder from './RowBuilder';
 
 export type GapFiller = (builder: RowBuilder, coords: SpanCoords, style: Style | null) => void;
 export const defaultGapFiller: GapFiller = (builder: RowBuilder, coords: SpanCoords, style: Style | null = null): void => {
@@ -12,5 +12,6 @@ export const defaultGapFiller: GapFiller = (builder: RowBuilder, coords: SpanCoo
         builder.text(text, width);
     }
 };
+export default GapFiller;
 
 const whitespaceBuilder = ' '.repeat(32).repeat(32); // quick way of creating 1024 spaces

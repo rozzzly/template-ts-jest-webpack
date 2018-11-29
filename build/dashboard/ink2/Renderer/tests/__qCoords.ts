@@ -1,5 +1,5 @@
 import { NodeInstance } from '../../Tree';
-import { GridSpan } from '../GridRow';
+import GridSpan from '../GridSpan';
 import TreeNode from '../../Tree/TreeNode';
 import RectCoords from '../Coords';
 
