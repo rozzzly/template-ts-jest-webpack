@@ -22,13 +22,13 @@ export class RenderGrid implements Dimensions {
     public constructor(width: number, height: number) {
         this.width = width;
         this.height = height;
-        this.root = new RootNode(width, height);
+        this.root = new RootNode(width, height, this);
         this.dirtyRows = new Set();
         this.createRows();
     }
 
     private createRows() {
-        this.rows = []; // discard existing rows, if any-when grid is resized, entire tree will be rebuilt
+        this.rows = []; // discard existing any rows; when grid is resized, entire tree will need to be re(plotted|rendered)
         this.dirtyRows.clear(); // if we shrink num of rows, render could try to render a row which does not exist
         this.isLayoutDirty = true;
         for (let i = 0; i < this.height; i++) {
@@ -47,7 +47,6 @@ export class RenderGrid implements Dimensions {
 
     public render(): void {
         if (this.isLayoutDirty) this.layout();
-        let row;
         for (let index of this.dirtyRows.values()) {
             this.rows[index].render();
         }

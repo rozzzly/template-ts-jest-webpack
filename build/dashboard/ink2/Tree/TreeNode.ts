@@ -4,18 +4,20 @@ import GroupNode from './GroupNode';
 import { NodeKind } from '../Tree';
 import YogaHandle from './yoga/YogaHandle';
 import RenderContainer from '../Renderer/RenderContainer';
+import RenderGrid from '../Renderer/RenderGrid';
 
 
 export abstract class TreeNode<K extends NodeKind> {
     public kind: K;
     public style: Style;
     public yoga: YogaHandle;
-    public parent: GroupNode | null = null;
+    public grid: RenderGrid | null;
+    public parent: GroupNode | null;
     public renderContainer: RenderContainer;
-    protected linked: boolean = false;
-    protected override: StyleOverride;
+    public override: StyleOverride;
 
-    public constructor(yogaOptions: Partial<YogaProps>, override: StyleOverride) {
+    public constructor(yogaOptions: Partial<YogaProps> = {}, override: StyleOverride = {}) {
+        this.grid = null;
         this.parent = null;
         this.override = override;
         this.yoga = new YogaHandle(this as any, yogaOptions);
@@ -46,15 +48,15 @@ export abstract class TreeNode<K extends NodeKind> {
             this.yoga.dispose();
         }
         this.parent = null;
-        this.linked = false;
+        this.grid = null;
     }
 
-    public link(parent: GroupNode | null, index: number) {
-        if (this.linked) {
+    public link(parent: GroupNode, index: number) {
+        if (this.grid) {
             this.dispose();
         }
         this.parent = parent;
-        this.linked = true;
+        this.grid = parent.grid;
         this.yoga.link(index);
         this.cascadeStyle();
     }
