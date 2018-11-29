@@ -1,7 +1,7 @@
 import { ExtractLiterals, literalsEnum } from '../../misc';
 import { Color, RGB } from './Color';
 import { StyleData, baseStyleData, TextWeight, TextTransform, StyleOverride } from '../Style';
-import { BackgroundColor, BackgroundColorName, ForegroundColorFlagMap, ColorPalette, ColorName, BackgroundColorFlagMap } from './palette';
+import { ForegroundColorFlagMap, CoreColorPalette, BackgroundColorFlagMap, FullColorPalette, FullColorName, CoreColorName, BackgroundColorName } from './palette';
 
 
 export type TextWeightFlagMap = {
@@ -45,21 +45,21 @@ export function composeProps(props: StyleComponentProps) {
     }
 
     for (const [key, value] of Object.entries(props)) {
-        if (ColorPalette[key as ColorName] && value === true) {
-            if (BackgroundColor[key as BackgroundColorName]) {
+        if (FullColorPalette[key as FullColorName] && value === true) {
+            if (BackgroundColorName[key as BackgroundColorName]) {
                 if (!explicitBackground) {
-                    style.bgColor = ColorPalette[key as ColorName];
+                    style.bgColor = FullColorPalette[key as FullColorName];
                 }
             } else {
                 if (!explicitColor) {
-                    style.fgColor = ColorPalette[key as ColorName];
+                    style.fgColor = FullColorPalette[key as FullColorName];
                 }
             }
         } else if (key === 'color') {
             if (typeof value === 'string') {
-                if (ColorPalette[value as ColorName]) {
+                if (CoreColorPalette[value as CoreColorName]) { // use CoreColorPalette because {color: bgRed} should not happen
                     explicitColor = true;
-                    style.fgColor = ColorPalette[value as ColorName];
+                    style.fgColor = CoreColorPalette[value as CoreColorName];
                 } else {
                     const parsed = Color.fromString(value);
                     if (parsed) {
@@ -73,9 +73,9 @@ export function composeProps(props: StyleComponentProps) {
             } /// else throw? warn?
         } else if (key === 'background') {
             if (typeof value === 'string') {
-                if (ColorPalette[value as ColorName]) {
+                if (FullColorPalette[value as FullColorName]) { // use FullColorPalette because {background: bgRed} might happen
                     explicitBackground = true;
-                    style.bgColor = ColorPalette[value as ColorName];
+                    style.bgColor = FullColorPalette[value as FullColorName];
                 } else {
                     const parsed = Color.fromString(value);
                     if (parsed) {
@@ -88,7 +88,7 @@ export function composeProps(props: StyleComponentProps) {
                 style.bgColor = value;
             } /// else throw? warn?
         } else if (TextTransform[key as TextTransform]) {
-             style[key as Exclude<TextTransform, 'reset'>] = value;
+             style[key as TextTransform] = value;
         } else if (key === 'weight' && TextWeight[value as TextWeight]) {
             style.weight = TextWeight[value as TextWeight];
             explicitWeight = true;

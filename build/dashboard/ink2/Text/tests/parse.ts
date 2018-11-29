@@ -1,7 +1,7 @@
 import Chalk from 'chalk';
 import { parseChunks } from '../parse';
 import { TextWeight } from '../Style';
-import { ColorPalette } from '../Style/palette';
+import ColorPalette from '../Style/palette';
 
 
 describe('parsing text with ansi codes', () => {

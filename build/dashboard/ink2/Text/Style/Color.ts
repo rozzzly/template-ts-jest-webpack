@@ -4,7 +4,7 @@ import * as htmlColorNames from 'color-name';
 import * as codes  from './AnsiCodes';
 import { inRange, literalsEnum, ExtractLiterals } from '../../misc';
 import { composeCode } from './AnsiCodes';
-import { ColorPalette } from './palette';
+import ColorPalette from './palette';
 
 export type RGB = (
     | RGBTuple
@@ -48,9 +48,9 @@ export class Color {
     public static fromString(str: string): Color | null {
         const lower = str.toLowerCase();
         let match: RegExpExecArray | null;
-        // @ts-ignore
+        // @ts-ignore because typedef uses namespace which keyof cannot operate on
         if (htmlColorNames[lower]) {
-            // @ts-ignore
+            // @ts-ignore because typedef uses namespace which keyof cannot operate on
             return Color.RGB(htmlColorNames[lower]);
         } else if (match = HexRegex.exec(str)) {
             const fullHex = ((match[0].length === 6)
@@ -169,7 +169,7 @@ export class Color {
     }
 
     public equalTo(other: Color): boolean {
-        if (this === other) return true; // quick test for referential equality (eg used predefined consts)
+        if (this === other) return true; // quick test for referential equality (eg: value from palette)
         const selfIsDefault = this.value === 'default';
         const otherIsDefault = other.value === 'default';
 
@@ -187,7 +187,7 @@ export class Color {
                     return compareRGBTuple(this.value as RGBTuple, other.value as RGBTuple);
                 } else {
                     // Can't test for true equality between RGB and Ansi16 (or first 16 colors in Ansi256)
-                    // because they're implementation specific (different terms use different RGBs)
+                    // because they're implementation specific (different terminals use different RGBs)
                     if (selfIs256 && this.value >= 16) {
                         return compareRGBTuple(
                             convert.ansi256.rgb(this.value as number),

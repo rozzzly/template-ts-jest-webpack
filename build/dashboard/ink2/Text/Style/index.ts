@@ -1,7 +1,7 @@
 import * as codes from './AnsiCodes';
 import { Color } from './Color';
 import { ExtractLiterals, literalsEnum } from '../../misc';
-import { ColorPalette } from './palette';
+import ColorPalette from './palette';
 
 
 export const TextWeight = literalsEnum(
@@ -30,7 +30,7 @@ export interface StyleData {
 
 export const baseStyleData: StyleData = {
     fgColor: ColorPalette.default,
-    bgColor: ColorPalette.bgDefault,
+    bgColor: ColorPalette.default,
     weight: TextWeight.normal,
     inverted: false,
     underline: false,

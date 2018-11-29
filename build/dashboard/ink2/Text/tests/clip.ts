@@ -2,7 +2,7 @@ import Chalk from 'chalk';
 import { parseChunks } from '../parse';
 import BlockLine from '../Block/BlockLine';
 import { baseStyle, Style } from '../Style';
-import { ColorPalette } from '../Style/palette';
+import ColorPalette from '../Style/palette';
 
 describe('clipping text', () => {
     describe('styled text (three chunks)', () => {

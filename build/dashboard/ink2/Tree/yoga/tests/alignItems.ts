@@ -7,7 +7,7 @@ import { YogaAlignItems, YogaAlignItemsValues } from '../constants';
 import RectCoords from '../../../Renderer/Coords';
 import { qSpan } from '../../../Renderer/tests/__qCoords';
 import { number } from 'prop-types';
-import { ColorPalette } from '../../../Text/Style/palette';
+import { CoreColorPalette } from '../../../Text/Style/palette';
 
 describe('a single GroupNode containing a simple TextNode', () => {
     const text = 'some simple text';
@@ -17,9 +17,9 @@ describe('a single GroupNode containing a simple TextNode', () => {
     let textNode: TextNode;
     beforeEach(() => {
         grid = new RenderGrid(20, 4);
-        groupNode = new GroupNode({}, { bgColor: ColorPalette.red });
+        groupNode = new GroupNode({}, { bgColor: CoreColorPalette.red });
         textNode = new TextNode(text);
-        textNode.setStyle({ fgColor: ColorPalette.green });
+        textNode.setStyle({ fgColor: CoreColorPalette.green });
         grid.root.appendChild(groupNode);
         groupNode.appendChild(textNode);
     });
@@ -60,7 +60,7 @@ describe('a single GroupNode containing a simple TextNode', () => {
         for (let row, y = 0; row = grid.rows[y]; y++ ) {
             if (y === yOffset) {
                 const built = ((row.getBuilder())
-                    .styledText(new Style({ fgColor: ColorPalette.red, bgColor: ColorPalette.blue }), text),
+                    .styledText(new Style({ fgColor: CoreColorPalette.red, bgColor: CoreColorPalette.blue }), text),
                     .styledText()
                 );
                 expect(row.text).toBe(text + ' '.repeat(grid.width - textWidth) + Style.resetCode + '\r\n');
