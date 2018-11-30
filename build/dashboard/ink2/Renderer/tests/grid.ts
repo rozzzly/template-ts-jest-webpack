@@ -1,5 +1,6 @@
 import RootNode from '../../Tree/RootNode';
 import RenderGrid from '../RenderGrid';
+import { qSpan } from './__qCoords';
 
 describe('grid', () => {
     it('is dirty upon creation', () => {
@@ -21,16 +22,13 @@ describe('grid', () => {
             });
             it('plots out both rows, belonging to just the root', () => {
                 expect(grid.rows.length).toBe(2);
-                expect(grid.rows[0].spans.length).toBe(1);
-                expect(grid.rows[0].spans[0].x0).toBe(0);
-                expect(grid.rows[0].spans[0].x1).toBe(20);
-                expect(grid.rows[0].spans[0].node).toBe(grid.root);
-                expect(grid.rows[0].y).toBe(0);
-                expect(grid.rows[1].spans.length).toBe(1);
-                expect(grid.rows[1].spans[0].x0).toBe(0);
-                expect(grid.rows[1].spans[0].x1).toBe(20);
-                expect(grid.rows[1].spans[0].node).toBe(grid.root);
-                expect(grid.rows[1].y).toBe(1);
+                let [ row0, row1 ] = grid.rows;
+                expect(grid.rows[0].spans).toEqual([
+                    qSpan(0, 20, grid.root, 0)
+                ]);
+                expect(grid.rows[1].spans).toEqual([
+                    qSpan(0, 20, grid.root, 1)
+                ]);
             });
             it('will still be dirty because rows have yet to be rendered', () => {
                 expect(grid.isDirty).toBe(true);

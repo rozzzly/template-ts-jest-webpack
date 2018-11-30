@@ -1,5 +1,5 @@
 import * as stringWidth from 'string-width';
-import Style from '../Text/Style';
+import Style, { StyleOverride } from '../Text/Style';
 import GapFiller, { defaultGapFiller } from './GapFiller';
 
 export class RowBuilder {
@@ -13,15 +13,20 @@ export class RowBuilder {
         this.buff = [];
         this.y = y;
     }
-    public gap(width: number, gapFiller: GapFiller = defaultGapFiller) {
-        gapFiller(this, { x0: this.width, x1: this.width + width, y: this.y }, null);
+    public gap(width: number, gapFiller: GapFiller = defaultGapFiller): this {
+        /// TODO ::: consider the following
+        // return result of gapFiller (which should === this) instead of returning this directly to ensure
+        // chained calls are consecutive.. not sure this is strictly speaking necessary...
+        return gapFiller(this, { x0: this.width, x1: this.width + width, y: this.y }, null) as this;
     }
-    public styledGap(width: number, style: Style, gapFiller: GapFiller = defaultGapFiller) {
-        gapFiller(this, { x0: this.width, x1: this.width + width, y: this.y }, style);
+    public styledGap(style: Style | StyleOverride, width: number, gapFiller: GapFiller = defaultGapFiller): this {
+        const _style = Style.isStyle(style) ? style : new Style(style);
+        return gapFiller(this, { x0: this.width, x1: this.width + width, y: this.y }, _style) as this;
     }
-    public style(style: Style): this {
-        this.buff.push(style.code(this.precedingStyle));
-        this.precedingStyle = style;
+    public style(style: Style | StyleOverride): this {
+        const _style = Style.isStyle(style) ? style : new Style(style);
+        this.buff.push(_style.code(this.precedingStyle));
+        this.precedingStyle = _style;
         return this;
     }
     public text(text: string): this;
@@ -33,11 +38,12 @@ export class RowBuilder {
             : stringWidth(text));
         return this;
     }
-    public styledText(style: Style, text: string): this;
-    public styledText(style: Style, text: string, textWidth: number): this;
-    public styledText(style: Style, text: string, textWidth: number | null = null): this {
-        this.buff.push(style.code(this.precedingStyle), text);
-        this.precedingStyle = style;
+    public styledText(style: Style | StyleOverride, text: string): this;
+    public styledText(style: Style | StyleOverride, text: string, textWidth: number): this;
+    public styledText(style: Style | StyleOverride, text: string, textWidth: number | null = null): this {
+        const _style = Style.isStyle(style) ? style : new Style(style);
+        this.buff.push(_style.code(this.precedingStyle), text);
+        this.precedingStyle = _style;
         this.width += ((textWidth !== null)
             ? textWidth
             : stringWidth(text));

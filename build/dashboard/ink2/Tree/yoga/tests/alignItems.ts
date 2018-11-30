@@ -7,7 +7,8 @@ import { YogaAlignItems, YogaAlignItemsValues } from '../constants';
 import RectCoords from '../../../Renderer/Coords';
 import { qSpan } from '../../../Renderer/tests/__qCoords';
 import { number } from 'prop-types';
-import { CoreColorPalette } from '../../../Text/Style/palette';
+import ColorPalette from '../../../Text/Style/palette';
+import { render } from 'ink';
 
 describe('a single GroupNode containing a simple TextNode', () => {
     const text = 'some simple text';
@@ -17,9 +18,9 @@ describe('a single GroupNode containing a simple TextNode', () => {
     let textNode: TextNode;
     beforeEach(() => {
         grid = new RenderGrid(20, 4);
-        groupNode = new GroupNode({}, { bgColor: CoreColorPalette.red });
+        groupNode = new GroupNode({}, { bgColor: ColorPalette.red });
         textNode = new TextNode(text);
-        textNode.setStyle({ fgColor: CoreColorPalette.green });
+        textNode.setStyle({ fgColor: ColorPalette.green });
         grid.root.appendChild(groupNode);
         groupNode.appendChild(textNode);
     });
@@ -59,13 +60,15 @@ describe('a single GroupNode containing a simple TextNode', () => {
     const renderMacro = (xOffset: number, yOffset: number): void => {
         for (let row, y = 0; row = grid.rows[y]; y++ ) {
             if (y === yOffset) {
-                const built = ((row.getBuilder())
-                    .styledText(new Style({ fgColor: CoreColorPalette.red, bgColor: CoreColorPalette.blue }), text),
-                    .styledText()
-                );
-                expect(row.text).toBe(text + ' '.repeat(grid.width - textWidth) + Style.resetCode + '\r\n');
+                expect(row.text).toBe((row.getBuilder()
+                    .styledText(new Style({ fgColor: ColorPalette.green, bgColor: ColorPalette.red }), text)
+                    .styledGap(Style.base, grid.width - textWidth)
+                ).toString());
             } else {
-                expect(
+                expect(row.text).toBe((row.getBuilder()
+                    .styledGap(new Style({ bgColor: ColorPalette.red }), textWidth)
+                    .styledGap(Style.base, grid.width - textWidth)
+                ).toString());
             }
         }
     };
@@ -79,10 +82,7 @@ describe('a single GroupNode containing a simple TextNode', () => {
         });
         it('correctly renders all rows', () => {
             grid.render();
-            expect(grid.rows[0].text).toBe(text + ' '.repeat(grid.width - textWidth) + Style.resetCode + '\r\n');
-            expect(grid.rows[1].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
-            expect(grid.rows[2].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
-            expect(grid.rows[3].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
+            renderMacro(0, 0);
         });
     });
     describe('alignItems = flexStart', () => {
@@ -97,10 +97,7 @@ describe('a single GroupNode containing a simple TextNode', () => {
         });
         it('correctly renders all rows', () => {
             grid.render();
-
-            expect(grid.rows[1].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
-            expect(grid.rows[2].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
-            expect(grid.rows[3].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
+            renderMacro(0, 0);
         });
     });
     describe('alignItems = flexEnd', () => {
@@ -115,10 +112,7 @@ describe('a single GroupNode containing a simple TextNode', () => {
         });
         it('correctly renders all rows', () => {
             grid.render();
-            expect(grid.rows[0].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
-            expect(grid.rows[1].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
-            expect(grid.rows[2].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
-            expect(grid.rows[3].text).toBe(text + ' '.repeat(grid.width - textWidth) + Style.resetCode + '\r\n');
+            renderMacro(0, 3);
         });
     });
     describe('alignItems = center', () => {
@@ -133,10 +127,7 @@ describe('a single GroupNode containing a simple TextNode', () => {
         });
         it('correctly renders all rows', () => {
             grid.render();
-            expect(grid.rows[0].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
-            expect(grid.rows[1].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
-            expect(grid.rows[2].text).toBe(text + ' '.repeat(grid.width - textWidth) + Style.resetCode + '\r\n');
-            expect(grid.rows[3].text).toBe(' '.repeat(grid.width) + Style.resetCode + '\r\n');
+            renderMacro(0, 2);
         });
     });
 

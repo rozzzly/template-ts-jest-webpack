@@ -2,14 +2,14 @@ import { SpanCoords } from './Coords';
 import Style from '../Text/Style';
 import RowBuilder from './RowBuilder';
 
-export type GapFiller = (builder: RowBuilder, coords: SpanCoords, style: Style | null) => void;
-export const defaultGapFiller: GapFiller = (builder: RowBuilder, coords: SpanCoords, style: Style | null = null): void => {
+export type GapFiller = (builder: RowBuilder, coords: SpanCoords, style: Style | null) => RowBuilder;
+export const defaultGapFiller: GapFiller = (builder: RowBuilder, coords: SpanCoords, style: Style | null = null): RowBuilder => {
     const width = coords.x1 - coords.x0;
     const text = whitespaceBuilder.substring(0, width);
     if (style !== null) {
-        builder.styledText(style, text, width);
+        return builder.styledText(style, text, width);
     } else {
-        builder.text(text, width);
+        return builder.text(text, width);
     }
 };
 export default GapFiller;
