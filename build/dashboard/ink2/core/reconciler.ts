@@ -4,6 +4,7 @@ import { NodeInstance } from '../Tree';
 import RootNode from '../Tree/RootNode';
 import TextNode from '../Tree/TextNode';
 import GroupNode from '../Tree/GroupNode';
+import composeProps from '../Text/Style/reactProps';
 
 const noopRet = <T>(value: T) => () => value;
 const noop = () => {};
@@ -29,7 +30,13 @@ export default function createReconciler(): Reconciler {
             let two = 1 + 1;
         },
         createInstance: (type, props) => {
-            return new GroupNode({}, {});
+            if (type === 'div' && 'data-yoga' in props) {
+                return new GroupNode(props['data-yoga'], {});
+            } else if (type === 'style' && 'data-style' in props) {
+                return new GroupNode({}, composeProps(props['data-style']));
+            } else {
+                return new GroupNode({}, {});
+            }
         },
         appendInitialChild: (parent, child) => {
             parent.appendChild(child);

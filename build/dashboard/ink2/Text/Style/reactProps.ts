@@ -31,7 +31,7 @@ export type ColorValue = (
 );
 
 
-export function composeProps(props: StyleComponentProps) {
+export function composeProps(props: StyleComponentProps): StyleOverride {
     let style: StyleOverride = { };
 
     let reset: boolean = false;
@@ -99,7 +99,7 @@ export function composeProps(props: StyleComponentProps) {
          }
     }
 
-    return reset ? { ...baseStyleData } : style;
+    return reset ? { ...baseStyleData, ...style } : style;
 }
 
 export default composeProps;
