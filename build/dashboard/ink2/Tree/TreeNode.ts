@@ -38,8 +38,7 @@ export abstract class TreeNode<K extends NodeKind> {
     }
 
     public cascadeStyle(): void {
-        //  const inherited = (this.parent && this.parent.style) ? this.parent.style : Style.base;
-        const inherited = this.parent ? this.parent.style : Style.base;
+        const inherited = (this.parent && this.parent.style) ? this.parent.style : Style.base;
         this.style = inherited.override(this.override);
     }
 

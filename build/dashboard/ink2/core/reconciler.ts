@@ -1,8 +1,9 @@
-import create, { Reconciler as ReactReconciler } from 'react-reconciler';
-import { NodeInstance } from './Tree';
-import RootNode from './Tree/RootNode';
-import TextNode from './Tree/TextNode';
-import GroupNode from './Tree/GroupNode';
+import * as create from 'react-reconciler';
+import { Reconciler as ReactReconciler, } from 'react-reconciler';
+import { NodeInstance } from '../Tree';
+import RootNode from '../Tree/RootNode';
+import TextNode from '../Tree/TextNode';
+import GroupNode from '../Tree/GroupNode';
 
 const noopRet = <T>(value: T) => () => value;
 const noop = () => {};
@@ -21,20 +22,32 @@ export default function createReconciler(): Reconciler {
         getRootHostContext: _ => rootHostContext,
         getChildHostContext: _ => childHostContext,
         getPublicInstance: instance => instance,
-        prepareForCommit: noop,
-        resetAfterCommit: noop,
+        prepareForCommit: () => {
+            let two = 1 + 1;
+        },
+        resetAfterCommit: () => {
+            let two = 1 + 1;
+        },
         createInstance: (type, props) => {
-            return new GroupNode();
+            return new GroupNode({}, {});
         },
         appendInitialChild: (parent, child) => {
+            parent.appendChild(child);
         },
-        finalizeInitialChildren: noopRet(false),
-        prepareUpdate: noopRet(true),
+        appendChildToContainer: (container, child) => {
+            container.appendChild(child);
+        },
+        finalizeInitialChildren: () => {
+            return false;
+        },
+        prepareUpdate: () => {
+            return true;
+        },
         shouldSetTextContent: (type, props) => {
             return false;
         },
         createTextInstance: (text) => {
-            return new TextNode();
+            return new TextNode(text);
         },
         // fiber / scheduling things I'm not going to worry about right now
         shouldDeprioritizeSubtree: noopRet(false),

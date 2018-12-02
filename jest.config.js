@@ -17,10 +17,10 @@ module.exports = {
     //     'template-ts-jest-webpack/(.*)': '$1'
     // },
     testMatch: [
-        fromRoot('src/**/*.(test|spec).ts'),
-        fromRoot('build/**/*.(test|spec).ts'),
-        fromRoot('build/**/tests/**/!(__)*.ts'),
-        fromRoot('test/**/!(__)*.ts')
+        fromRoot('src/**/*.(test|spec).ts?(x)'),
+        fromRoot('build/**/*.(test|spec).ts?(x)'),
+        fromRoot('build/**/tests/**/!(__)*.ts?(x)'),
+        fromRoot('test/**/!(__)*.ts?(x)')
     ],
     moduleFileExtensions: [ 'ts', 'tsx', 'js', 'jsx', 'json', 'node' ],
     preset: 'ts-jest'
