@@ -60,15 +60,19 @@ describe('a single GroupNode containing a simple TextNode', () => {
     const renderMacro = (xOffset: number, yOffset: number): void => {
         for (let row, y = 0; row = grid.rows[y]; y++ ) {
             if (y === yOffset) {
-                expect(row.text).toBe((row.getBuilder()
+                expect(row.text).toBe(
+                    row.getBuilder()
                     .styledText(new Style({ fgColor: ColorPalette.green, bgColor: ColorPalette.red }), text)
                     .styledGap(Style.base, grid.width - textWidth)
-                ).toString());
+                    .toString()
+                );
             } else {
-                expect(row.text).toBe((row.getBuilder()
+                expect(row.text).toBe(
+                    row.getBuilder()
                     .styledGap(new Style({ bgColor: ColorPalette.red }), textWidth)
                     .styledGap(Style.base, grid.width - textWidth)
-                ).toString());
+                    .toString()
+                );
             }
         }
     };

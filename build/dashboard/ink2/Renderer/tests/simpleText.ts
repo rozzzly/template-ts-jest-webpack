@@ -3,7 +3,7 @@ import RenderGrid from '../RenderGrid';
 import TextNode from '../../Tree/TextNode';
 import Style from '../../Text/Style';
 import ColorPalette from '../../Text/Style/palette';
-import { qSpan, qRect } from './__qCoords';
+import { qSpan, qRect, rowSpans } from './__qCoords';
 
 describe('a single (unclipped) text node without embedded Ansi styles', () => {
     const text = 'simple text';
@@ -17,12 +17,13 @@ describe('a single (unclipped) text node without embedded Ansi styles', () => {
     describe('without styles from it\'s parent', () => {
         beforeEach(() => grid.render());
         it('correctly plots all spans correctly', () => {
-            expect(grid.rows[0].spans).toEqual([
-                qSpan(0, textWidth, textNode, 0),
-                qSpan(textWidth, 20, grid.root, 0)
-            ]);
-            expect(grid.rows[1].spans).toEqual([
-                qSpan(0, 20, grid.root, 1)
+            expect(rowSpans(grid)).toEqual([
+                [
+                    qSpan(0, textWidth, textNode, 0),
+                    qSpan(textWidth, 20, grid.root, 0)
+                ], [
+                    qSpan(0, 20, grid.root, 1)
+                ]
             ]);
         });
         it('renders the grid as expected', () => {
@@ -43,12 +44,14 @@ describe('a single (unclipped) text node without embedded Ansi styles', () => {
         });
         it('renders the grid as expected', () => {
             grid.render();
-            expect(grid.rows[0].text).toBe(grid.rows[0].getBuilder()
+            expect(grid.rows[0].text).toBe(
+                grid.rows[0].getBuilder()
                 .styledText({ bgColor: ColorPalette.blue }, text, textWidth)
                 .gap(grid.width - textWidth)
                 .toString()
             );
-            expect(grid.rows[1].text).toBe(grid.rows[1].getBuilder()
+            expect(grid.rows[1].text).toBe(
+                grid.rows[1].getBuilder()
                 .styledGap({ bgColor: ColorPalette.blue }, grid.width)
                 .toString()
             );
@@ -59,12 +62,14 @@ describe('a single (unclipped) text node without embedded Ansi styles', () => {
             });
             it('renders the grid as expected', () => {
                 grid.render();
-                expect(grid.rows[0].text).toBe(grid.rows[0].getBuilder()
+                expect(grid.rows[0].text).toBe(
+                    grid.rows[0].getBuilder()
                     .styledText({ bgColor: ColorPalette.blue, fgColor: ColorPalette.red }, text, textWidth)
                     .styledGap({ bgColor: ColorPalette.blue }, grid.width - textWidth)
                     .toString()
                 );
-                expect(grid.rows[1].text).toBe(grid.rows[1].getBuilder()
+                expect(grid.rows[1].text).toBe(
+                    grid.rows[1].getBuilder()
                     .styledGap({ bgColor: ColorPalette.blue }, grid.width)
                     .toString()
                 );
@@ -77,12 +82,14 @@ describe('a single (unclipped) text node without embedded Ansi styles', () => {
         });
         it('renders the grid as expected', () => {
             grid.render();
-            expect(grid.rows[0].text).toBe(grid.rows[0].getBuilder()
+            expect(grid.rows[0].text).toBe(
+                grid.rows[0].getBuilder()
                 .styledText({ fgColor: ColorPalette.red }, text, textWidth)
                 .styledGap({}, grid.width - textWidth)
                 .toString()
             );
-            expect(grid.rows[1].text).toBe(grid.rows[1].getBuilder()
+            expect(grid.rows[1].text).toBe(
+                grid.rows[1].getBuilder()
                 .gap(grid.width)
                 .toString()
             );

@@ -2,6 +2,11 @@ import { NodeInstance } from '../../Tree';
 import GridSpan from '../GridSpan';
 import TreeNode from '../../Tree/TreeNode';
 import RectCoords from '../Coords';
+import RenderGrid from '../RenderGrid';
+
+export function rowSpans(grid: RenderGrid): GridSpan[][] {
+    return grid.rows.map(row => row.spans);
+}
 
 export function qSpan(x0: number, x1: number, node?: NodeInstance, y?: number): GridSpan {
     return new GridSpan(

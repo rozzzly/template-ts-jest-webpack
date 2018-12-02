@@ -1,6 +1,6 @@
 import RootNode from '../../Tree/RootNode';
 import RenderGrid from '../RenderGrid';
-import { qSpan } from './__qCoords';
+import { qSpan, rowSpans } from './__qCoords';
 
 describe('grid', () => {
     it('is dirty upon creation', () => {
@@ -22,12 +22,13 @@ describe('grid', () => {
             });
             it('plots out both rows, belonging to just the root', () => {
                 expect(grid.rows.length).toBe(2);
-                let [ row0, row1 ] = grid.rows;
-                expect(grid.rows[0].spans).toEqual([
-                    qSpan(0, 20, grid.root, 0)
-                ]);
-                expect(grid.rows[1].spans).toEqual([
-                    qSpan(0, 20, grid.root, 1)
+                expect(rowSpans(grid)).toEqual([
+                    [
+                        qSpan(0, 20, grid.root, 0)
+                    ],
+                    [
+                        qSpan(0, 20, grid.root, 1)
+                    ]
                 ]);
             });
             it('will still be dirty because rows have yet to be rendered', () => {
