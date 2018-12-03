@@ -1,8 +1,8 @@
 import * as React from 'react';
-import { StyleComponentProps } from '../Text/Style/reactProps';
+import { InlineStyleComponentProps } from '../Text/Style/reactProps';
 
 
-export interface GroupProps extends StyleComponentProps {
+export interface GroupProps extends InlineStyleComponentProps {
     children: React.ReactNode;
 }
 

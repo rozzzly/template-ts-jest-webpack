@@ -12,6 +12,7 @@ export class RootNode extends GroupNode {
     public constructor(width: number, height: number, grid: RenderGrid) {
         super({ width, height }, {});
         this.grid = grid;
+        this.renderContainer.grid = grid;
         this.width = width;
         this.height = height;
         this.yoga.link();

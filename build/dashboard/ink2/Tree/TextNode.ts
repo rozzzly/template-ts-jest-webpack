@@ -22,9 +22,10 @@ export class TextNode extends TreeNode<'TextNode'> {
 
     public setText(text: string): void {
         if (this.text !== text) {
+            this.markDirty();
             this.text = text;
-            this.chunks = [];
             let width = 0;
+            this.chunks = [];
             parseChunks(text.normalize()).forEach(chunk => {
                 this.chunks.push(chunk);
                 width += chunk.width;

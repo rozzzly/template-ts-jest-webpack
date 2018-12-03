@@ -1,5 +1,5 @@
 import { Dimensions } from './RenderContainer';
-import  { NodeInstance } from '../Tree';
+import  { NodeInstance, NodeKind } from '../Tree';
 import { Style, baseStyle } from '../Text/Style';
 import RootNode from '../Tree/RootNode';
 import GridRow from './GridRow';
@@ -45,11 +45,19 @@ export class RenderGrid implements Dimensions {
         this.isLayoutDirty = false;
     }
 
+    private markTreeClean(node: NodeInstance): void {
+        node.dirty = false;
+        if (node.kind === NodeKind.GroupNode) {
+            node.children.forEach(child => this.markTreeClean(child));
+        }
+    }
+
     public render(): void {
         if (this.isLayoutDirty) this.layout();
         for (let index of this.dirtyRows.values()) {
             this.rows[index].render();
         }
+        this.markTreeClean(this.root);
         this.dirtyRows.clear();
     }
 

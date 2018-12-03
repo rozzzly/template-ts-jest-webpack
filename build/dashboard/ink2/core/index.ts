@@ -29,7 +29,9 @@ export interface MountedInstance {
     opts: MountOptions;
     container: FiberRoot;
     reconciler: Reconciler;
-    render: RenderFn;
+    renderer: RenderFn;
+    render: () => void;
+    renderToString: () => string;
     grid: RenderGrid;
     unmount: UnmountFn;
 }
@@ -44,14 +46,24 @@ export const lookupInstance = (unmountFn: UnmountFn): MountedInstance | null => 
     null
 );
 
-export default function render(renderer: RenderFn, options: Partial<MountOptions> = {}): UnmountFn {
+export function renderToString(renderer: RenderFn, options: Partial<MountOptions> = {}): string {
+    const inst = mount(renderer, options);
+    return inst.grid.renderToString();
+
+}
+export function render(renderer: RenderFn, options: Partial<MountOptions> = {}): UnmountFn {
+    const inst = mount(renderer, options);
+    return inst.unmount;
+}
+
+export default function mount(renderer: RenderFn, options: Partial<MountOptions> = {}): MountedInstance {
     const opts: MountOptions = { ...defaultMountOpts, ...options };
 
     let inst: MountedInstance;
     if (InstanceMap.stdout.has(opts.stdout)) {
         inst = InstanceMap.stdout.get(opts.stdout) as MountedInstance;
         inst.render = renderer;
-        // check if opts !== stored opts and react if needed (eg: resize the grid)
+        /// TODO ::: check if opts !== stored opts and react if needed (eg: resize the grid)
 
     } else {
         let disposed = false;
@@ -81,7 +93,15 @@ export default function render(renderer: RenderFn, options: Partial<MountOptions
         inst.grid  = new RenderGrid(inst.dimensions.width, inst.dimensions.height);
         inst.container = reconciler.createContainer(inst.grid.root, false, false);
         inst.reconciler = reconciler;
-        inst.render = renderer;
+        inst.renderer = renderer;
+        inst.render = () => {
+            reconciler.updateContainer(inst.renderer(), inst.container, null, undefined as any);
+            inst.grid.render();
+        };
+        inst.renderToString = () => {
+            inst.render();
+            return inst.renderToString();
+        };
         inst.unmount = (cb): void => {
             if (disposed) {
                 throw new Error('already unmounted!');
@@ -95,7 +115,7 @@ export default function render(renderer: RenderFn, options: Partial<MountOptions
         InstanceMap.stdout.set(opts.stdout, inst);
     }
 
-    inst.reconciler.updateContainer(renderer(), inst.container, null, undefined as any);
+    inst.render();
 
-    return inst.unmount;
+    return inst;
 }

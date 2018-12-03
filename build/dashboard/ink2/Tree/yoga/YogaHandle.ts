@@ -26,20 +26,35 @@ export class YogaHandle {
     }
 
     public mergeProps(incoming: Partial<YogaProps>): void {
+        const old = this.staged;
         this.staged = internalizeProps(incoming, this.staged);
-        if (this.node) {
-            this.applyProps();
+        this.owner.grid!.isLayoutDirty = true;
+        const changed = !isEqual(this.staged, old);
+        if (changed) {
+            if (this.owner.grid) {
+                this.owner.grid!.isLayoutDirty = true;
+            }
+            if (this.node) {
+                this.applyProps();
+            }
         }
     }
 
     public setProps(incoming: Partial<YogaProps>): void {
+        const old = this.staged;
         if (Object.keys(incoming).length === 0) { // quick test to avoid calling internalizeProps() when it will have no effect
             this.staged = { ...defaultProps };
         } else {
             this.staged = internalizeProps(incoming);
         }
-        if (this.node) {
-            this.applyProps();
+        const changed = !isEqual(this.staged, old);
+        if (changed) {
+            if (this.owner.grid) {
+                this.owner.grid!.isLayoutDirty = true;
+            }
+            if (this.node) {
+                this.applyProps();
+            }
         }
     }
 

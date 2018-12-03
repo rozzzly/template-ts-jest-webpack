@@ -13,16 +13,20 @@ export type TextTransformsFlagMap = {
     [transform in TextTransform]?: boolean;
 };
 
-export type StyleComponentProps = (
-    & ForegroundColorFlagMap
-    & BackgroundColorFlagMap
-    & TextWeightFlagMap
+export type StyleGroupProps = (
     & TextTransformsFlagMap
     & {
         color?: ColorValue;
         background?: ColorValue;
         weight?: TextWeight;
     }
+);
+
+export type InlineStyleComponentProps = (
+    & ForegroundColorFlagMap
+    & BackgroundColorFlagMap
+    & TextWeightFlagMap
+    & StyleGroupProps
 );
 export type ColorValue = (
     | Color
@@ -31,7 +35,7 @@ export type ColorValue = (
 );
 
 
-export function composeProps(props: StyleComponentProps): StyleOverride {
+export function composeProps(props: InlineStyleComponentProps): StyleOverride {
     let style: StyleOverride = { };
 
     let reset: boolean = false;

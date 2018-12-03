@@ -17,22 +17,22 @@ describe('a single (unclipped) text node without embedded Ansi styles', () => {
     describe('without styles from it\'s parent', () => {
         beforeEach(() => grid.render());
         it('correctly plots all spans correctly', () => {
-            expect(rowSpans(grid)).toEqual([
-                [
-                    qSpan(0, textWidth, textNode, 0),
-                    qSpan(textWidth, 20, grid.root, 0)
-                ], [
-                    qSpan(0, 20, grid.root, 1)
-                ]
-            ]);
+            expect(rowSpans(grid)).toEqual([[
+                qSpan(0, textWidth, textNode, 0),
+                qSpan(textWidth, 20, grid.root, 0)
+            ], [
+                qSpan(0, 20, grid.root, 1)
+            ]]);
         });
         it('renders the grid as expected', () => {
-            expect(grid.rows[0].text).toBe(grid.rows[0].getBuilder()
+            expect(grid.rows[0].text).toBe(
+                grid.rows[0].getBuilder()
                 .text(text, textWidth)
                 .gap(grid.width - textWidth)
                 .toString()
             );
-            expect(grid.rows[1].text).toBe(grid.rows[1].getBuilder()
+            expect(grid.rows[1].text).toBe(
+                grid.rows[1].getBuilder()
                 .gap(grid.width)
                 .toString()
             );
@@ -40,7 +40,7 @@ describe('a single (unclipped) text node without embedded Ansi styles', () => {
     });
     describe('with RootNode having the bgColor set to blue', () => {
         beforeEach(() => {
-            grid.root.setStyle({ bgColor: ColorPalette.blue });
+            grid.root.setOverride({ bgColor: ColorPalette.blue });
         });
         it('renders the grid as expected', () => {
             grid.render();
@@ -58,7 +58,7 @@ describe('a single (unclipped) text node without embedded Ansi styles', () => {
         });
         describe('with TextNode having a fgColor of red', () => {
             beforeEach(() => {
-                textNode.setStyle({ fgColor: ColorPalette.red });
+                textNode.setOverride({ fgColor: ColorPalette.red });
             });
             it('renders the grid as expected', () => {
                 grid.render();
@@ -78,7 +78,7 @@ describe('a single (unclipped) text node without embedded Ansi styles', () => {
     });
     describe('with TextNode having a fgColor of red', () => {
         beforeEach(() => {
-            textNode.setStyle({ fgColor: ColorPalette.red });
+            textNode.setOverride({ fgColor: ColorPalette.red });
         });
         it('renders the grid as expected', () => {
             grid.render();

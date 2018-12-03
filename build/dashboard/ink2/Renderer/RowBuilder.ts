@@ -35,7 +35,8 @@ export class RowBuilder {
         this.buff.push(text);
         this.width += ((textWidth !== null)
             ? textWidth
-            : stringWidth(text));
+            : stringWidth(text)
+        );
         return this;
     }
     public styledText(style: Style | StyleOverride, text: string): this;
@@ -46,7 +47,8 @@ export class RowBuilder {
         this.precedingStyle = _style;
         this.width += ((textWidth !== null)
             ? textWidth
-            : stringWidth(text));
+            : stringWidth(text)
+        );
         return this;
     }
     public toString(): string {

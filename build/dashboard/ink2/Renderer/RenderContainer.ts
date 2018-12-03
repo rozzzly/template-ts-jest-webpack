@@ -1,10 +1,9 @@
-import { TreeNode } from '../Tree/TreeNode';
 import { NodeInstance, NodeKind } from '../Tree';
 import { ComputedLayout } from '../Tree/yoga/props';
-import { inRange } from '../misc';
 import RectCoords, { SpanCoords } from './Coords';
 import { GridRow } from './GridRow';
 import RowBuilder from './RowBuilder';
+import RenderGrid from './RenderGrid';
 
 export interface Dimensions {
     height: number;
@@ -14,6 +13,7 @@ export interface Dimensions {
 
 export class RenderContainer implements Dimensions {
 
+    public grid: RenderGrid | null;
     public treeRef: NodeInstance;
     public dirty: boolean;
     public width: number;
@@ -27,6 +27,11 @@ export class RenderContainer implements Dimensions {
     }
 
     public updateGeometry(layout: ComputedLayout): void {
+        const old = {
+            viewBox: this.viewBox,
+            localCoords: this.localCoords,
+            globalCoords: this.globalCoords
+        };
         this.width = layout.width;
         this.height = layout.height;
 
@@ -54,6 +59,27 @@ export class RenderContainer implements Dimensions {
             } else this.viewBox = null;
         } else { // this RenderContainer is the RootNode
             this.viewBox = this.globalCoords;
+        }
+        if (!old.globalCoords || !old.localCoords) {
+            this.treeRef.markDirty();
+            this.grid!.markRangeDirty({
+                y0: this.globalCoords.y0,
+                y1: this.globalCoords.y1 - 1
+            });
+        } else if (RectCoords.equalTo(old.globalCoords, this.globalCoords) || RectCoords.equalTo(old.localCoords, this.localCoords)) {
+            this.treeRef.markDirty();
+            this.grid!.markRangeDirty({
+                y0: Math.min(old.globalCoords.y0, this.globalCoords.y0),
+                y1: Math.min(old.globalCoords.y1, this.globalCoords.y1) - 1
+            });
+        } else if (old.viewBox || this.viewBox) {
+            if (!old.viewBox || !this.viewBox || !RectCoords.equalTo(this.viewBox, old.viewBox)) {
+                this.treeRef.markDirty();
+                this.grid!.markRangeDirty({
+                    y0: Math.min(old.globalCoords.y0, this.globalCoords.y0),
+                    y1: Math.min(old.globalCoords.y1, this.globalCoords.y1) - 1
+                });
+            }
         }
 
     }

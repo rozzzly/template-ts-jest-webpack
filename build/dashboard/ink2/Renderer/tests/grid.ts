@@ -22,14 +22,11 @@ describe('grid', () => {
             });
             it('plots out both rows, belonging to just the root', () => {
                 expect(grid.rows.length).toBe(2);
-                expect(rowSpans(grid)).toEqual([
-                    [
-                        qSpan(0, 20, grid.root, 0)
-                    ],
-                    [
-                        qSpan(0, 20, grid.root, 1)
-                    ]
-                ]);
+                expect(rowSpans(grid)).toEqual([[
+                    qSpan(0, 20, grid.root, 0)
+                ], [
+                    qSpan(0, 20, grid.root, 1)
+                ]]);
             });
             it('will still be dirty because rows have yet to be rendered', () => {
                 expect(grid.isDirty).toBe(true);

@@ -38,8 +38,9 @@ export const baseStyleData: StyleData = {
     strike: false
 };
 
-export const isOverrideIdempotent = (override: StyleOverride): boolean => (
-    Object.keys(override).length === 0
+export const isOverrideIdempotent = (override: Style | StyleOverride, currentOverride?: Style | StyleOverride): boolean => (
+    Object.keys(override).length === 0 ||
+    (!!currentOverride && Style.equalTo(override, currentOverride))
 );
 
 export type StyleOverride = Partial<StyleData>;
@@ -168,10 +169,29 @@ export class Style implements StyleData {
         ));
     }
 
-    public static rollingCode(override: StyleOverride, parent: Style, preceding: Style): [Style, string] {
-        const local = parent.override(override);
-        const code = local.code(preceding);
-        return [local, code];
+    public static equalTo(alpha: Style | StyleOverride, bravo: Style | StyleOverride): boolean {
+        if (alpha.weight !== bravo.weight) return false;
+        else if (alpha.underline !== bravo.underline) return false;
+        else if (alpha.strike !== bravo.strike) return false;
+        else if (alpha.italic !== bravo.italic) return false;
+        else if (alpha.inverted !== bravo.inverted) return false;
+        else {
+            if (alpha.bgColor) {
+                if (bravo.bgColor) {
+                    if (!alpha.bgColor.equalTo(alpha.bgColor)) {
+                        return false;
+                    }
+                } else return false;
+            }
+            if (alpha.fgColor) {
+                if (bravo.fgColor) {
+                    if (!alpha.fgColor.equalTo(alpha.fgColor)) {
+                        return false;
+                    }
+                } else return false;
+            }
+            return true;
+        }
     }
 
     public static code(style: Style | StyleOverride): string {

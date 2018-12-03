@@ -3,12 +3,9 @@ import RenderGrid from '../../../Renderer/RenderGrid';
 import GroupNode from '../../GroupNode';
 import TextNode from '../../TextNode';
 import Style from '../../../Text/Style';
-import { YogaAlignItems, YogaAlignItemsValues } from '../constants';
-import RectCoords from '../../../Renderer/Coords';
-import { qSpan } from '../../../Renderer/tests/__qCoords';
-import { number } from 'prop-types';
 import ColorPalette from '../../../Text/Style/palette';
-import { render } from 'ink';
+import { YogaAlignItems, YogaAlignItemsValues } from '../constants';
+import { qSpan } from '../../../Renderer/tests/__qCoords';
 
 describe('a single GroupNode containing a simple TextNode', () => {
     const text = 'some simple text';
@@ -20,7 +17,7 @@ describe('a single GroupNode containing a simple TextNode', () => {
         grid = new RenderGrid(20, 4);
         groupNode = new GroupNode({}, { bgColor: ColorPalette.red });
         textNode = new TextNode(text);
-        textNode.setStyle({ fgColor: ColorPalette.green });
+        textNode.setOverride({ fgColor: ColorPalette.green });
         grid.root.appendChild(groupNode);
         groupNode.appendChild(textNode);
     });

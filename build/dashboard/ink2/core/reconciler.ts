@@ -5,6 +5,7 @@ import RootNode from '../Tree/RootNode';
 import TextNode from '../Tree/TextNode';
 import GroupNode from '../Tree/GroupNode';
 import composeProps from '../Text/Style/reactProps';
+import { NodeSet } from '../Tree/NodeSet';
 
 const noopRet = <T>(value: T) => () => value;
 const noop = () => {};
@@ -31,12 +32,15 @@ export default function createReconciler(): Reconciler {
         },
         createInstance: (type, props) => {
             if (type === 'div' && 'data-yoga' in props) {
-                return new GroupNode(props['data-yoga'], {});
+                return new GroupNode(props['data-yoga'], props['data-style'] || {});
             } else if (type === 'style' && 'data-style' in props) {
-                return new GroupNode({}, composeProps(props['data-style']));
+                return new NodeSet(composeProps(props['data-style'])) as any;
             } else {
                 return new GroupNode({}, {});
             }
+        },
+        appendChild: (parent, child) => {
+            parent.appendChild(child);
         },
         appendInitialChild: (parent, child) => {
             parent.appendChild(child);
@@ -55,6 +59,27 @@ export default function createReconciler(): Reconciler {
         },
         createTextInstance: (text) => {
             return new TextNode(text);
+        },
+        removeChild: (parent, child) => {
+            parent.removeChild(child);
+        },
+        removeChildFromContainer: (parent, child) => {
+            parent.removeChild(child);
+        },
+        insertBefore: (parent, child, reference) => {
+            parent.insertBefore(child, reference);
+        },
+        insertInContainerBefore: (parent, child, reference) => {
+            parent.insertBefore(child, reference);
+        },
+        commitMount: (...args) => {
+            console.log(args);
+        },
+        commitUpdate: (...args) => {
+            console.log(args);
+        },
+        commitTextUpdate: (node, oldText, newText) => {
+            node.setText(newText);
         },
         // fiber / scheduling things I'm not going to worry about right now
         shouldDeprioritizeSubtree: noopRet(false),
