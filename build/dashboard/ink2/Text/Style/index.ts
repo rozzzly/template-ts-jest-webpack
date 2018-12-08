@@ -182,18 +182,18 @@ export class Style implements StyleData {
                         return false;
                     }
                 } else return false;
-            }
+            } else if (bravo.bgColor) return false;
             if (alpha.fgColor) {
                 if (bravo.fgColor) {
                     if (!alpha.fgColor.equalTo(alpha.fgColor)) {
                         return false;
                     }
                 } else return false;
-            }
+            } else if (bravo.fgColor) return false;
             return true;
         }
     }
-
+                                        
     public static code(style: Style | StyleOverride): string {
         let params: number[] = [];
         if (style.fgColor !== undefined) {
