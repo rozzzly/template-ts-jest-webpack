@@ -2,19 +2,26 @@ declare module 'ink' {
     import * as React from 'react';
 
     export interface RenderOptions {
-        stdout: NodeJS.WriteStream,
-        stdin: NodeJS.ReadStream,
-        debug: boolean
+        exitOnCtrlC: boolean;
+        stdout: NodeJS.WriteStream;
+        stdin: NodeJS.ReadStream;
+        debug: boolean;
     }
 
     export type Unmount = () => void;
 
     // export function renderToString<P>(tree: React.ReactElement<P>): string;
-    export function render<P>(tree: React.ReactElement<P>, options?: NodeJS.WriteStream | Partial<RenderOptions>): Unmount;
-
+    export function render<P>(
+        tree: React.ReactElement<P>,
+        options?: NodeJS.WriteStream | Partial<RenderOptions>,
+    ): {
+        rerender: <P>(tree: React.ReactElement<P>) => void;
+        unmount: Unmount;
+        waitUntilExit: Promise<void>;
+    };
 
     export interface ColorProps {
-        hex?: string
+        hex?: string;
         hsl?: [number, number, number];
         hsv?: [number, number, number];
         hwb?: [number, number, number];
@@ -22,7 +29,7 @@ declare module 'ink' {
         keyword?: string;
         bgHex?: string;
         bgHsl?: [number, number, number];
-        bgHsv?: [number, number, number],
+        bgHsv?: [number, number, number];
         bgHwb?: [number, number, number];
         bgRgb?: [number, number, number];
         bgKeyword?: string;
@@ -75,7 +82,7 @@ declare module 'ink' {
         bgWhiteBright?: boolean;
     }
 
-    export const Color: React.SFC<ColorProps>;
+    export const Color: React.FC<ColorProps>;
 
     export interface BoxProps {
         width?: number;
@@ -96,24 +103,14 @@ declare module 'ink' {
         margin?: number;
         flexGrow?: number;
         flexShrink?: number;
-        flexDirection?: (
-            | 'row'
-            | 'row-reverse'
-            | 'column'
-            | 'column-reverse'
-        );
-        alignItems?: (
-            | 'flex-start'
-            | 'center'
-            | 'flex-end'
-        );
-        justifyContent?: (
+        flexDirection?: 'row' | 'row-reverse' | 'column' | 'column-reverse';
+        alignItems?: 'flex-start' | 'center' | 'flex-end';
+        justifyContent?:
             | 'flex-start'
             | 'center'
             | 'flex-end'
             | 'space-between'
-            | 'space-around'
-        )
+            | 'space-around';
     }
 
     export const Box: React.ComponentClass<BoxProps>;
@@ -125,13 +122,16 @@ declare module 'ink' {
         strikethrough?: boolean;
     }
 
-    export const Text: React.SFC<TextProps>;
+    export const Text: React.FC<TextProps>;
+
+    export const Static: React.FC<{children: React.ReactNodeArray}>;
+
+    export const AppContext: React.Context<{exit: () => void}>;
 
     export const StdinContext: React.Context<{
-        stdin: NodeJS.ReadStream
-        setRawMode: (isEnabled: boolean) => void;
+        stdin: NodeJS.ReadStream;
+        setRawMode: NodeJS.ReadStream['setRawMode'];
     }>;
-    export const StdoutContext: React.Context<{
-        stdout: NodeJS.WriteStream
-    }>;
+
+    export const StdoutContext: React.Context<{stdout: NodeJS.WriteStream}>;
 }
